@@ -1,4 +1,15 @@
-# ⚡ TeleTerm — Mobile Remote Terminal Controller for Windows
+---
+title: TeleTerm Cyberdeck MMO
+emoji: 🛸
+colorFrom: purple
+colorTo: blue
+sdk: gradio
+sdk_version: 4.44.0
+app_file: app.py
+pinned: false
+---
+
+# ⚡ TeleTerm — Mobile Remote Terminal Controller & 3D MMO for Windows
 
 **TeleTerm** cho phép bạn truy cập, giám sát và điều khiển toàn bộ các terminal (PowerShell, CMD, WSL, Claude Code, Aider, Python scripts...) trên laptop Windows từ điện thoại ở bất kỳ đâu qua Internet — không cần mở port router, không bị ngắt tiến trình khi mất mạng (Session Persistence) và có bàn phím ảo tối ưu cho mobile.
 
