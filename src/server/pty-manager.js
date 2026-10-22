@@ -369,6 +369,30 @@ class PtySessionManager extends EventEmitter {
     }
 
     /**
+     * Lấy Snapshot trạng thái toàn diện của Terminal để khôi phục phiên (Session Reconnect)
+     */
+    getSnapshot(id) {
+        const session = this.sessions.get(id);
+        if (!session) return null;
+
+        const history = typeof session.buffer?.getContents === 'function'
+            ? session.buffer.getContents()
+            : (session.buffer || '');
+
+        return {
+            sessionId: id,
+            name: session.name,
+            cols: session.cols,
+            rows: session.rows,
+            status: session.status,
+            history,
+            masterClientId: session.masterClientId,
+            subscribersCount: session.subscribers ? session.subscribers.size : 0,
+            timestamp: Date.now()
+        };
+    }
+
+    /**
      * Ngắt kết nối client khỏi session (không tắt session)
      */
     detach(id, ws) {

@@ -1808,6 +1808,22 @@ wss.on('connection', (ws, req) => {
                     }
                     break;
 
+                case 'get_snapshot':
+                case 'reconnect_sync':
+                    {
+                        const targetId = payload.sessionId || currentTarget;
+                        if (targetId && !targetId.startsWith('sys-')) {
+                            const snapshot = ptyManager.getSnapshot(targetId);
+                            if (snapshot) {
+                                ws.send(JSON.stringify({
+                                    type: 'snapshot',
+                                    ...snapshot
+                                }));
+                            }
+                        }
+                    }
+                    break;
+
                 case 'ping':
                     ws.send(JSON.stringify({ type: 'pong' }));
                     break;

@@ -118,9 +118,14 @@ export class TerminalManager {
             return true;
         });
 
-        // Window resize observer
+        // Window resize observer with Virtual Keyboard guard
         window.addEventListener('resize', () => {
             this.fit();
+        });
+
+        // Orientation change is a physical geometry flip: force fit after transition
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => this.fit(true), 150);
         });
 
         // Recalculate fit after fonts finish loading to prevent misaligned cols/rows
@@ -236,8 +241,12 @@ export class TerminalManager {
                 }
                 this.currentSessionId = msg.sessionId;
                 this.sessionUnavailable = false;
+                this.isMaster = !!msg.isMaster;
                 if (this.onSessionChange) {
                     this.onSessionChange({ id: msg.sessionId, name: msg.name || 'Terminal' });
+                }
+                if (msg.cols && msg.rows) {
+                    this.term.resize(msg.cols, msg.rows);
                 }
                 this.term.reset();
                 const sessionContent = msg.history || msg.buffer || '';
@@ -248,7 +257,40 @@ export class TerminalManager {
                     // Trigger prompt from shell
                     this.sendInput('\r');
                 }
-                this.fit();
+                // Only Master issues fit() to prevent Follower from sending unneeded resize to server
+                if (this.isMaster) {
+                    this.fit();
+                }
+                break;
+
+            case 'sync_viewport':
+                if (msg.cols && msg.rows) {
+                    this.isMaster = false;
+                    this.term.resize(msg.cols, msg.rows);
+                }
+                break;
+
+            case 'master_promoted':
+                this.isMaster = true;
+                if (msg.cols && msg.rows) {
+                    this.term.resize(msg.cols, msg.rows);
+                }
+                break;
+
+            case 'resize_rejected':
+                if (msg.cols && msg.rows) {
+                    this.term.resize(msg.cols, msg.rows);
+                }
+                break;
+
+            case 'snapshot':
+                if (msg.cols && msg.rows) {
+                    this.term.resize(msg.cols, msg.rows);
+                }
+                this.term.reset();
+                if (msg.history) {
+                    this.term.write(msg.history);
+                }
                 break;
 
             case 'session_unavailable':
@@ -337,8 +379,31 @@ export class TerminalManager {
         }));
     }
 
-    fit() {
+    isVirtualKeyboardActive() {
+        if (typeof window === 'undefined') return false;
+        const isMobileOrCoarse = window.matchMedia('(max-width: 900px), (pointer: coarse)').matches;
+        if (!isMobileOrCoarse) return false;
+
+        const activeEl = document.activeElement;
+        const isTerminalFocused = activeEl && (
+            activeEl.classList?.contains('xterm-helper-textarea') ||
+            (this.mountElement && this.mountElement.contains(activeEl))
+        );
+
+        if (window.visualViewport) {
+            const heightRatio = window.visualViewport.height / window.innerHeight;
+            if (heightRatio < 0.82 && isTerminalFocused) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    fit(force = false) {
         if (!this.fitAddon || !this.mountElement || !this.term) return;
+        if (!force && this.isVirtualKeyboardActive()) {
+            return;
+        }
         try {
             this.fitAddon.fit();
             if (this.ws && this.ws.readyState === WebSocket.OPEN && this.term.cols && this.term.rows) {

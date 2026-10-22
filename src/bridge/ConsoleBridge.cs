@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using System.Threading;
 
 namespace TeleTerm {
@@ -201,12 +203,23 @@ namespace TeleTerm {
 
                 while (true) {
                     try {
+                        var pipeSecurity = new PipeSecurity();
+                        var currentUser = WindowsIdentity.GetCurrent().User;
+                        if (currentUser != null) {
+                            pipeSecurity.AddAccessRule(new PipeAccessRule(currentUser, PipeAccessRights.ReadWrite | PipeAccessRights.CreateNewInstance, AccessControlType.Allow));
+                        }
+                        var adminSid = new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, null);
+                        pipeSecurity.AddAccessRule(new PipeAccessRule(adminSid, PipeAccessRights.FullControl, AccessControlType.Allow));
+
                         using (var server = new NamedPipeServerStream(
                             "TeleTermConsoleBridge",
                             PipeDirection.InOut,
                             NamedPipeServerStream.MaxAllowedServerInstances,
                             PipeTransmissionMode.Byte,
-                            PipeOptions.Asynchronous))
+                            PipeOptions.Asynchronous,
+                            4096,
+                            4096,
+                            pipeSecurity))
                         {
                             server.WaitForConnection();
                             using (var reader = new StreamReader(server, Encoding.UTF8))
