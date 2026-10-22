@@ -1,0 +1,1715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#04060a">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'><path d='M 5 7.5 L 11 12.5 L 5 17.5' stroke='%23da7756' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/><path d='M 13 17.5 L 19 17.5' stroke='%23da7756' stroke-width='2.6' stroke-linecap='round'/><path d='M 16 4.5 C 16 6.3 17.2 7.5 19 7.5 C 17.2 7.5 16 8.7 16 10.5 C 16 8.7 14.8 7.5 13 7.5 C 14.8 7.5 16 6.3 16 4.5 Z' fill='%23da7756'/></svg>">
+    <title>TeleTerm 3D — Holographic Remote Terminal & AI Hub</title>
+
+    <!-- Typography: Newsreader (Claude Editorial Serif), Plus Jakarta Sans (UI), JetBrains Mono (Code) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/vendor/xterm/xterm/css/xterm.css">
+    <link rel="stylesheet" href="/style.css?v=26">
+    <link rel="stylesheet" href="/css/desktop-launcher.css?v=2">
+
+    <!-- Immediate Theme Initialization (Zero FOUC) -->
+    <script>
+        (function() {
+            try {
+                var theme = localStorage.getItem('teleterm_theme') || 'dark';
+                document.documentElement.setAttribute('data-theme', theme);
+                if (theme === 'light') {
+                    document.documentElement.classList.add('theme-light');
+                } else {
+                    document.documentElement.classList.add('theme-dark');
+                }
+            } catch(e) {}
+        })();
+    </script>
+
+    <!-- ES Module Import Map for Three.js -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "/vendor/three/build/three.module.js",
+            "three/addons/": "/vendor/three/examples/jsm/"
+        }
+    }
+    </script>
+</head>
+<body>
+    <!-- Native Desktop Frameless Titlebar -->
+    <header id="desktop-titlebar" class="desktop-titlebar">
+        <div class="titlebar-drag-region">
+            <span class="titlebar-brand">TELETERM 3D</span>
+        </div>
+        <div class="titlebar-actions">
+            <button id="btn-tb-launcher" class="tb-btn tb-btn-launcher" title="Exit to Launcher"><span class="tt-icon" data-icon="home" data-size="13" style="margin-right:4px;"></span>Launcher</button>
+            <button id="btn-tb-fullscreen" class="tb-btn" title="Toggle Fullscreen (F11)" aria-label="Toggle Fullscreen"><span class="tt-icon" data-icon="maximize-2" data-size="13"></span></button>
+            <button id="btn-tb-minimize" class="tb-btn" title="Minimize Window" aria-label="Minimize"><span class="tt-icon" data-icon="minus" data-size="13"></span></button>
+            <button id="btn-tb-maximize" class="tb-btn" title="Maximize Window" aria-label="Maximize"><span class="tt-icon" data-icon="square" data-size="13"></span></button>
+            <button id="btn-tb-close" class="tb-btn tb-btn-close" title="Close Game" aria-label="Close"><span class="tt-icon" data-icon="x" data-size="13"></span></button>
+        </div>
+    </header>
+
+    <!-- 1. Open World 3D Canvas (Romantic Sunset, Sakura & Anime RPG) -->
+    <canvas id="open-world-canvas" tabindex="0"></canvas>
+
+    <!-- 2. CSS3D Interactive Viewport (Terminal & Floating HUDs) -->
+    <div id="css3d-viewport"></div>
+
+    <!-- 2b. Embedded Seamless ADE Studio Viewport (0ms Map Reload, Persistent 3D World) -->
+    <div id="ade-studio-viewport" class="ade-studio-viewport hidden" style="display:none;">
+        <div class="ade-viewport-header">
+            <div class="ade-viewport-title">
+                <span class="tt-icon" data-icon="laptop" data-size="16" style="margin-right:6px;"></span>
+                <span>TeleTerm ADE Studio</span>
+                <span class="ade-viewport-tag">Zero-Reload Embedded Viewport</span>
+            </div>
+            <div class="ade-viewport-actions">
+                <button id="btn-close-ade-studio" class="ade-vp-btn ade-vp-close" title="Return to 3D World (0ms Instant)"><span class="tt-icon" data-icon="x" data-size="13" style="margin-right:4px;"></span>Return to 3D World</button>
+            </div>
+        </div>
+        <iframe id="ade-studio-frame" class="ade-studio-frame" src="about:blank" allow="clipboard-read; clipboard-write; fullscreen"></iframe>
+    </div>
+
+    <!-- 3. Top Navigation Bar -->
+    <header class="cyber-top-nav">
+        <div class="nav-brand" title="TeleTerm Studio — Holographic Terminal & Living World">
+            <span class="teleterm-brand-icon" aria-label="TeleTerm Brand Glyph">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="tt-brand-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#f08c6a"/>
+                            <stop offset="100%" stop-color="#c96442"/>
+                        </linearGradient>
+                    </defs>
+                    <path class="tt-icon-prompt" d="M 5 7.5 L 11 12.5 L 5 17.5" stroke="url(#tt-brand-grad)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path class="tt-icon-cursor" d="M 13 17.5 L 19 17.5" stroke="url(#tt-brand-grad)" stroke-width="2.6" stroke-linecap="round"/>
+                    <path class="tt-icon-spark" d="M 16 4.5 C 16 6.3 17.2 7.5 19 7.5 C 17.2 7.5 16 8.7 16 10.5 C 16 8.7 14.8 7.5 13 7.5 C 14.8 7.5 16 6.3 16 4.5 Z" fill="url(#tt-brand-grad)"/>
+                </svg>
+            </span>
+            <span class="brand-title">TeleTerm</span>
+            <span class="brand-tag">Studio</span>
+        </div>
+
+        <!-- View Switcher Tabs -->
+        <div class="nav-view-tabs">
+            <button id="tab-view-term" class="nav-tab-btn active" data-view="terminal">
+                <span class="tt-icon" data-icon="terminal" data-size="15"></span> <span class="tab-label-full" data-i18n="nav_terminal">Terminal</span><span class="tab-label-short" data-i18n="nav_term_short">Term</span>
+            </button>
+            <button id="tab-view-codex" class="nav-tab-btn" data-view="codex">
+                <span class="tt-icon" data-icon="book-open" data-size="15"></span> <span class="tab-label-full" data-i18n="nav_codex">Codex</span><span class="tab-label-short" data-i18n="nav_codex_short">Codex</span>
+            </button>
+            <button id="tab-view-agy" class="nav-tab-btn" data-view="antigravity">
+                <span class="tt-icon" data-icon="orbit" data-size="15"></span> <span class="tab-label-full" data-i18n="nav_antigravity">Antigravity</span><span class="tab-label-short" data-i18n="nav_agy_short">AGY</span>
+            </button>
+            <button id="tab-view-universal" class="nav-tab-btn" data-view="universal" title="Universal AI Agents (OpenClaw, Claude Code, Cursor, Aider)">
+                <span class="tt-icon" data-icon="users" data-size="15"></span> <span class="tab-label-full" data-i18n="nav_universal">All Agents</span><span class="tab-label-short" data-i18n="nav_universal_short">Agents</span>
+            </button>
+            <button id="tab-view-ade" class="nav-tab-btn" data-view="ade" title="Open TeleTerm Agentic Development Environment Studio (0ms Instant Switch)">
+                <span class="tt-icon" data-icon="laptop" data-size="15"></span> <span class="tab-label-full">ADE Studio</span><span class="tab-label-short">ADE</span>
+            </button>
+            <button id="btn-open-accounts-nav" class="nav-tab-btn" title="Switch Account & Check Quota">
+                <span class="tt-icon" data-icon="users" data-size="15"></span> <span class="tab-label-full" data-i18n="nav_quota">Acc & Quota</span><span class="tab-label-short" data-i18n="nav_quota_short">Quota</span>
+            </button>
+        </div>
+
+        <!-- Telemetry Chips -->
+        <div class="nav-center-telemetry">
+            <!-- Developer EXP & Level Progress Capsule -->
+            <div id="top-xp-hud-capsule" class="tele-chip xp-hud-capsule" title="Developer Level & Experience Points">
+                <span id="hud-player-level" class="chip-val val-emerald font-bold">Lv.1</span>
+                <span id="hud-player-title" class="chip-label text-cyan">Script Novice</span>
+                <div class="hud-xp-mini-track">
+                    <div id="hud-xp-bar-fill" class="hud-xp-mini-fill" style="width: 0%;"></div>
+                </div>
+                <span id="hud-xp-text" class="chip-label text-muted">0/100 XP</span>
+            </div>
+
+            <div class="tele-chip tele-chip-sys" title="Hardware Performance (CPU & RAM)">
+                <span class="chip-label">SYS</span>
+                <span class="chip-val val-cyan">CPU <span id="top-cpu-chip">--%</span></span>
+                <span class="tele-sep" style="opacity: 0.4; font-size: 10px;">·</span>
+                <span class="chip-val val-violet">RAM <span id="top-ram-chip">--%</span></span>
+            </div>
+
+            <div id="top-gfx-telemetry-chip" class="tele-chip tele-chip-gfx" title="Real-time 3D Engine Telemetry & Active Profile (Click to open Graphics settings)" style="cursor: pointer;">
+                <span class="chip-label" id="top-gfx-profile-badge">PC</span>
+                <span class="chip-val val-emerald"><span id="top-fps-chip">60</span> FPS</span>
+                <span class="tele-sep" style="opacity: 0.4; font-size: 10px;">·</span>
+                <span class="chip-val val-cyan"><span id="top-frametime-chip">16.6</span>ms</span>
+            </div>
+        </div>
+
+        <div class="nav-actions">
+            <!-- Launcher / Home Screen Trigger -->
+            <button id="btn-open-launcher" class="cyber-btn-nav" title="Return to Desktop Launcher / Home Screen">
+                <span class="tt-icon" data-icon="home" data-size="15"></span> <span>Home</span>
+            </button>
+            <!-- Lofi Vibe Capsule Trigger -->
+            <button id="btn-lofi-toggle-panel" class="cyber-btn-nav" title="Open LoFi Chillhop Music Controls">
+                <span class="tt-icon" data-icon="headphones" data-size="15"></span> <span data-i18n="nav_lofi">LoFi</span>
+            </button>
+            <!-- Avatar Customizer Trigger -->
+            <button id="btn-open-customizer" class="cyber-btn-nav" title="Customize 3D Avatar & Skin">
+                <span class="tt-icon" data-icon="shirt" data-size="15"></span> <span data-i18n="nav_skin">Skin</span>
+            </button>
+            <!-- Fish Dex Encyclopedia Trigger (Alt + F) -->
+            <button id="btn-open-fish-dex" class="cyber-btn-nav" title="Zen Fish Dex Encyclopedia (Alt + F)">
+                <span class="tt-icon" data-icon="fish" data-size="15"></span> <span>Fish Dex</span>
+            </button>
+            <button id="btn-nav-mode" class="cyber-btn-nav active" title="Toggle Explore / Focus Mode">
+                <span id="nav-mode-icon" class="tt-icon" data-icon="compass" data-size="15"></span> <span id="nav-mode-text" data-i18n="nav_mode_explore">Explore</span>
+            </button>
+            <button id="btn-theme-toggle" class="cyber-btn-nav btn-theme-toggle" title="Toggle Theme (Dark / Light)">
+                <span id="theme-toggle-icon" class="tt-icon" data-icon="moon" data-size="15"></span> <span id="theme-toggle-text">Dark</span>
+            </button>
+            <button id="btn-nav-hub" class="cyber-btn-nav" title="Quick Control Hub">
+                <span class="tt-icon" data-icon="settings" data-size="15"></span> <span data-i18n="nav_hub">Hub</span>
+            </button>
+        </div>
+
+        <!-- Mobile Header Bar Dedicated Tools Drawer & Active View Trigger -->
+        <div class="mobile-nav-cluster">
+            <span id="mobile-current-view-pill" class="mobile-current-view-pill" title="Current Active Workspace">Term</span>
+            <button id="btn-mobile-tools-drawer" class="mobile-tools-trigger-btn" type="button" title="Open Full Cyber Tools Suite">
+                <span class="trigger-icon tt-icon" data-icon="menu" data-size="15"></span>
+                <span class="trigger-text" data-i18n="nav_tools">Tools</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- 4. Hidden DOM Templates for 3D CSS3D Scene Injection -->
+    <!-- Center 3D Screen (Multi-View: Terminal, Codex, Antigravity) -->
+    <div id="deck-terminal-screen" class="holo-3d-card">
+        <div class="holo-corner holo-corner-tl"></div>
+        <div class="holo-corner holo-corner-tr"></div>
+        <div class="holo-corner holo-corner-bl"></div>
+        <div class="holo-corner holo-corner-br"></div>
+        <div class="screen-header">
+            <div class="header-dots">
+                <span class="h-dot dot-red" title="Close Window [Esc]"></span>
+                <span class="h-dot dot-yellow" title="Minimize / Return to 3D World"></span>
+                <span class="h-dot dot-green" title="Toggle Fullscreen"></span>
+            </div>
+            <div id="screen-title-text" class="screen-title"><span class="tt-icon" data-icon="terminal" data-size="14" style="margin-right:6px;color:#da7756;"></span>PowerShell</div>
+            <div class="screen-tools">
+                <span id="codex-diff-summary" class="acc-badge badge-active" style="display:none;"></span>
+                <button id="btn-term-clear" class="tool-btn-micro" title="Clear Screen Output">⌫ Clear</button>
+                <button id="btn-deck-close" class="tool-btn-micro tool-btn-close" title="Close Window / Return to 3D World [Esc]" aria-label="Close"><span class="tt-icon" data-icon="x" data-size="12"></span></button>
+            </div>
+        </div>
+
+        <!-- View 1: Terminal Host -->
+        <div id="panel-terminal" class="view-panel">
+            <div id="terminal-mount" class="terminal-host"></div>
+        </div>
+
+        <!-- View 2: Codex Host -->
+        <div id="panel-codex" class="view-panel hidden">
+            <div class="codex-layout">
+                <div class="codex-sidebar">
+                    <div class="codex-sb-header">
+                        <span><span class="tt-icon" data-icon="message-square" data-size="13" style="margin-right:6px;color:#da7756;"></span>Codex Threads</span>
+                        <button id="btn-codex-refresh-sidebar" class="tool-btn-micro" title="Refresh" aria-label="Refresh"><span class="tt-icon" data-icon="refresh-cw" data-size="11"></span></button>
+                    </div>
+                    <div id="codex-threads-list" class="codex-threads-list"></div>
+                </div>
+                <div class="codex-main-area">
+                    <div id="codex-turns-container" class="codex-turns-container"></div>
+                    <div class="codex-input-bar-container">
+                        <select id="codex-model-select" class="codex-model-select">
+                            <option value="gpt-6-luna">G Luna High</option>
+                            <option value="o3-mini">o3-mini</option>
+                            <option value="moonshotai/kimi-k3">kimi-k3</option>
+                            <option value="gpt-4o">gpt-4o</option>
+                        </select>
+                        <input type="text" id="codex-prompt-input" class="codex-prompt-input" placeholder="Type a prompt for Codex..." autocomplete="off">
+                        <button id="btn-codex-send" class="btn-codex-send">Send ⏎</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- View 3: Antigravity Interactive Web Chat -->
+        <div id="panel-antigravity" class="view-panel hidden">
+            <div class="agy-web-chat-layout">
+                <!-- Header Quota & Session Bar -->
+                <div class="agy-web-header">
+                    <div class="agy-sess-control-box">
+                        <button id="btn-agy-toggle-sessions" class="agy-btn-chip" title="View conversations list">
+                            <span id="agy-active-session-title"><span class="tt-icon" data-icon="orbit" data-size="13" style="margin-right:4px;color:#da7756;"></span>Loading session...</span>
+                            <span class="chevron">▾</span>
+                        </button>
+                        <button id="btn-agy-new-session" class="agy-btn-chip active" title="Create new session">+ New Session</button>
+                    </div>
+
+                    <!-- Quota & Profile Telemetry Strip -->
+                    <div class="agy-web-telemetry-row">
+                        <span id="agy-web-quota-5h" class="agy-pill pill-cyan"><span class="tt-icon" data-icon="clock" data-size="12" style="margin-right:4px;"></span>5h: Checking...</span>
+                        <span id="agy-web-credits" class="agy-pill pill-emerald"><span class="tt-icon" data-icon="zap" data-size="12" style="margin-right:4px;"></span>500 credits</span>
+                        <span id="agy-web-profile" class="agy-pill pill-dim" title="Google Account">Google Account</span>
+                    </div>
+
+                    <!-- Dropdown Drawer for Sessions -->
+                    <div id="agy-sessions-drawer" class="agy-sessions-drawer hidden">
+                        <div class="drawer-header">
+                            <span><span class="tt-icon" data-icon="folder" data-size="14" style="margin-right:6px;"></span>Antigravity Conversations</span>
+                        </div>
+                        <div id="agy-web-sessions-list" class="drawer-sessions-list"></div>
+                    </div>
+                </div>
+
+                <!-- Live Session Telemetry Bar -->
+                <div id="agy-live-status-bar" class="agy-live-status-bar">
+                    <div class="agy-live-status-content">
+                        <span id="agy-live-pulse-dot" class="live-pulse-dot active"></span>
+                        <span id="agy-live-status-text">Connected to Antigravity Engine</span>
+                    </div>
+                    <span id="agy-live-step-badge" class="agy-live-step-badge">Live Sync</span>
+                </div>
+
+                <!-- Chat Feed Scroll Area -->
+                <div id="agy-web-chat-feed" class="agy-web-chat-feed">
+                    <div class="agy-chat-loading">
+                        <span class="loading-orb"><span class="tt-icon" data-icon="orbit" data-size="18" style="color:#da7756;"></span></span>
+                        <span>Loading Antigravity conversation data...</span>
+                    </div>
+                </div>
+
+                <!-- Slash Commands Chip Strip -->
+                <div class="agy-slash-chips-row">
+                    <button type="button" class="agy-slash-chip" data-cmd="/plan"><span class="tt-icon" data-icon="zap" data-size="12" style="margin-right:4px;"></span>/plan</button>
+                    <button type="button" class="agy-slash-chip" data-cmd="/grill-me"><span class="tt-icon" data-icon="help-circle" data-size="12" style="margin-right:4px;"></span>/grill-me</button>
+                    <button type="button" class="agy-slash-chip" data-cmd="/boost">/boost</button>
+                    <button type="button" class="agy-slash-chip" data-cmd="/goal">/goal</button>
+                    <button type="button" class="agy-slash-chip" data-cmd="/browser">/browser</button>
+                    <button type="button" class="agy-slash-chip" data-cmd="/schedule">/schedule</button>
+                </div>
+
+                <!-- Quick Prompts Chips -->
+                <div class="agy-quick-chips-row">
+                    <button class="agy-quick-chip" data-prompt="Check system status and hardware telemetry">System Status</button>
+                    <button class="agy-quick-chip" data-prompt="Optimize mobile layout and touch experience">Mobile Layout</button>
+                    <button class="agy-quick-chip" data-prompt="Write unit tests for application modules">Unit Tests</button>
+                    <button class="agy-quick-chip" data-prompt="Explain the current codebase architecture">Code Analysis</button>
+                </div>
+
+                <!-- Attached Images Preview Dock -->
+                <div id="agy-attached-preview-dock" class="agy-attached-preview-dock hidden"></div>
+
+                <!-- Bottom Web Prompt Bar -->
+                <div class="agy-web-input-bar">
+                    <input type="file" id="input-agy-photo" accept="image/*" multiple style="display:none;">
+                    <button id="btn-agy-attach-photo" class="agy-btn-icon" title="Attach Photo or Screenshot"><i data-teleterm-icon="camera" data-icon-size="14"></i></button>
+                    <select id="agy-web-model-select" class="agy-model-dropdown" title="Select AI Model"></select>
+                    <textarea id="agy-web-prompt-input" class="agy-web-prompt-input" rows="1" placeholder="Prompt Antigravity, paste screenshot (Ctrl+V) or attach photos..."></textarea>
+                    <button id="btn-agy-web-send" class="btn-agy-web-send" title="Send (Enter)">Send ⏎</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- View 4: Universal Agents (OpenClaw, Claude Code, Cursor, Aider, Windsurf...) -->
+        <div id="panel-universal" class="view-panel hidden">
+            <div class="universal-agents-layout">
+                <div class="universal-sidebar">
+                    <div class="universal-sb-header">
+                        <span style="display:inline-flex;align-items:center;gap:6px;"><i data-teleterm-icon="globe" data-icon-size="13"></i> <span>Discovered Agents</span></span>
+                        <button id="btn-refresh-universal-agents" class="tool-btn-micro" title="Scan & Refresh Agents"><i data-teleterm-icon="refresh-cw" data-icon-size="12"></i></button>
+                    </div>
+                    <input id="universal-agents-filter" class="universal-agents-filter" type="search" placeholder="Filter agents and sessions" aria-label="Filter agents and sessions">
+                    <div id="universal-agents-list" class="universal-agents-list"></div>
+                </div>
+                <div class="universal-main-area">
+                    <div class="universal-header-bar">
+                        <span id="universal-active-agent-title">Select an agent session</span>
+                        <span id="universal-agent-status-badge" class="acc-badge">Idle</span>
+                    </div>
+                    <div id="universal-turns-container" class="universal-turns-container">
+                        <div class="empty-universal-msg">Auto-scanning machine for OpenClaw, Claude Code, Cursor, Aider, Windsurf...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Left 3D Floating HUD (Hardware Telemetry) -->
+    <div id="hud-hardware-deck" class="holo-3d-card">
+        <div class="hud-panel-title" style="display:inline-flex;align-items:center;gap:6px;">
+            <i data-teleterm-icon="gauge" data-icon-size="14"></i> <span>Telemetry Deck</span>
+        </div>
+        <div class="meter-group">
+            <div class="meter-header">
+                <span>CPU Core</span>
+                <span id="val-cpu" class="val-cyan">15%</span>
+            </div>
+            <div class="meter-track">
+                <div id="meter-cpu" class="meter-fill fill-cyan" style="width: 15%;"></div>
+            </div>
+        </div>
+        <div class="meter-group">
+            <div class="meter-header">
+                <span>Memory</span>
+                <span id="val-ram" class="val-violet">45%</span>
+            </div>
+            <div class="meter-track">
+                <div id="meter-ram" class="meter-fill fill-violet" style="width: 45%;"></div>
+            </div>
+        </div>
+        <div class="meter-group">
+            <div class="meter-header">
+                <span>Storage</span>
+                <span id="val-disk" class="val-emerald">60%</span>
+            </div>
+            <div class="meter-track">
+                <div id="meter-disk" class="meter-fill fill-emerald" style="width: 60%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right 3D Floating HUD (Sessions & Tools) -->
+    <div id="hud-sessions-deck" class="holo-3d-card">
+        <div class="hud-panel-title">
+            <span class="tt-icon" data-icon="laptop" data-size="14" style="margin-right:6px;"></span> Active Sessions
+            <button id="btn-add-session" class="tool-btn-micro" style="margin-left:auto;" title="Add new session"><span class="tt-icon" data-icon="plus" data-size="11"></span></button>
+        </div>
+        <div id="session-list-container" class="session-list-scroll"></div>
+    </div><!-- end #hud-sessions-deck -->
+
+    <!-- Mobile Virtual Touch Joystick (Visible in Explore Mode on touch devices) -->
+    <div id="virtual-joystick-zone" class="virtual-joystick-zone">
+        <div id="virtual-joystick-base" class="virtual-joystick-base">
+            <div id="virtual-joystick-stick" class="virtual-joystick-stick"></div>
+        </div>
+    </div>
+
+    <!-- Mobile Floating RPG Actions (Clean & uncluttered) -->
+    <div id="mobile-rpg-actions" class="mobile-rpg-actions">
+        <button id="btn-mobile-orientation" class="mobile-action-btn btn-orient" title="Toggle Screen Orientation">
+            <span class="orientation-toggle-icon tt-icon" data-icon="refresh-cw" data-size="14"></span> <span class="orientation-toggle-text">Rotate</span>
+        </button>
+    </div>
+
+    <!-- Proximity 3D-Anchored Interaction Prompt (Floats directly beside/above closest 3D object) -->
+    <div id="world-interact-prompt" class="world-interact-prompt hidden" role="button" tabindex="0" title="Click or Tap to Interact (Press E)">
+        <span class="interact-prompt-prefix">Press</span>
+        <span class="interact-key-pill">E</span>
+        <span class="interact-prompt-to">to</span>
+        <span id="interact-prompt-icon" class="interact-icon tt-icon" data-icon="coffee" data-size="16"></span>
+        <span id="interact-prompt-text" class="interact-text" data-i18n="prompt_interact">Interact</span>
+    </div>
+
+    <!-- Terminal Toggle Floating Button (Mobile & Desktop) -->
+    <button id="btn-toggle-terminal" class="btn-toggle-terminal" title="Toggle Terminal (H)">
+        <span id="toggle-term-icon" class="tt-icon" data-icon="terminal" data-size="16"></span>
+    </button>
+
+    <!-- 5. Bottom Tactile Ergonomic Thumb Deck -->
+    <nav class="cyber-thumb-deck">
+        <div class="thumb-scroll-track">
+            <button id="thumb-approve" class="t-btn btn-approve" title="Approve (y)"><span class="tt-icon" data-icon="check" data-size="12" style="margin-right:3px;"></span>y</button>
+            <button id="thumb-cancel" class="t-btn btn-cancel" title="Cancel (n)"><span class="tt-icon" data-icon="x" data-size="12" style="margin-right:3px;"></span>n</button>
+            <button id="thumb-enter" class="t-btn btn-enter" title="Send Enter key"><span class="tt-icon" data-icon="corner-down-left" data-size="12" style="margin-right:3px;"></span>Enter</button>
+            <button id="thumb-ctrl-c" class="t-btn" title="Interrupt (Ctrl+C)">^C</button>
+            <button id="thumb-tab" class="t-btn" title="Autocomplete (Tab)">⇥ Tab</button>
+            <button id="thumb-esc" class="t-btn" title="Escape (Esc)">Esc</button>
+            <button id="thumb-accounts" class="t-btn btn-highlight" title="Switch Account & Check Quota"><span class="tt-icon" data-icon="users" data-size="12" style="margin-right:4px;"></span>Quota</button>
+            <button id="thumb-peek" class="t-btn" title="Instant Desktop Peek"><span class="tt-icon" data-icon="monitor" data-size="12" style="margin-right:4px;"></span>Peek</button>
+            <button id="thumb-viet" class="t-btn" title="Quick Input & Vietnamese Dock"><span class="tt-icon" data-icon="terminal" data-size="12" style="margin-right:4px;"></span>Quick Input</button>
+            <button id="thumb-orbit" class="t-btn" title="Toggle 3D World / Focus"><span class="tt-icon" data-icon="orbit" data-size="12" style="margin-right:4px;"></span>3D</button>
+            <button id="thumb-hub" class="t-btn" title="Cyber Tools Drawer (Files, Ports, Keys)"><span class="tt-icon" data-icon="settings" data-size="12" style="margin-right:4px;"></span>Tools</button>
+        </div>
+    </nav>
+
+    <!-- 6. Vietnamese Safe Input Dock & Quick Command Chips -->
+    <div id="viet-dock" class="viet-dock-modal hidden">
+        <div id="viet-chips" class="viet-chips-row"></div>
+        <div class="viet-input-bar">
+            <span class="viet-sym"><span class="tt-icon" data-icon="chevron-right" data-size="12"></span></span>
+            <input type="text" id="viet-input" class="viet-text-input" placeholder="Type command or prompt..." autocomplete="off" spellcheck="false">
+            <button type="button" id="btn-viet-send" class="viet-send-btn">Send <span class="tt-icon" data-icon="corner-down-left" data-size="12"></span></button>
+        </div>
+    </div>
+
+    <!-- 7. Accounts & Quota Modal (Fast 1-Tap Switcher & Live Usage Telemetry) -->
+    <div id="quota-accounts-modal" class="cyber-modal-overlay hidden">
+        <div class="cyber-modal-card" style="max-width: 620px;">
+            <div class="modal-header">
+                <span class="modal-title"><span class="tt-icon" data-icon="users" data-size="16" style="margin-right:8px;color:#da7756;"></span>TeleTerm Accounts & Quota Manager</span>
+                <button id="btn-close-quota-modal" class="modal-close-btn" aria-label="Close"><span class="tt-icon" data-icon="x" data-size="15"></span></button>
+            </div>
+            <div class="quota-modal-body">
+                <!-- Quota Summary Strip (Codex Tokens, 5H Rolling Limit, Weekly Pool, Active Account) -->
+                <div class="quota-summary-strip">
+                    <div class="quota-stat-card">
+                        <span class="quota-stat-label">Codex Tokens</span>
+                        <span id="quota-codex-tokens" class="quota-stat-val val-violet">-- Tokens</span>
+                    </div>
+                    <div class="quota-stat-card">
+                        <span class="quota-stat-label">5-Hour Rolling Limit</span>
+                        <span id="quota-agy-5h" class="quota-stat-val val-cyan">Checking...</span>
+                    </div>
+                    <div class="quota-stat-card">
+                        <span class="quota-stat-label">Tier & Weekly Quota</span>
+                        <span id="quota-agy-tier" class="quota-stat-val val-emerald">Tier Pro</span>
+                    </div>
+                    <div class="quota-stat-card">
+                        <span class="quota-stat-label">Active Account</span>
+                        <span id="quota-agy-active-acc" class="quota-stat-val val-cyan" style="font-size:12px;">--</span>
+                    </div>
+                </div>
+
+                <!-- Live Model Quotas (Geminis, Claudes, GPTs) -->
+                <div class="acc-section-block">
+                    <div class="acc-section-header">
+                        <span><span class="tt-icon" data-icon="zap" data-size="14" style="margin-right:6px;color:#da7756;"></span>Detailed Model Quotas (Gemini, Claude, GPT)</span>
+                        <span id="quota-reset-countdown" style="font-size:10px;color:var(--text-muted);">Auto Reset</span>
+                    </div>
+                    <div id="agy-models-quota-list" class="models-quota-grid">
+                        <div style="color:var(--text-dim);font-size:11px;padding:6px;">Loading model quotas...</div>
+                    </div>
+                </div>
+
+                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+                    <button id="btn-refresh-quota" class="cyber-btn-nav active"><span class="tt-icon" data-icon="refresh-cw" data-size="13" style="margin-right:6px;"></span>Refresh Quota</button>
+                    <label class="chk-autorestart-row">
+                        <input type="checkbox" id="chk-auto-restart-agy" checked>
+                        <span>Auto-restart Antigravity on switch</span>
+                    </label>
+                </div>
+
+                <!-- Section 1: Antigravity Accounts -->
+                <div class="acc-section-block">
+                    <div class="acc-section-header">
+                        <span><span class="tt-icon" data-icon="orbit" data-size="14" style="margin-right:6px;color:#da7756;"></span>Google Antigravity Profiles (1-Tap Switch)</span>
+                    </div>
+                    <div id="agy-accounts-list" class="acc-profiles-container"></div>
+                </div>
+
+                <!-- Section 2: Claude Accounts -->
+                <div class="acc-section-block">
+                    <div class="acc-section-header">
+                        <span><span class="tt-icon" data-icon="cpu" data-size="14" style="margin-right:6px;color:#da7756;"></span>Claude AI Profiles</span>
+                    </div>
+                    <div id="claude-accounts-list" class="acc-profiles-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 8. Interactive Desktop Peek Modal -->
+    <div id="modal-desktop-peek" class="cyber-modal-overlay hidden">
+        <div class="cyber-modal-card">
+            <div class="modal-header">
+                <span class="modal-title"><span class="tt-icon" data-icon="monitor" data-size="16" style="margin-right:8px;color:#da7756;"></span>Desktop Live Peek</span>
+                <button id="btn-close-peek" class="modal-close-btn" title="Close" aria-label="Close"><span class="tt-icon" data-icon="x" data-size="15"></span></button>
+            </div>
+            <div class="peek-modal-body">
+                <div class="peek-meta-bar">
+                    <span id="peek-meta">Capturing desktop screenshot...</span>
+                    <span>Direct Screen Capture</span>
+                </div>
+                <div class="peek-viewport-card">
+                    <img id="peek-img" src="" alt="PC Screen">
+                </div>
+                <div class="peek-actions-row">
+                    <button id="btn-refresh-peek" class="peek-btn btn-primary" title="Refresh screenshot"><span class="tt-icon" data-icon="refresh-cw" data-size="13" style="margin-right:4px;"></span>Capture</button>
+                    <button id="btn-fullscreen-peek" class="peek-btn" title="Open fullscreen screenshot"><span class="tt-icon" data-icon="maximize" data-size="13" style="margin-right:4px;"></span>Zoom</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 9. Cyber Tools Drawer (4 Tabs: Control, Files, Processes, Keys & D-Pad) -->
+    <div id="modal-tools-drawer" class="cyber-modal-overlay hidden">
+        <div class="cyber-modal-card">
+            <div class="modal-header">
+                <span class="modal-title"><span class="tt-icon" data-icon="settings" data-size="16" style="margin-right:8px;color:#da7756;"></span>Cyber Tools Drawer</span>
+                <button id="btn-close-tools-drawer" class="modal-close-btn" title="Close" aria-label="Close"><span class="tt-icon" data-icon="x" data-size="15"></span></button>
+            </div>
+            <div class="tools-nav-bar">
+                <button class="tools-nav-tab active" data-tab="control"><span class="tt-icon" data-icon="zap" data-size="13" style="margin-right:4px;"></span>Control</button>
+                <button class="tools-nav-tab" data-tab="files"><span class="tt-icon" data-icon="folder" data-size="13" style="margin-right:4px;"></span>Files</button>
+                <button class="tools-nav-tab" data-tab="processes"><span class="tt-icon" data-icon="bar-chart-2" data-size="13" style="margin-right:4px;"></span>Processes</button>
+                <button class="tools-nav-tab" data-tab="keys"><span class="tt-icon" data-icon="keyboard" data-size="13" style="margin-right:4px;"></span>Keys & D-Pad</button>
+                <button class="tools-nav-tab" data-tab="graphics"><span class="tt-icon" data-icon="palette" data-size="13" style="margin-right:4px;"></span>Graphics</button>
+            </div>
+            <div class="tools-drawer-body">
+                <!-- Panel 1: Control & Web Preview -->
+                <div id="tools-panel-control" class="tools-tab-panel">
+                    <div class="tools-actions-grid">
+                        <div id="tool-graphics-settings" class="tool-action-tile">
+                            <span class="tool-tile-icon"><span class="tt-icon" data-icon="palette" data-size="20"></span></span>
+                            <div class="tool-tile-content">
+                                <div class="tool-tile-title">Graphics Quality</div>
+                                <div class="tool-tile-desc">Mobile/PC profiles, Shaders & FPS cap</div>
+                            </div>
+                        </div>
+                        <div id="tool-desktop-peek" class="tool-action-tile">
+                            <span class="tool-tile-icon"><span class="tt-icon" data-icon="monitor" data-size="20"></span></span>
+                            <div class="tool-tile-content">
+                                <div class="tool-tile-title">Desktop Peek</div>
+                                <div class="tool-tile-desc">Live PC screenshot capture</div>
+                            </div>
+                        </div>
+                        <div id="tool-read-pc-clipboard" class="tool-action-tile">
+                            <span class="tool-tile-icon"><span class="tt-icon" data-icon="clipboard" data-size="20"></span></span>
+                            <div class="tool-tile-content">
+                                <div class="tool-tile-title">Get PC Clipboard</div>
+                                <div class="tool-tile-desc">Copy text from PC to mobile</div>
+                            </div>
+                        </div>
+                        <div id="tool-send-pc-clipboard" class="tool-action-tile">
+                            <span class="tool-tile-icon"><span class="tt-icon" data-icon="upload" data-size="20"></span></span>
+                            <div class="tool-tile-content">
+                                <div class="tool-tile-title">Send to PC Clipboard</div>
+                                <div class="tool-tile-desc">Paste text to PC clipboard</div>
+                            </div>
+                        </div>
+                        <div id="tool-smart-watchdog" class="tool-action-tile">
+                            <span class="tool-tile-icon"><span class="tt-icon" data-icon="eye" data-size="20"></span></span>
+                            <div class="tool-tile-content">
+                                <div class="tool-tile-title">Smart Watchdog</div>
+                                <div class="tool-tile-desc">Alert when task or build finishes</div>
+                            </div>
+                        </div>
+                        <div id="tool-screen-off" class="tool-action-tile">
+                            <span class="tool-tile-icon"><span class="tt-icon" data-icon="moon" data-size="20"></span></span>
+                            <div class="tool-tile-content">
+                                <div class="tool-tile-title">Turn Off PC Display</div>
+                                <div class="tool-tile-desc">Put physical monitors to sleep</div>
+                            </div>
+                        </div>
+                        <div id="tool-lock-windows" class="tool-action-tile">
+                            <span class="tool-tile-icon"><span class="tt-icon" data-icon="lock" data-size="20"></span></span>
+                            <div class="tool-tile-content">
+                                <div class="tool-tile-title">Lock Computer</div>
+                                <div class="tool-tile-desc">Lock Windows screen (Win + L)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Web Preview -->
+                    <div class="web-preview-box">
+                        <div class="web-preview-header">
+                            <span class="web-preview-title"><span class="tt-icon" data-icon="globe" data-size="15" style="margin-right:6px;color:#da7756;"></span>Localhost Web Preview</span>
+                            <button id="btn-scan-ports" class="tool-btn-micro" title="Scan dev ports"><span class="tt-icon" data-icon="refresh-cw" data-size="12" style="margin-right:4px;"></span>Scan</button>
+                        </div>
+                        <div id="web-preview-ports" class="web-port-chips">
+                            <span style="color:var(--text-dim);font-size:11px;">Click Scan to discover active dev ports (:3000, :5173...)</span>
+                        </div>
+                        <div class="preview-input-row">
+                            <input type="number" id="preview-port-input" class="preview-port-input" placeholder="Port (e.g. 3000)">
+                            <button id="btn-open-web-preview" class="peek-btn btn-primary">Open Preview</button>
+                        </div>
+                        <div class="preview-iframe-wrapper">
+                            <iframe id="web-preview-iframe" src="about:blank"></iframe>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel 2: Remote Files Explorer & Directory Switcher -->
+                <div id="tools-panel-files" class="tools-tab-panel hidden">
+                    <div class="tools-folder-navigator">
+                        <div class="tools-drives-bar" id="tools-drives-container">
+                            <span class="drives-icon tt-icon" data-icon="hard-drive" data-size="14"></span>
+                            <div id="drives-chips-list" class="drives-chips-list">
+                                <button type="button" class="btn-drive-chip" data-path="C:\">C:\</button>
+                                <button type="button" class="btn-drive-chip" data-path="D:\">D:\</button>
+                                <button type="button" class="btn-drive-chip" data-path="E:\">E:\</button>
+                                <button type="button" class="btn-drive-chip" data-path="~">Home (~)</button>
+                            </div>
+                        </div>
+                        <div class="tools-path-input-group">
+                            <span class="path-icon tt-icon" data-icon="folder" data-size="14"></span>
+                            <input type="text" id="tools-path-input" class="tools-path-input" placeholder="Enter path e.g. E:\Terminal control or D:\" value="e:\Terminal control" autocomplete="off" />
+                            <button id="btn-path-go" type="button" class="btn-path-go" title="Go to folder">Go <span class="tt-icon" data-icon="arrow-right" data-size="12"></span></button>
+                        </div>
+                        <div class="tools-dir-quick-actions">
+                            <button id="btn-set-term-cwd" type="button" class="btn-cwd-action primary" title="Run cd to this directory in active terminal">
+                                <span class="tt-icon" data-icon="terminal" data-size="13"></span> cd in Terminal
+                            </button>
+                            <button id="btn-new-term-here" type="button" class="btn-cwd-action" title="Open a new terminal shell in this directory">
+                                <span class="tt-icon" data-icon="plus" data-size="13"></span> New Terminal here
+                            </button>
+                            <button id="btn-copy-dir-path" type="button" class="btn-cwd-action" title="Copy path to clipboard">
+                                <span class="tt-icon" data-icon="clipboard" data-size="13"></span> Copy Path
+                            </button>
+                        </div>
+                    </div>
+                    <div id="tools-file-list" class="tools-file-list"></div>
+                </div>
+
+                <!-- Panel 3: Process Inspector -->
+                <div id="tools-panel-processes" class="tools-tab-panel hidden">
+                    <div id="tools-process-list" class="tools-process-list"></div>
+                </div>
+
+                <!-- Panel 4: Virtual Keyboard & D-Pad -->
+                <div id="tools-panel-keys" class="tools-tab-panel hidden">
+                    <div class="virtual-keys-layout">
+                        <!-- D-Pad -->
+                        <div class="dpad-container">
+                            <div class="dpad-cluster">
+                                <div></div>
+                                <button id="dpad-up" class="dpad-btn" title="Arrow Up">▲</button>
+                                <div></div>
+                                <button id="dpad-left" class="dpad-btn" title="Arrow Left">◀</button>
+                                <button id="dpad-center" class="dpad-btn center" title="Enter">OK</button>
+                                <button id="dpad-right" class="dpad-btn" title="Arrow Right">▶</button>
+                                <div></div>
+                                <button id="dpad-down" class="dpad-btn" title="Arrow Down">▼</button>
+                                <div></div>
+                            </div>
+                        </div>
+
+                        <!-- Sticky Modifiers -->
+                        <div class="keys-section-title">Sticky Modifiers</div>
+                        <div style="display:flex;gap:8px;">
+                            <button id="vkey-ctrl" class="vkey-btn" style="flex:1;">Ctrl (Hold)</button>
+                            <button id="vkey-alt" class="vkey-btn" style="flex:1;">Alt (Hold)</button>
+                        </div>
+
+                        <!-- Nav Keys -->
+                        <div class="keys-section-title">Navigation Keys</div>
+                        <div class="keys-row-group">
+                            <button id="vkey-esc" class="vkey-btn">Esc</button>
+                            <button id="vkey-tab" class="vkey-btn">Tab</button>
+                            <button id="vkey-enter" class="vkey-btn">Enter</button>
+                            <button id="vkey-backspace" class="vkey-btn">Back</button>
+                            <button id="vkey-home" class="vkey-btn">Home</button>
+                            <button id="vkey-end" class="vkey-btn">End</button>
+                            <button id="vkey-pgup" class="vkey-btn">PgUp</button>
+                            <button id="vkey-pgdn" class="vkey-btn">PgDn</button>
+                            <button id="vkey-insert" class="vkey-btn">Ins</button>
+                            <button id="vkey-delete" class="vkey-btn">Del</button>
+                        </div>
+
+                        <!-- Function Keys F1-F12 -->
+                        <div class="keys-section-title">Function Keys (F1 - F12)</div>
+                        <div class="keys-fn-grid">
+                            <button id="vkey-f1" class="vkey-btn">F1</button>
+                            <button id="vkey-f2" class="vkey-btn">F2</button>
+                            <button id="vkey-f3" class="vkey-btn">F3</button>
+                            <button id="vkey-f4" class="vkey-btn">F4</button>
+                            <button id="vkey-f5" class="vkey-btn">F5</button>
+                            <button id="vkey-f6" class="vkey-btn">F6</button>
+                            <button id="vkey-f7" class="vkey-btn">F7</button>
+                            <button id="vkey-f8" class="vkey-btn">F8</button>
+                            <button id="vkey-f9" class="vkey-btn">F9</button>
+                            <button id="vkey-f10" class="vkey-btn">F10</button>
+                            <button id="vkey-f11" class="vkey-btn">F11</button>
+                            <button id="vkey-f12" class="vkey-btn">F12</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel 5: Graphics Settings Shortcut -->
+                <div id="tools-panel-graphics" class="tools-tab-panel hidden">
+                    <div style="padding: 16px; display: flex; flex-direction: column; gap: 14px; background: rgba(10, 15, 30, 0.7); border-radius: 8px; border: 1px solid rgba(218, 119, 86, 0.25);">
+                        <div style="font-size: 14px; font-weight: 700; color: #da7756; display: flex; align-items: center; gap: 8px;">
+                            <span class="tt-icon" data-icon="palette" data-size="16"></span> <span data-i18n="gfx_title">Graphics & Performance Settings</span>
+                        </div>
+                        <div style="font-size: 12px; color: #cbd5e1; line-height: 1.5;">
+                            Configure Mobile/PC platform profiles, resolution scaling (DPR), smooth anti-aliasing, soft shadows, shader atmospheres, and battery-saving FPS limits.
+                        </div>
+                        <button id="btn-drawer-open-full-gfx" class="cyber-btn-primary" style="padding: 12px; justify-content: center; font-size: 13px; font-weight: 700; cursor: pointer;">
+                            <span class="tt-icon" data-icon="palette" data-size="15" style="margin-right:6px;"></span> <span data-i18n="nav_graphics_title">Open Full Graphics Settings</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 9b. Mobile Full Cyber Tools Drawer (Comprehensive PC Tools Parity for Mobile) -->
+    <div id="modal-mobile-full-tools" class="mobile-tools-drawer-overlay hidden">
+        <div class="mobile-tools-drawer-sheet">
+            <div class="mobile-drawer-drag-bar"></div>
+            
+            <div class="mobile-drawer-header">
+                <div class="mobile-drawer-title-group">
+                    <span class="mobile-drawer-title" data-i18n="mob_drawer_title"><span class="tt-icon" data-icon="settings" data-size="16" style="margin-right:6px;color:#da7756;"></span>TeleTerm Cyber Suite</span>
+                    <span class="mobile-drawer-badge">FULL TOOLS</span>
+                </div>
+                <button id="btn-close-mobile-tools" class="mobile-drawer-close-btn" type="button" title="Close Tools Drawer" aria-label="Close"><span class="tt-icon" data-icon="x" data-size="15"></span></button>
+            </div>
+
+            <!-- Mobile Live Telemetry Bar -->
+            <div class="mobile-drawer-telemetry-bar">
+                <div class="mob-tele-card">
+                    <span class="mob-tele-label">CPU</span>
+                    <span id="mob-cpu-val" class="mob-tele-val val-cyan">--%</span>
+                </div>
+                <div class="mob-tele-card">
+                    <span class="mob-tele-label">RAM</span>
+                    <span id="mob-ram-val" class="mob-tele-val val-violet">--%</span>
+                </div>
+                <div class="mob-tele-card">
+                    <span class="mob-tele-label">DEV LEVEL</span>
+                    <span id="mob-level-val" class="mob-tele-val val-emerald">Lv.1</span>
+                </div>
+                <div class="mob-tele-card mob-tele-mode">
+                    <span class="mob-tele-label">MODE</span>
+                    <span id="mob-mode-val" class="mob-tele-val val-amber">3D World</span>
+                </div>
+            </div>
+
+            <div class="mobile-drawer-scroll-body">
+                <!-- Group 1: Workspaces & AI Engines -->
+                <div class="mob-section-block">
+                    <div class="mob-section-title">
+                        <span class="tt-icon" data-icon="orbit" data-size="14" style="margin-right:6px;color:#da7756;"></span> <span data-i18n="mob_sec_workspaces">WORKSPACES & AI ENGINES</span>
+                    </div>
+                    <div class="mob-tools-grid">
+                        <button type="button" class="mob-tool-tile" data-mob-action="view-terminal">
+                            <span class="mob-tool-icon tt-icon" data-icon="terminal" data-size="16"></span>
+                            <div class="mob-tool-info">
+                                <span class="mob-tool-name" data-i18n="tile_term_name">Terminal</span>
+                                <span class="mob-tool-sub" data-i18n="tile_term_sub">PowerShell ConPTY Shell</span>
+                            </div>
+                        </button>
+                        <button type="button" class="mob-tool-tile" data-mob-action="view-codex">
+                            <span class="mob-tool-icon tt-icon" data-icon="book-open" data-size="16"></span>
+                            <div class="mob-tool-info">
+                                <span class="mob-tool-name" data-i18n="tile_codex_name">Codex AI</span>
+                                <span class="mob-tool-sub" data-i18n="tile_codex_sub">Coding Threads & Prompts</span>
+                            </div>
+                        </button>
+                        <button type="button" class="mob-tool-tile" data-mob-action="view-antigravity">
+                            <span class="mob-tool-icon tt-icon" data-icon="orbit" data-size="16"></span>
+                            <div class="mob-tool-info">
+                                <span class="mob-tool-name" data-i18n="tile_agy_name">Antigravity</span>
+                                <span class="mob-tool-sub" data-i18n="tile_agy_sub">Gemini Live Interactive AI</span>
+                            </div>
+                        </button>
+                        <button type="button" class="mob-tool-tile" data-mob-action="view-universal">
+                            <span class="mob-tool-icon tt-icon" data-icon="users" data-size="16"></span>
+                            <div class="mob-tool-info">
+                                <span class="mob-tool-name" data-i18n="tile_agents_name">All Agents</span>
+                                <span class="mob-tool-sub" data-i18n="tile_agents_sub">Claude, Cursor, OpenClaw</span>
+                            </div>
+                        </button>
+                        <button type="button" class="mob-tool-tile highlight-cyan" data-mob-action="open-accounts">
+                            <span class="mob-tool-icon tt-icon" data-icon="users" data-size="16"></span>
+                            <div class="mob-tool-info">
+                                <span class="mob-tool-name" data-i18n="tile_quota_name">Acc & Quota</span>
+                                <span class="mob-tool-sub" data-i18n="tile_quota_sub">1-Tap Profiles & Limits</span>
+                            </div>
+                        </button>
+                        <button type="button" class="mob-tool-tile" data-mob-action="toggle-mode">
+                            <span class="mob-tool-icon tt-icon" data-icon="compass" data-size="16"></span>
+                            <div class="mob-tool-info">
+                                <span class="mob-tool-name" data-i18n="tile_mode_name">Toggle View</span>
+                                <span class="mob-tool-sub" data-i18n="tile_mode_sub">3D World ⇄ Focus Screen</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Group 2: Metaverse, Graphics & Audio -->
+                <div class="mob-section-block">
+                    <div class="mob-section-title">
+                        <span class="tt-icon" data-icon="gamepad-2" data-size="14" style="margin-right:6px;color:#da7756;"></span> <span data-i18n="mob_sec_metaverse">METAVERSE & CUSTOMIZATION</span>
+                    </div>
+                    <div class="mob-tools-grid">
+                        <button type="button" class="mob-tool-tile highlight-violet" data-mob-action="open-graphics">
+                            <span class="mob-tool-icon tt-icon" data-icon="palette" data-size="16"></span>
+                            <div class="mob-tool-info">
+                                <span class="mob-tool-name" data-i18n="tile_gfx_name">Graphics Settings</span>
+                                <span class="mob-tool-sub" data-i18n="tile_gfx_sub">Shaders, FPS & Anti-aliasing</span>
+                            </div>
+                        </button>
+                        <button type="button" class="mob-tool-tile" data-mob-action="toggle-lofi">
+                            <span class="mob-tool-icon tt-icon" data-icon="headphones" data-size="16"></span>
+                            <div class="mob-tool-info">
+                                <span class="mob-tool-name" data-i18n="tile_lofi_name">LoFi Music</span>
+                                <span class="mob-tool-sub" data-i18n="tile_lofi_sub">Chillhop & Rain/Fire Ambience</span>
+                            </div>
+                        </button>
+                        <button type="button" class="mob-tool-tile" data-mob-action="open-customizer">
+                            <span class="mob-tool-icon tt-icon" data-icon="shirt" data-size="16"></span>
+                            <div class="mob-tool-info">
+                                <span class="mob-tool-name" data-i18n="tile_skin_name">Skin & Avatar</span>
+                                <span class="mob-tool-sub" data-i18n="tile_skin_sub">Costumes & 3D GLB/VRM Upload</span>
+                            </div>
+                        </button>
+                        <button type="button" class="mob-tool-tile" data-mob-action="toggle-mmo-chat">
+                            <span class="mob-tool-icon tt-icon" data-icon="message-circle" data-size="16"></span>
+                            <div class="mob-tool-info">
+                                <span class="mob-tool-name" data-i18n="tile_chat_name">MMO Chat</span>
+                                <span class="mob-tool-sub" data-i18n="tile_chat_sub">Global & Whisper Channels</span>
+                            </div>
+                        </button>
+                        <button type="button" class="mob-tool-tile" data-mob-action="toggle-orientation">
+                            <span class="mob-tool-icon tt-icon" data-icon="refresh-cw" data-size="16"></span>
+                            <div class="mob-tool-info">
+                                <span class="mob-tool-name" data-i18n="tile_orient_name">Screen Orientation</span>
+                                <span class="mob-tool-sub" data-i18n="tile_orient_sub">Portrait ⇄ Landscape</span>
+                            </div>
+                        </button>
+                        <button type="button" class="mob-tool-tile" data-mob-action="toggle-viet-dock">
+                            <span class="mob-tool-icon tt-icon" data-icon="terminal" data-size="16"></span>
+                            <div class="mob-tool-info">
+                                <span class="mob-tool-name" data-i18n="tile_viet_name">Vietnamese Input</span>
+                                <span class="mob-tool-sub" data-i18n="tile_viet_sub">Quick Input & Hotkeys</span>
+                            </div>
+                        </button>
+                        <button type="button" class="mob-tool-tile highlight-cyan" data-mob-action="toggle-language">
+                            <span class="mob-tool-icon tt-icon" data-icon="globe" data-size="16"></span>
+                            <div class="mob-tool-info">
+                                <span class="mob-tool-name" data-i18n="tile_lang_name">Language / Ngôn Ngữ</span>
+                                <span class="mob-tool-sub" data-i18n="tile_lang_sub">English ⇄ Tiếng Việt</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Group 3: Remote Desktop & System Control -->
+                <div class="mob-section-block">
+                    <div class="mob-section-title">
+                        <span class="tt-icon" data-icon="laptop" data-size="14" style="margin-right:6px;color:#da7756;"></span> <span data-i18n="mob_sec_utilities">REMOTE PC & SYSTEM POWER</span>
+                    </div>
+                    <div class="mob-tools-grid">
+                        <button type="button" class="mob-tool-tile" data-mob-action="desktop-peek">
+                            <span class="mob-tool-icon tt-icon" data-icon="monitor" data-size="16"></span>
+                            <div class="mob-tool-info">
+                                <span class="mob-tool-name" data-i18n="tile_peek_name">Desktop Peek</span>
+                                <span class="mob-tool-sub" data-i18n="tile_peek_sub">Live Screen Screenshot</span>
+                            </div>
+                        </button>
+                        <button type="button" class="mob-tool-tile" data-mob-action="open-files">
+                            <span class="mob-tool-icon tt-icon" data-icon="folder" data-size="16"></span>
+                            <div class="mob-tool-info">
+                                <span class="mob-tool-name" data-i18n="tile_files_name">File Explorer</span>
+                                <span class="mob-tool-sub" data-i18n="tile_files_sub">Browse C:\, D:\, E:\, Home</span>
+                            </div>
+                        </button>
+                        <button type="button" class="mob-tool-tile" data-mob-action="open-processes">
+                            <span class="mob-tool-icon tt-icon" data-icon="activity" data-size="16"></span>
+                            <div class="mob-tool-info">
+                                <span class="mob-tool-name" data-i18n="tile_tasks_name">Task Manager</span>
+                                <span class="mob-tool-sub" data-i18n="tile_tasks_sub">View & Manage PC Processes</span>
+                            </div>
+                        </button>
+                        <button type="button" class="mob-tool-tile" data-mob-action="open-keys">
+                            <span class="mob-tool-icon tt-icon" data-icon="keyboard" data-size="16"></span>
+                            <div class="mob-tool-info">
+                                <span class="mob-tool-name" data-i18n="tile_keys_name">Virtual Keyboard</span>
+                                <span class="mob-tool-sub" data-i18n="tile_keys_sub">D-Pad, Ctrl, Alt, F1-F12</span>
+                            </div>
+                        </button>
+                        <button type="button" class="mob-tool-tile" data-mob-action="open-preview">
+                            <span class="mob-tool-icon tt-icon" data-icon="globe" data-size="16"></span>
+                            <div class="mob-tool-info">
+                                <span class="mob-tool-name" data-i18n="tile_preview_name">Web Preview</span>
+                                <span class="mob-tool-sub" data-i18n="tile_preview_sub">Preview Port :3000, :5173</span>
+                            </div>
+                        </button>
+                        <button type="button" class="mob-tool-tile" data-mob-action="get-clipboard">
+                            <span class="mob-tool-icon tt-icon" data-icon="clipboard" data-size="16"></span>
+                            <div class="mob-tool-info">
+                                <span class="mob-tool-name" data-i18n="tile_getclip_name">Get PC Clipboard</span>
+                                <span class="mob-tool-sub" data-i18n="tile_getclip_sub">Copy text from computer</span>
+                            </div>
+                        </button>
+                        <button type="button" class="mob-tool-tile" data-mob-action="send-clipboard">
+                            <span class="mob-tool-icon tt-icon" data-icon="send" data-size="16"></span>
+                            <div class="mob-tool-info">
+                                <span class="mob-tool-name" data-i18n="tile_sendclip_name">Send PC Clipboard</span>
+                                <span class="mob-tool-sub" data-i18n="tile_sendclip_sub">Paste text to computer</span>
+                            </div>
+                        </button>
+                        <button type="button" class="mob-tool-tile" data-mob-action="screen-off">
+                            <span class="mob-tool-icon tt-icon" data-icon="moon" data-size="16"></span>
+                            <div class="mob-tool-info">
+                                <span class="mob-tool-name" data-i18n="tile_screenoff_name">Turn Off PC Screen</span>
+                                <span class="mob-tool-sub" data-i18n="tile_screenoff_sub">Put PC display to sleep</span>
+                            </div>
+                        </button>
+                        <button type="button" class="mob-tool-tile" data-mob-action="lock-pc">
+                            <span class="mob-tool-icon tt-icon" data-icon="lock" data-size="16"></span>
+                            <div class="mob-tool-info">
+                                <span class="mob-tool-name" data-i18n="tile_lockpc_name">Lock Computer</span>
+                                <span class="mob-tool-sub" data-i18n="tile_lockpc_sub">Lock Windows (Win + L)</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 10. Remote File Viewer Modal -->
+    <div id="modal-file-viewer" class="cyber-modal-overlay hidden">
+        <div class="cyber-modal-card">
+            <div class="modal-header">
+                <span id="viewer-file-title" class="modal-title"><span class="tt-icon" data-icon="file-text" data-size="16" style="margin-right:8px;color:#da7756;"></span>Remote File Viewer</span>
+                <button id="btn-close-file-viewer" class="modal-close-btn" title="Close" aria-label="Close"><span class="tt-icon" data-icon="x" data-size="15"></span></button>
+            </div>
+            <div class="file-viewer-body">
+                <pre id="viewer-file-content" class="file-viewer-pre"></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Legacy Quick Hub Modal (Preserved for compatibility) -->
+    <div id="cyber-hub-modal" class="cyber-modal-overlay hidden">
+        <div class="cyber-modal-card">
+            <div class="modal-header">
+                <span class="modal-title"><span class="tt-icon" data-icon="settings" data-size="16" style="margin-right:8px;color:#da7756;"></span>TeleTerm Control Hub</span>
+                <button id="btn-close-hub" class="modal-close-btn" aria-label="Close"><span class="tt-icon" data-icon="x" data-size="15"></span></button>
+            </div>
+            <div class="modal-grid">
+                <div id="tile-graphics-hub" class="action-tile">
+                    <span class="action-tile-icon tt-icon" data-icon="palette" data-size="20"></span>
+                    <div>
+                        <div class="action-tile-title">Graphics & Shaders</div>
+                        <div class="action-tile-desc">Mobile/PC, Shaders & FPS cap</div>
+                    </div>
+                </div>
+                <div id="tile-accounts-hub" class="action-tile">
+                    <span class="action-tile-icon tt-icon" data-icon="users" data-size="20"></span>
+                    <div>
+                        <div class="action-tile-title">Accounts & Quota</div>
+                        <div class="action-tile-desc">Switch accounts & check tokens</div>
+                    </div>
+                </div>
+                <div id="tile-claude" class="action-tile">
+                    <span class="action-tile-icon tt-icon" data-icon="book-open" data-size="20"></span>
+                    <div>
+                        <div class="action-tile-title">Claude Code</div>
+                        <div class="action-tile-desc">Launch Claude AI CLI session</div>
+                    </div>
+                </div>
+                <div id="tile-screenshot" class="action-tile">
+                    <span class="action-tile-icon tt-icon" data-icon="camera" data-size="20"></span>
+                    <div>
+                        <div class="action-tile-title">Screenshot PC</div>
+                        <div class="action-tile-desc">Capture desktop screenshot</div>
+                    </div>
+                </div>
+                <div id="tile-screen-off" class="action-tile">
+                    <span class="action-tile-icon tt-icon" data-icon="moon" data-size="20"></span>
+                    <div>
+                        <div class="action-tile-title">Screen Off</div>
+                        <div class="action-tile-desc">Put PC display to sleep</div>
+                    </div>
+                </div>
+                <div id="tile-lock-pc" class="action-tile">
+                    <span class="action-tile-icon tt-icon" data-icon="lock" data-size="20"></span>
+                    <div>
+                        <div class="action-tile-title">Lock PC</div>
+                        <div class="action-tile-desc">Lock Windows screen (Win + L)</div>
+                    </div>
+                </div>
+                <div id="tile-reload" class="action-tile">
+                    <span class="action-tile-icon tt-icon" data-icon="refresh-cw" data-size="20"></span>
+                    <div>
+                        <div class="action-tile-title">Reload UI</div>
+                        <div class="action-tile-desc">Refresh web client code</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 11. Antigravity Session Action Modal -->
+    <div id="modal-agy-session-actions" class="cyber-modal-overlay hidden">
+        <div class="cyber-modal-card" style="max-width: 480px;">
+            <div class="modal-header">
+                <span class="modal-title"><span class="tt-icon" data-icon="orbit" data-size="16" style="margin-right:8px;color:#da7756;"></span>Antigravity Session Options</span>
+                <button id="btn-close-agy-action-modal" class="modal-close-btn" aria-label="Close"><span class="tt-icon" data-icon="x" data-size="15"></span></button>
+            </div>
+            <div style="padding: 16px; display: flex; flex-direction: column; gap: 12px; background: #05070d;">
+                <div style="font-size: 11px; font-family: var(--font-mono); color: var(--cyber-cyan); word-break: break-all;" id="agy-action-session-id">--</div>
+                <div style="font-size: 12px; color: var(--text-muted);" id="agy-action-session-meta">--</div>
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px;">
+                    <button id="btn-agy-launch-terminal" class="peek-btn btn-primary" style="justify-content: center; padding: 11px;">
+                        <span class="tt-icon" data-icon="play" data-size="13" style="margin-right:6px;"></span> Resume Session in Terminal
+                    </button>
+                    <button id="btn-agy-view-transcript" class="peek-btn" style="justify-content: center; padding: 11px;">
+                        <span class="tt-icon" data-icon="message-square" data-size="13" style="margin-right:6px;"></span> View Chat Transcript
+                    </button>
+                    <button id="btn-agy-copy-id" class="peek-btn" style="justify-content: center; padding: 9px;">
+                        <span class="tt-icon" data-icon="clipboard" data-size="13" style="margin-right:6px;"></span> Copy Session ID
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 12. Antigravity Transcript Viewer Modal -->
+    <div id="modal-agy-transcript" class="cyber-modal-overlay hidden">
+        <div class="cyber-modal-card" style="max-width: 720px; max-height: 88vh;">
+            <div class="modal-header">
+                <span id="agy-transcript-title" class="modal-title"><span class="tt-icon" data-icon="message-square" data-size="16" style="margin-right:8px;color:#da7756;"></span>Antigravity Transcript</span>
+                <button id="btn-close-agy-transcript" class="modal-close-btn" aria-label="Close"><span class="tt-icon" data-icon="x" data-size="15"></span></button>
+            </div>
+            <div id="agy-transcript-messages" class="codex-turns-container" style="flex: 1; max-height: 75vh; overflow-y: auto;">
+                <div style="color:var(--text-dim);font-size:12px;padding:16px;">Loading messages...</div>
+            </div>
+        </div>
+    </div><!-- end #modal-agy-transcript -->
+
+    <!-- 13. Visual Novel Anime Dialogue Modal (4 NPCs: Lumina, Sakura, Ren, Kaede) -->
+    <div id="anime-dialogue-modal" class="anime-dialogue-overlay hidden" style="display: none;">
+        <div class="anime-dialogue-card">
+            <div class="dialogue-header">
+                <div id="dialogue-avatar" class="dialogue-avatar"><span class="tt-icon" data-icon="sparkles" data-size="28" style="color:#da7756;"></span></div>
+                <div class="dialogue-char-info">
+                    <div id="dialogue-char-name" class="dialogue-char-name">Lumina</div>
+                    <div id="dialogue-char-role" class="dialogue-char-role">Spirit of Light</div>
+                </div>
+                <button id="dialogue-btn-close" class="dialogue-close-btn" title="Close dialogue" aria-label="Close"><span class="tt-icon" data-icon="x" data-size="14"></span></button>
+            </div>
+            <div id="dialogue-text-body" class="dialogue-text-body"></div>
+            <div id="dialogue-choices-container" class="dialogue-choices-container"></div>
+            <button id="dialogue-btn-next" class="dialogue-next-btn" style="display:none;">Continue <span class="tt-icon" data-icon="corner-down-left" data-size="12"></span></button>
+        </div>
+    </div>
+
+    <!-- 14. MMO Top-Left Global & Whisper Chat -->
+    <div id="mmo-chat-container" class="mmo-chat-container">
+        <div class="mmo-chat-header">
+            <div class="mmo-chat-tabs">
+                <button id="chat-tab-global" class="chat-tab-btn active" data-i18n="chat_global"><span class="tt-icon" data-icon="globe" data-size="13" style="margin-right:4px;"></span> Global</button>
+                <button id="chat-tab-whisper" class="chat-tab-btn" data-i18n="chat_whisper"><span class="tt-icon" data-icon="lock" data-size="13" style="margin-right:4px;"></span> Whisper</button>
+            </div>
+            <div class="chat-header-actions">
+                <span class="chat-hotkey-badge" title="Press T to focus chat">[T] Key</span>
+                <button id="btn-toggle-mmo-chat" class="chat-toggle-btn" title="Hide Chat (Press T to show)" aria-label="Hide"><span class="tt-icon" data-icon="x" data-size="12"></span></button>
+            </div>
+        </div>
+        <div id="chat-whisper-banner" class="chat-whisper-banner hidden"></div>
+        <div id="mmo-chat-messages" class="mmo-chat-messages">
+            <div class="chat-message-row is-system">
+                <span class="chat-system-tag"><span class="tt-icon" data-icon="sparkles" data-size="12" style="margin-right:4px;color:#da7756;"></span>TeleTerm:</span>
+                <span class="chat-content" data-i18n-html="chat_welcome">Welcome to the open developer metaverse! Press <strong>[T]</strong> to chat.</span>
+            </div>
+        </div>
+        <div class="mmo-chat-footer">
+            <input type="text" id="mmo-chat-input" class="mmo-chat-input" data-i18n-placeholder="chat_placeholder" placeholder="Type a message... (Press T to focus)" maxlength="300" autocomplete="off" />
+            <button id="btn-mmo-chat-send" class="btn-mmo-chat-send" title="Send message" aria-label="Send"><span class="tt-icon" data-icon="send" data-size="13"></span></button>
+        </div>
+    </div>
+    <!-- Floating Chat Open Pill (When Chat is Hidden) -->
+    <button id="btn-floating-chat-open" class="floating-chat-pill hidden" data-i18n="chat_open_pill" title="Open Chat (Press T)"><span class="tt-icon" data-icon="message-circle" data-size="14" style="margin-right:6px;"></span> Chat [T]</button>
+
+    <!-- 15. Lofi Vibe Capsule Audio Floating Panel -->
+    <div id="lofi-vibe-panel" class="lofi-vibe-panel hidden">
+        <div class="lofi-panel-header">
+            <div class="lofi-track-cluster">
+                <span id="lofi-status-dot" class="lofi-status-dot"></span>
+                <span class="lofi-track-title" data-i18n="lofi_track_sakura"><span class="tt-icon" data-icon="music" data-size="13" style="margin-right:5px;color:#da7756;"></span> Sakura Afternoon (Rhodes Chill)</span>
+            </div>
+            <button id="btn-lofi-play" class="lofi-play-btn" data-i18n="lofi_play"><span class="tt-icon" data-icon="play" data-size="12" style="margin-right:4px;"></span> Play Music</button>
+        </div>
+        <div class="lofi-volume-row">
+            <span class="lofi-icon tt-icon" data-icon="volume-2" data-size="16"></span>
+            <input type="range" id="lofi-volume-slider" min="0" max="1" step="0.01" value="0.65" class="lofi-slider" />
+        </div>
+        <div class="lofi-ambient-chips">
+            <button id="btn-ambient-rain" class="ambient-chip-btn" data-i18n="lofi_rain"><span class="tt-icon" data-icon="wind" data-size="13" style="margin-right:4px;"></span> Rain</button>
+            <button id="btn-ambient-fire" class="ambient-chip-btn" data-i18n="lofi_campfire"><span class="tt-icon" data-icon="flame" data-size="13" style="margin-right:4px;"></span> Campfire</button>
+            <button id="btn-ambient-vinyl" class="ambient-chip-btn" data-i18n="lofi_static"><span class="tt-icon" data-icon="disc" data-size="13" style="margin-right:4px;"></span> Static</button>
+        </div>
+    </div>
+
+    <!-- 15b. 9-Slot Player Inventory Hotbar (Master Spec v4 Section 72-76) -->
+    <div id="hotbar-item-title-banner" class="hotbar-item-title-banner hidden"></div>
+    <div id="player-inventory-hotbar" class="player-inventory-hotbar">
+        <div class="hotbar-slots-container" id="hotbar-slots-container">
+            <!-- 9 slots [1]..[9] populated dynamically by player-inventory.js -->
+        </div>
+    </div>
+
+    <!-- 16. Avatar Customizer & 12MB Model Upload Modal -->
+    <div id="modal-avatar-customizer" class="cyber-modal-overlay hidden">
+        <div class="cyber-modal-card avatar-customizer-card">
+            <div class="modal-header">
+                <span class="modal-title" data-i18n="avatar_modal_title"><span class="tt-icon" data-icon="shirt" data-size="16" style="margin-right:8px;color:#da7756;"></span> Customize Avatar & 3D Model</span>
+                <button id="btn-close-customizer" class="modal-close-btn" aria-label="Close"><span class="tt-icon" data-icon="x" data-size="15"></span></button>
+            </div>
+            <div class="customizer-content">
+                <div class="customizer-section">
+                    <div class="section-title" data-i18n="avatar_section_preset">1. Anime Outfit & Accessories Preset</div>
+                    <div class="presets-row">
+                        <button class="avatar-preset-btn active" data-preset="sakura_alice" data-i18n="avatar_preset_sakura"><span class="tt-icon" data-icon="sparkles" data-size="14" style="margin-right:4px;"></span> Sakura Alice</button>
+                        <button class="avatar-preset-btn" data-preset="hacker_hoodie" data-i18n="avatar_preset_hacker"><span class="tt-icon" data-icon="terminal" data-size="14" style="margin-right:4px;"></span> Hacker Hoodie</button>
+                        <button class="avatar-preset-btn" data-preset="kimono_ronin" data-i18n="avatar_preset_ronin"><span class="tt-icon" data-icon="swords" data-size="14" style="margin-right:4px;"></span> Kimono Ronin</button>
+                        <button class="avatar-preset-btn" data-preset="kemono_coder" data-i18n="avatar_preset_kemono"><span class="tt-icon" data-icon="laptop" data-size="14" style="margin-right:4px;"></span> Kemono Coder</button>
+                    </div>
+                    <div style="font-size: 11px; color: #94a3b8; margin-top: 8px;" data-i18n-html="avatar_texture_notice">
+                        <span class="tt-icon" data-icon="sparkles" data-size="12" style="margin-right:4px;color:#da7756;"></span> <em>Original high-res MToon textures are 100% preserved with anti-color bleed protection.</em>
+                    </div>
+                </div>
+                <div class="customizer-section">
+                    <div class="section-title" data-i18n="avatar_section_upload">2. Upload Custom 3D Model (Max 12MB .GLB / .VRM)</div>
+                    <div class="upload-dropzone">
+                        <input type="file" id="input-custom-avatar-file" accept=".glb,.vrm" style="display:none;" />
+                        <button class="cyber-btn-outline" onclick="document.getElementById('input-custom-avatar-file').click()" data-i18n="avatar_btn_select_file">
+                            <span class="tt-icon" data-icon="folder" data-size="14" style="margin-right:6px;"></span> Select .GLB / .VRM File (≤ 12MB)
+                        </button>
+                        <div id="avatar-upload-status" class="upload-status-text" data-i18n="avatar_upload_status_compat">Compatible with standard glTF 2.0 & VRoid Studio</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-save-avatar" class="cyber-btn-primary" data-i18n="avatar_btn_save"><span class="tt-icon" data-icon="check" data-size="14" style="margin-right:6px;"></span> Save & Apply</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 18. Universal System Settings Dashboard (5-Tab Redesign) -->
+    <div id="modal-graphics-settings" class="cyber-modal-overlay hidden">
+        <div class="cyber-modal-card gfx-modal-card universal-settings-card">
+            <div class="modal-header gfx-modal-header">
+                <span class="modal-title" data-i18n="settings_title"><span class="tt-icon" data-icon="settings" data-size="18" style="margin-right:8px;color:#da7756;"></span>System Configuration / Cài Đặt Hệ Thống</span>
+                <button id="btn-close-graphics-modal" class="modal-close-btn" data-i18n-title="gfx_close" title="Close" aria-label="Close"><span class="tt-icon" data-icon="x" data-size="15"></span></button>
+            </div>
+            
+            <div class="universal-settings-body">
+                <!-- Left Sidebar Navigation Tabs -->
+                <nav class="settings-tabs-sidebar" role="tablist">
+                    <button class="settings-tab-btn active" data-tab="graphics" role="tab" aria-selected="true">
+                        <span class="tab-icon tt-icon" data-icon="palette" data-size="18"></span>
+                        <div class="tab-text">
+                            <span class="tab-title" data-i18n="tab_graphics">Đồ Họa</span>
+                            <span class="tab-sub">Graphics & Display</span>
+                        </div>
+                    </button>
+                    <button class="settings-tab-btn" data-tab="audio" role="tab" aria-selected="false">
+                        <span class="tab-icon tt-icon" data-icon="volume-2" data-size="18"></span>
+                        <div class="tab-text">
+                            <span class="tab-title" data-i18n="tab_audio">Âm Thanh</span>
+                            <span class="tab-sub">Audio & Spatial 3D</span>
+                        </div>
+                    </button>
+                    <button class="settings-tab-btn" data-tab="controls" role="tab" aria-selected="false">
+                        <span class="tab-icon tt-icon" data-icon="gamepad-2" data-size="18"></span>
+                        <div class="tab-text">
+                            <span class="tab-title" data-i18n="tab_controls">Điều Khiển</span>
+                            <span class="tab-sub">Controls & Camera</span>
+                        </div>
+                    </button>
+                    <button class="settings-tab-btn" data-tab="gameui" role="tab" aria-selected="false">
+                        <span class="tab-icon tt-icon" data-icon="globe" data-size="18"></span>
+                        <div class="tab-text">
+                            <span class="tab-title" data-i18n="tab_gameui">Giao Diện & Thế Giới</span>
+                            <span class="tab-sub">World, Time & HUD</span>
+                        </div>
+                    </button>
+                    <button class="settings-tab-btn" data-tab="system" role="tab" aria-selected="false">
+                        <span class="tab-icon tt-icon" data-icon="zap" data-size="18"></span>
+                        <div class="tab-text">
+                            <span class="tab-title" data-i18n="tab_system">Mạng & Hệ Thống</span>
+                            <span class="tab-sub">Network & Diagnostics</span>
+                        </div>
+                    </button>
+                </nav>
+
+                <!-- Right Scrollable Tab Panels -->
+                <div class="settings-tab-panels">
+                    <!-- ================= TAB 1: GRAPHICS ================= -->
+                    <section class="settings-panel active" data-panel="graphics">
+                        <!-- Presets Row -->
+                        <div class="gfx-section-block">
+                            <div class="gfx-section-label" data-i18n="gfx_presets_section"><span class="tt-icon" data-icon="zap" data-size="14" style="margin-right:6px;color:#da7756;"></span>1. Quick Quality Presets</div>
+                            <div class="gfx-presets-row">
+                                <button id="gfx-preset-low" class="gfx-preset-btn" type="button" data-i18n="preset_btn_low">Low</button>
+                                <button id="gfx-preset-medium" class="gfx-preset-btn" type="button" data-i18n="preset_btn_medium">Medium</button>
+                                <button id="gfx-preset-high" class="gfx-preset-btn active" type="button" data-i18n="preset_btn_high">High</button>
+                                <button id="gfx-preset-max" class="gfx-preset-btn" type="button" data-i18n="preset_btn_max">Max / Ultra</button>
+                                <button id="gfx-preset-custom" class="gfx-preset-btn" type="button" data-i18n="preset_btn_custom">Custom</button>
+                            </div>
+                        </div>
+
+                        <!-- Thermal / Status Strip -->
+                        <div id="gfx-status-banner" class="gfx-status-strip status-cool">
+                            <div class="gfx-status-head">
+                                <span class="gfx-platform-pill"><span class="tt-icon" data-icon="monitor" data-size="12" style="margin-right:4px;"></span>PC Graphics</span>
+                                <span class="gfx-preset-pill">HIGH</span>
+                            </div>
+                            <div class="gfx-status-desc"><span class="tt-icon" data-icon="sparkles" data-size="12" style="margin-right:4px;color:#da7756;"></span>High fidelity with smooth 60 FPS and crisp shadows</div>
+                        </div>
+
+                        <!-- Platform Profile Switcher -->
+                        <div class="gfx-section-block">
+                            <div class="gfx-section-label" data-i18n="gfx_profile_section"><span class="tt-icon" data-icon="smartphone" data-size="14" style="margin-right:6px;color:#da7756;"></span>2. Hardware Platform Profile</div>
+                            <div class="gfx-platform-toggle">
+                                <button id="gfx-platform-mobile" class="gfx-platform-btn" type="button" data-profile="mobile">
+                                    <span class="gfx-icon tt-icon" data-icon="smartphone" data-size="20"></span>
+                                    <div class="gfx-btn-text">
+                                        <div class="gfx-btn-main" data-i18n="gfx_profile_mobile">Mobile (Lite)</div>
+                                        <div class="gfx-btn-sub" data-i18n="gfx_profile_mobile_desc">Cool thermals, battery saver</div>
+                                    </div>
+                                </button>
+                                <button id="gfx-platform-web" class="gfx-platform-btn" type="button" data-profile="web">
+                                    <span class="gfx-icon tt-icon" data-icon="globe" data-size="20"></span>
+                                    <div class="gfx-btn-text">
+                                        <div class="gfx-btn-main" data-i18n="gfx_profile_web">Web (Balanced)</div>
+                                        <div class="gfx-btn-sub" data-i18n="gfx_profile_web_desc">Smooth 60 FPS, 512px shadows</div>
+                                    </div>
+                                </button>
+                                <button id="gfx-platform-pc" class="gfx-platform-btn active" type="button" data-profile="pc">
+                                    <span class="gfx-icon tt-icon" data-icon="monitor" data-size="20"></span>
+                                    <div class="gfx-btn-text">
+                                        <div class="gfx-btn-main" data-i18n="gfx_profile_pc">PC (Ultra)</div>
+                                        <div class="gfx-btn-sub" data-i18n="gfx_profile_pc_desc">Full fidelity, PCF soft shadows</div>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Display Mode (Fullscreen, Borderless, Window) -->
+                        <div class="gfx-section-block">
+                            <div class="gfx-section-label" data-i18n="gfx_display_mode_section"><span class="tt-icon" data-icon="monitor" data-size="14" style="margin-right:6px;color:#da7756;"></span>3. Display Mode / Chế Độ Hiển Thị</div>
+                            <div class="gfx-display-mode-toggle">
+                                <button id="gfx-mode-fullscreen" class="gfx-mode-btn" type="button" data-mode="fullscreen">
+                                    <span class="gfx-icon tt-icon" data-icon="maximize" data-size="20"></span>
+                                    <div class="gfx-btn-text">
+                                        <div class="gfx-btn-main" data-i18n="gfx_mode_fullscreen">Fullscreen</div>
+                                        <div class="gfx-btn-sub" data-i18n="gfx_mode_fullscreen_sub">Exclusive Fullscreen</div>
+                                    </div>
+                                </button>
+                                <button id="gfx-mode-borderless" class="gfx-mode-btn active" type="button" data-mode="borderless">
+                                    <span class="gfx-icon tt-icon" data-icon="app-window" data-size="20"></span>
+                                    <div class="gfx-btn-text">
+                                        <div class="gfx-btn-main" data-i18n="gfx_mode_borderless">Borderless</div>
+                                        <div class="gfx-btn-sub" data-i18n="gfx_mode_borderless_sub">Instant Alt+Tab</div>
+                                    </div>
+                                </button>
+                                <button id="gfx-mode-window" class="gfx-mode-btn" type="button" data-mode="window">
+                                    <span class="gfx-icon tt-icon" data-icon="square" data-size="20"></span>
+                                    <div class="gfx-btn-text">
+                                        <div class="gfx-btn-main" data-i18n="gfx_mode_window">Window</div>
+                                        <div class="gfx-btn-sub" data-i18n="gfx_mode_window_sub">Flexible Resizing</div>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Granular Parameters Grid -->
+                        <div class="gfx-section-block">
+                            <div class="gfx-section-label" data-i18n="gfx_custom_section"><span class="tt-icon" data-icon="settings" data-size="14" style="margin-right:6px;color:#da7756;"></span>4. Granular Graphics Settings</div>
+                            <div class="gfx-options-grid">
+                                <!-- Resolution Scale / DPR -->
+                                <div class="gfx-field-card">
+                                    <div class="gfx-field-title">
+                                        <span data-i18n="gfx_res_label"><span class="tt-icon" data-icon="gauge" data-size="14" style="margin-right:4px;color:#da7756;"></span>Resolution Scale (DPR)</span>
+                                        <span class="gfx-field-tag" data-i18n="gfx_res_tag">Clarity</span>
+                                    </div>
+                                    <div class="gfx-field-desc" data-i18n="gfx_res_desc">Maintains render sharpness and prevents texture blur</div>
+                                    <select id="gfx-select-dpr" class="gfx-select">
+                                        <option value="0.8" data-i18n="gfx_res_low">Low (0.8x) — GPU Saver</option>
+                                        <option value="1" data-i18n="gfx_res_med">Medium (1.0x) — Standard Sharp</option>
+                                        <option value="1.25" data-i18n="gfx_res_high">High (1.25x) — Super Smooth</option>
+                                        <option value="1.5" data-i18n="gfx_res_max">Max (1.5x / Native) — Ultra Crisp</option>
+                                    </select>
+                                </div>
+
+                                <!-- Anti-Aliasing -->
+                                <div class="gfx-field-card">
+                                    <div class="gfx-field-title">
+                                        <span data-i18n="gfx_aa_label"><span class="tt-icon" data-icon="sparkles" data-size="14" style="margin-right:4px;color:#da7756;"></span>Anti-Aliasing (MSAA)</span>
+                                        <span class="gfx-field-tag" data-i18n="gfx_aa_tag">Smooth Edges</span>
+                                    </div>
+                                    <div class="gfx-field-desc" data-i18n="gfx_aa_desc">Eliminates jagged polygon edges for smooth silhouettes</div>
+                                    <label class="gfx-toggle-row">
+                                        <span data-i18n="gfx_aa_enable">Enable Smooth Edge Anti-Aliasing</span>
+                                        <input type="checkbox" id="gfx-chk-aa" class="gfx-checkbox" checked>
+                                    </label>
+                                </div>
+
+                                <!-- Model Smoothing & Textures -->
+                                <div class="gfx-field-card">
+                                    <div class="gfx-field-title">
+                                        <span data-i18n="gfx_model_label"><span class="tt-icon" data-icon="layers" data-size="14" style="margin-right:4px;color:#da7756;"></span>Model & Texture Smoothing</span>
+                                        <span class="gfx-field-tag" data-i18n="gfx_model_tag">MToon</span>
+                                    </div>
+                                    <div class="gfx-field-desc" data-i18n="gfx_model_desc">Smooths character mesh surfaces with anisotropic texture filtering</div>
+                                    <select id="gfx-select-smoothing" class="gfx-select">
+                                        <option value="standard" data-i18n="gfx_model_std">Standard — Lightweight & Fast</option>
+                                        <option value="high" data-i18n="gfx_model_high">High / Anisotropic — Maximum Detail</option>
+                                    </select>
+                                </div>
+
+                                <!-- Shadow Quality -->
+                                <div class="gfx-field-card">
+                                    <div class="gfx-field-title">
+                                        <span data-i18n="gfx_shadow_label"><span class="tt-icon" data-icon="sun" data-size="14" style="margin-right:4px;color:#da7756;"></span>Shadow Quality</span>
+                                        <span class="gfx-field-tag" data-i18n="gfx_shadow_tag">Lighting</span>
+                                    </div>
+                                    <div class="gfx-field-desc" data-i18n="gfx_shadow_desc">Resolution of directional sunlight shadows on terrain and avatars</div>
+                                    <select id="gfx-select-shadow" class="gfx-select">
+                                        <option value="off" data-i18n="gfx_shadow_off">Off (Low — Max FPS & Ultra Cool)</option>
+                                        <option value="512" data-i18n="gfx_shadow_512">512 Basic (Medium — Lightweight)</option>
+                                        <option value="1024" data-i18n="gfx_shadow_1024">1024 PCF (High — Filtered Soft Shadow)</option>
+                                        <option value="2048" data-i18n="gfx_shadow_2048">2048 PCF Soft (Max / Ultra — Soft Shadow)</option>
+                                    </select>
+                                </div>
+
+                                <!-- Shader Atmosphere -->
+                                <div class="gfx-field-card">
+                                    <div class="gfx-field-title">
+                                        <span data-i18n="gfx_shader_label"><span class="tt-icon" data-icon="eye" data-size="14" style="margin-right:4px;color:#da7756;"></span>Shader Atmosphere (BSL Inspired)</span>
+                                        <span class="gfx-field-tag" data-i18n="gfx_shader_tag">Atmosphere</span>
+                                    </div>
+                                    <div class="gfx-field-desc" data-i18n="gfx_shader_desc">Enhances world atmosphere with warm god rays and water reflections</div>
+                                    <select id="gfx-select-shader" class="gfx-select">
+                                        <option value="vanilla" data-i18n="gfx_shader_vanilla">Vanilla Stylized (Cool Anime)</option>
+                                        <option value="enhanced" data-i18n="gfx_shader_enhanced">Enhanced Anime (Warm God Rays)</option>
+                                    </select>
+                                </div>
+
+                                <!-- Frame Rate Cap -->
+                                <div class="gfx-field-card">
+                                    <div class="gfx-field-title">
+                                        <span data-i18n="gfx_fps_label"><span class="tt-icon" data-icon="gauge" data-size="14" style="margin-right:4px;color:#da7756;"></span>Frame Rate Limit (FPS Cap)</span>
+                                        <span class="gfx-field-tag" data-i18n="gfx_fps_tag">Thermals</span>
+                                    </div>
+                                    <div class="gfx-field-desc" data-i18n="gfx_fps_desc">Locks FPS to keep devices cool during extended play</div>
+                                    <select id="gfx-select-fps" class="gfx-select">
+                                        <option value="30" data-i18n="gfx_fps_30">30 FPS — Battery Saver</option>
+                                        <option value="60" data-i18n="gfx_fps_60">60 FPS — Tournament Smooth</option>
+                                        <option value="0" data-i18n="gfx_fps_uncapped">Uncapped — Native Refresh Rate</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- ================= TAB 2: AUDIO ================= -->
+                    <section class="settings-panel" data-panel="audio" hidden>
+                        <div class="gfx-section-block">
+                            <div class="gfx-section-label" data-i18n="sound_settings_section"><span class="tt-icon" data-icon="volume-2" data-size="14" style="margin-right:6px;color:#da7756;"></span>Master & Volume Channels</div>
+                            <div class="gfx-options-grid">
+                                <!-- Master Volume -->
+                                <div class="gfx-field-card" style="grid-column: 1 / -1;">
+                                    <div class="gfx-field-title">
+                                        <span data-i18n="sound_master_label"><span class="tt-icon" data-icon="volume-2" data-size="14" style="margin-right:4px;color:#da7756;"></span>Master Volume</span>
+                                        <span class="gfx-field-tag" id="val-sound-master">100%</span>
+                                    </div>
+                                    <div class="gfx-field-desc" data-i18n="sound_master_desc">Scales all game audio, ambience, footstep and action sounds</div>
+                                    <input type="range" id="slider-sound-master" class="cyber-range" min="0" max="1" step="0.01" value="1.0">
+                                </div>
+
+                                <!-- LoFi / BGM Music -->
+                                <div class="gfx-field-card">
+                                    <div class="gfx-field-title">
+                                        <span><span class="tt-icon" data-icon="music" data-size="14" style="margin-right:4px;color:#da7756;"></span>LoFi & Background Music</span>
+                                        <span class="gfx-field-tag" id="val-sound-bgm">60%</span>
+                                    </div>
+                                    <div class="gfx-field-desc">Background chillhop streams and ambient melodies</div>
+                                    <input type="range" id="slider-sound-bgm" class="cyber-range" min="0" max="1" step="0.01" value="0.6">
+                                </div>
+
+                                <!-- Ambiance Volume -->
+                                <div class="gfx-field-card">
+                                    <div class="gfx-field-title">
+                                        <span data-i18n="sound_ambiance_label"><span class="tt-icon" data-icon="wind" data-size="14" style="margin-right:4px;color:#da7756;"></span>Nature Ambience</span>
+                                        <span class="gfx-field-tag" id="val-sound-ambiance">70%</span>
+                                    </div>
+                                    <div class="gfx-field-desc" data-i18n="sound_ambiance_desc">Gentle wind, waterfall stream, koi pond splashes, flocking birds & crickets</div>
+                                    <input type="range" id="slider-sound-ambiance" class="cyber-range" min="0" max="1" step="0.01" value="0.7">
+                                </div>
+
+                                <!-- Players' Sounds -->
+                                <div class="gfx-field-card">
+                                    <div class="gfx-field-title">
+                                        <span data-i18n="sound_players_label"><span class="tt-icon" data-icon="footprints" data-size="14" style="margin-right:4px;color:#da7756;"></span>Players' Action SFX</span>
+                                        <span class="gfx-field-tag" id="val-sound-players">80%</span>
+                                    </div>
+                                    <div class="gfx-field-desc" data-i18n="sound_players_desc">Footsteps, drinking tea, item use, vending machine & warp sound effects</div>
+                                    <input type="range" id="slider-sound-players" class="cyber-range" min="0" max="1" step="0.01" value="0.8">
+                                </div>
+
+                                <!-- 3D Positional Audio Toggle -->
+                                <div class="gfx-field-card">
+                                    <div class="gfx-field-title">
+                                        <span><span class="tt-icon" data-icon="headphones" data-size="14" style="margin-right:4px;color:#da7756;"></span>3D Spatial Audio</span>
+                                        <span class="gfx-field-tag">Binaural</span>
+                                    </div>
+                                    <div class="gfx-field-desc">Realistic distance falloff and stereo panning based on player head position</div>
+                                    <label class="gfx-toggle-row">
+                                        <span>Enable Web Audio 3D Positional Panner</span>
+                                        <input type="checkbox" id="chk-sound-spatial" class="gfx-checkbox" checked>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- ================= TAB 3: CONTROLS & CAMERA ================= -->
+                    <section class="settings-panel" data-panel="controls" hidden>
+                        <div class="gfx-section-block">
+                            <div class="gfx-section-label"><span class="tt-icon" data-icon="gamepad-2" data-size="14" style="margin-right:6px;color:#da7756;"></span>Camera Dynamics & Sensitivity</div>
+                            <div class="gfx-options-grid">
+                                <!-- Mouse Sensitivity -->
+                                <div class="gfx-field-card">
+                                    <div class="gfx-field-title">
+                                        <span><span class="tt-icon" data-icon="mouse" data-size="14" style="margin-right:4px;color:#da7756;"></span>Mouse Sensitivity</span>
+                                        <span class="gfx-field-tag" id="val-mouse-sensitivity">0.0050</span>
+                                    </div>
+                                    <div class="gfx-field-desc">Camera orbit responsiveness during desktop mouse dragging</div>
+                                    <input type="range" id="slider-mouse-sensitivity" class="cyber-range" min="0.001" max="0.012" step="0.0005" value="0.005">
+                                </div>
+
+                                <!-- Invert Y -->
+                                <div class="gfx-field-card">
+                                    <div class="gfx-field-title">
+                                        <span><span class="tt-icon" data-icon="refresh-cw" data-size="14" style="margin-right:4px;color:#da7756;"></span>Invert Vertical Pitch (Invert Y)</span>
+                                        <span class="gfx-field-tag">Pitch</span>
+                                    </div>
+                                    <div class="gfx-field-desc">Inverts vertical pitch direction when moving mouse up/down</div>
+                                    <label class="gfx-toggle-row">
+                                        <span>Invert Camera Y-Axis</span>
+                                        <input type="checkbox" id="chk-invert-y" class="gfx-checkbox">
+                                    </label>
+                                </div>
+
+                                <!-- Field of View (FOV) -->
+                                <div class="gfx-field-card">
+                                    <div class="gfx-field-title">
+                                        <span><span class="tt-icon" data-icon="compass" data-size="14" style="margin-right:4px;color:#da7756;"></span>Field of View (FOV)</span>
+                                        <span class="gfx-field-tag" id="val-camera-fov">75°</span>
+                                    </div>
+                                    <div class="gfx-field-desc">Wider view angles provide cinematic panoramic perception</div>
+                                    <input type="range" id="slider-camera-fov" class="cyber-range" min="60" max="100" step="1" value="75">
+                                </div>
+
+                                <!-- Camera Orbit Distance -->
+                                <div class="gfx-field-card">
+                                    <div class="gfx-field-title">
+                                        <span><span class="tt-icon" data-icon="ruler" data-size="14" style="margin-right:4px;color:#da7756;"></span>Default Camera Distance</span>
+                                        <span class="gfx-field-tag" id="val-camera-distance">4.2m</span>
+                                    </div>
+                                    <div class="gfx-field-desc">Distance from third-person camera to character shoulders</div>
+                                    <input type="range" id="slider-camera-distance" class="cyber-range" min="2.5" max="7.0" step="0.1" value="4.2">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Keybinding Reference Cheat Sheet -->
+                        <div class="gfx-section-block">
+                            <div class="gfx-section-label"><span class="tt-icon" data-icon="keyboard" data-size="14" style="margin-right:6px;color:#da7756;"></span>Keybinding Quick Reference</div>
+                            <div class="keybinds-table-grid">
+                                <div class="keybind-row"><span>Move Forward</span><button class="keybind-action-btn" data-action="forward">W</button></div>
+                                <div class="keybind-row"><span>Move Backward</span><button class="keybind-action-btn" data-action="backward">S</button></div>
+                                <div class="keybind-row"><span>Move Left</span><button class="keybind-action-btn" data-action="left">A</button></div>
+                                <div class="keybind-row"><span>Move Right</span><button class="keybind-action-btn" data-action="right">D</button></div>
+                                <div class="keybind-row"><span>Jump</span><button class="keybind-action-btn" data-action="jump">SPACE</button></div>
+                                <div class="keybind-row"><span>Interact / Talk / Warp</span><button class="keybind-action-btn" data-action="interact">E</button></div>
+                                <div class="keybind-row"><span>Drink / Consume Item</span><button class="keybind-action-btn" data-action="drink">RMB HOLD</button></div>
+                                <div class="keybind-row"><span>Tactical Mini-Map Radar</span><button class="keybind-action-btn" data-action="minimap">M</button></div>
+                                <div class="keybind-row"><span>Anime Photo Mode / Drone</span><button class="keybind-action-btn" data-action="photoMode">P</button></div>
+                                <div class="keybind-row"><span>Photo Studio Modal</span><button class="keybind-action-btn" data-action="photoStudio">O</button></div>
+                                <div class="keybind-row"><span>Cửa Hàng Đổi Thưởng XP (Shop)</span><button class="keybind-action-btn" data-action="xpShop">K</button></div>
+                                <div class="keybind-row"><span>Toggle Terminal / Cyber Deck</span><button class="keybind-action-btn" data-action="terminal">`</button></div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- ================= TAB 4: GAME & WORLD ================= -->
+                    <section class="settings-panel" data-panel="gameui" hidden>
+                        <div class="gfx-section-block">
+                            <div class="gfx-section-label"><span class="tt-icon" data-icon="globe" data-size="14" style="margin-right:6px;color:#da7756;"></span>Language & Aesthetic Theme</div>
+                            <div class="gfx-options-grid">
+                                <!-- Language -->
+                                <div class="gfx-field-card">
+                                    <div class="gfx-field-title">
+                                        <span data-i18n="gfx_lang_label"><span class="tt-icon" data-icon="globe" data-size="14" style="margin-right:4px;color:#da7756;"></span>Interface Language / Ngôn Ngữ</span>
+                                    </div>
+                                    <div class="gfx-field-desc" data-i18n="gfx_lang_desc">Bilingual English & Tiếng Việt localization</div>
+                                    <select id="gfx-language-select" class="gfx-select">
+                                        <option value="en">English (Default)</option>
+                                        <option value="vi">Tiếng Việt</option>
+                                    </select>
+                                </div>
+
+                                <!-- Theme -->
+                                <div class="gfx-field-card">
+                                    <div class="gfx-field-title">
+                                        <span><span class="tt-icon" data-icon="palette" data-size="14" style="margin-right:4px;color:#da7756;"></span>Claude Minimalist UI Theme</span>
+                                    </div>
+                                    <div class="gfx-field-desc">Claude.ai Minimalist Palette (Obsidian vs Paper Cream)</div>
+                                    <select id="gfx-theme-select" class="gfx-select">
+                                        <option value="dark">Dark Mode (Claude Obsidian)</option>
+                                        <option value="light">Light Mode (Claude Paper Cream)</option>
+                                    </select>
+                                </div>
+
+                                <!-- Time of Day -->
+                                <div class="gfx-field-card" style="grid-column: 1 / -1;">
+                                    <div class="gfx-field-title">
+                                        <span data-i18n="gfx_tod_mode_label"><span class="tt-icon" data-icon="clock" data-size="14" style="margin-right:4px;color:#da7756;"></span>Environmental Time of Day</span>
+                                        <span class="gfx-field-tag" id="gfx-tod-current-time">Cycle: 10:00</span>
+                                    </div>
+                                    <div class="gfx-field-desc" data-i18n="gfx_tod_desc">Dynamic 24-minute diurnal cycle or lock your favorite aesthetic horizon</div>
+                                    <select id="gfx-select-time-of-day" class="gfx-select">
+                                        <option value="auto">Dynamic 24-Minute Day/Night Cycle</option>
+                                        <option value="06:30">Dawn / Golden Sunrise (06:30)</option>
+                                        <option value="12:00">Clear Daylight / High Noon (12:00)</option>
+                                        <option value="18:30">Sunset / Twilight Orange Horizon (18:30)</option>
+                                        <option value="22:30">Cyberpunk Midnight / Glowing Lanterns (22:30)</option>
+                                    </select>
+                                </div>
+
+
+
+                                <!-- In-World Hologram Screens Toggle -->
+                                <div class="gfx-field-card">
+                                    <div class="gfx-field-title">
+                                        <span><span class="tt-icon" data-icon="sparkles" data-size="14" style="margin-right:4px;color:#da7756;"></span>In-World 3D Holographic Popups</span>
+                                        <span class="gfx-field-tag">3D HUD</span>
+                                    </div>
+                                    <div class="gfx-field-desc">Project cyber floating holograms when you open Terminal, Codex, or AGY</div>
+                                    <label class="gfx-toggle-row">
+                                        <span>Enable 3D Hologram Screens</span>
+                                        <input type="checkbox" id="chk-game-inworld-holograms" class="gfx-checkbox" checked>
+                                    </label>
+                                </div>
+
+                                <!-- Nametag Visibility Mode -->
+                                <div class="gfx-field-card" style="grid-column: 1 / -1;">
+                                    <div class="gfx-field-title">
+                                        <span data-i18n="gfx_nametag_label"><span class="tt-icon" data-icon="tag" data-size="14" style="margin-right:4px;color:#da7756;"></span>Overhead Nametags & Ranks</span>
+                                        <span class="gfx-field-tag" data-i18n="gfx_nametag_tag">Smart View</span>
+                                    </div>
+                                    <div class="gfx-field-desc" data-i18n="gfx_nametag_desc">Smart view cone culling prevents visual clutter during exploration</div>
+                                    <select id="gfx-select-nametags" class="gfx-select">
+                                        <option value="focus" data-i18n="gfx_nametag_focus">Focus Only (In View Cone or <6m — Recommended)</option>
+                                        <option value="always" data-i18n="gfx_nametag_always">Always (Show all NPCs & Players)</option>
+                                        <option value="off" data-i18n="gfx_nametag_off">Off (Hide all nametags — Cinematic Mode)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- ================= TAB 5: SYSTEM & NETWORK ================= -->
+                    <section class="settings-panel" data-panel="system" hidden>
+                        <div class="gfx-section-block">
+                            <div class="gfx-section-label"><span class="tt-icon" data-icon="zap" data-size="14" style="margin-right:6px;color:#da7756;"></span>Real-time Telemetry & Performance</div>
+                            <div class="gfx-options-grid">
+                                <!-- Ping Latency Indicator -->
+                                <div class="gfx-field-card">
+                                    <div class="gfx-field-title">
+                                        <span><span class="tt-icon" data-icon="activity" data-size="14" style="margin-right:4px;color:#da7756;"></span>Server Connection & Ping</span>
+                                        <span class="gfx-field-tag" id="sys-ping-latency">12 ms</span>
+                                    </div>
+                                    <div class="gfx-field-desc">Real-time WebSocket round-trip latency to TeleTerm backend</div>
+                                </div>
+
+                                <!-- Telemetry Overlay Toggle -->
+                                <div class="gfx-field-card">
+                                    <div class="gfx-field-title">
+                                        <span><span class="tt-icon" data-icon="gauge" data-size="14" style="margin-right:4px;color:#da7756;"></span>Performance Telemetry Chip</span>
+                                        <span class="gfx-field-tag">Metrics</span>
+                                    </div>
+                                    <div class="gfx-field-desc">Display FPS, RAM usage, and GPU draw-calls on the top navigation bar</div>
+                                    <label class="gfx-toggle-row">
+                                        <span>Show Telemetry Chips</span>
+                                        <input type="checkbox" id="chk-sys-telemetry" class="gfx-checkbox" checked>
+                                    </label>
+                                </div>
+
+                                <!-- Cache & Session Reset -->
+                                <div class="gfx-field-card" style="grid-column: 1 / -1;">
+                                    <div class="gfx-field-title">
+                                        <span><span class="tt-icon" data-icon="hard-drive" data-size="14" style="margin-right:4px;color:#da7756;"></span>Local Session & Asset Cache</span>
+                                        <span class="gfx-field-tag">Storage</span>
+                                    </div>
+                                    <div class="gfx-field-desc">Clear cached 3D assets, textures, and temporary UI states</div>
+                                    <div style="margin-top: 10px;">
+                                        <button id="btn-sys-clearcache" class="cyber-btn-outline" type="button"><span class="tt-icon" data-icon="rotate-ccw" data-size="14" style="margin-right:6px;"></span>Clear Temporary Cache</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <div class="modal-footer gfx-modal-footer">
+                <button id="btn-reset-graphics-settings" class="cyber-btn-outline" type="button" data-i18n="gfx_btn_reset"><span class="tt-icon" data-icon="rotate-ccw" data-size="14" style="margin-right:6px;"></span>Restore Defaults</button>
+                <button id="btn-done-graphics-settings" class="cyber-btn-primary" type="button" data-i18n="gfx_btn_done"><span class="tt-icon" data-icon="check" data-size="14" style="margin-right:6px;"></span>Apply & Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 17. Level-Up Celebration Modal -->
+    <div id="modal-level-up" class="cyber-modal-overlay hidden">
+        <div class="cyber-modal-card levelup-card">
+            <div class="levelup-sparks"><span class="tt-icon" data-icon="sparkles" data-size="28" style="color:#da7756;"></span></div>
+            <h2 class="levelup-header">LEVEL UP!</h2>
+            <div id="levelup-modal-level-num" class="levelup-level-num">LEVEL 2</div>
+            <div id="levelup-modal-title" class="levelup-title">New Title: Terminal Adept</div>
+            <p class="levelup-desc">You earned EXP from development activity and terminal operations!</p>
+            <button id="btn-close-level-up" class="cyber-btn-primary" style="margin-top:16px;">Continue Coding <span class="tt-icon" data-icon="flame" data-size="14" style="margin-left:6px;"></span></button>
+        </div>
+    </div>
+
+    <!-- 17b. Full 36-Slot Player Inventory Modal -->
+    <div id="modal-player-inventory" class="cyber-modal-overlay hidden">
+        <div class="cyber-modal-card inventory-modal-card">
+            <div class="modal-header">
+                <span class="modal-title" data-i18n="inventory_title"><span class="tt-icon" data-icon="shopping-bag" data-size="16" style="margin-right:8px;color:#da7756;"></span>Player Inventory</span>
+                <button id="btn-close-inventory" class="modal-close-btn" title="Close (Esc)" aria-label="Close"><span class="tt-icon" data-icon="x" data-size="15"></span></button>
+            </div>
+            <div class="inventory-modal-body">
+                <div class="inv-section-title" data-i18n="inventory_storage">Storage (3×9)</div>
+                <div id="inventory-storage-grid" class="inventory-storage-grid"></div>
+                
+                <div class="inv-section-title" style="margin-top: 14px;" data-i18n="inventory_hotbar">Hotbar (1..9)</div>
+                <div id="inventory-hotbar-grid" class="inventory-hotbar-grid"></div>
+
+                <div class="inv-modal-hint" data-i18n="inventory_drag_hint"><span class="tt-icon" data-icon="lightbulb" data-size="13" style="margin-right:6px;color:#da7756;"></span>Click or drag items to swap / rearrange slots [E/I to toggle]</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Lightbox Modal -->
+    <div id="modal-image-lightbox" class="modal-backdrop hidden" style="z-index:99999;backdrop-filter:blur(8px);background:rgba(0,0,0,0.85);display:none;position:fixed;inset:0;align-items:center;justify-content:center;">
+        <div class="lightbox-container" style="position:relative;max-width:92vw;max-height:92vh;display:flex;align-items:center;justify-content:center;">
+            <button id="btn-lightbox-close" class="lightbox-close" style="position:absolute;top:-40px;right:0;background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:20px;width:36px;height:36px;border-radius:50%;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><span class="tt-icon" data-icon="x" data-size="18"></span></button>
+            <img id="lightbox-img" src="" alt="Enlarged view" style="max-width:100%;max-height:85vh;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,0.8);border:1px solid rgba(0,240,255,0.3);object-fit:contain;">
+        </div>
+    </div>
+
+    <!-- 9. Floating Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- METAVERSE CLIENT SUBSYSTEMS -->
+    <script type="module" src="/js/ui/teleterm-icons.js?v=26"></script>
+    <script src="/js/lofi-engine.js?v=25"></script>
+    <script src="/js/mmo-chat.js?v=26"></script>
+    <script src="/js/xp-hud.js?v=25"></script>
+    <script src="/js/avatar-customizer.js?v=25"></script>
+    <script src="/js/multiplayer-client.js?v=25"></script>
+    <script type="module" src="/js/inventory/player-inventory.js?v=25"></script>
+    <script type="module" src="/js/voice-chat-manager.js?v=26"></script>
+    <script type="module" src="/js/minigames/campfire-cooking-system.js?v=41"></script>
+    <script type="module" src="/js/shop/cyber-shop-system.js?v=41"></script>
+    <script type="module" src="/js/ui/radial-emote-wheel.js?v=42"></script>
+    <script type="module" src="/js/world/spatial-boombox-manager.js?v=42"></script>
+    <script type="module" src="/js/world/ghibli-sky-dome.js?v=43"></script>
+    <script type="module" src="/js/world/firefly-swarm-system.js?v=43"></script>
+    <script type="module" src="/js/world/zen-garden-pomodoro.js?v=44"></script>
+    <script type="module" src="/js/world/pet-companion-system.js?v=45"></script>
+
+    <!-- Application Script (ESM) -->
+    <script type="module" src="/app.js?v=39"></script>
+</body>
+</html>

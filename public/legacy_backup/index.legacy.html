@@ -1,0 +1,1842 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TeleTerm">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#090d16">
+    <link rel="manifest" href="/manifest.json">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>TeleTerm — Mobile & Desktop 3D Cyber Terminal 24/7</title>
+    
+    <!-- GOOGLE FONTS: SYNE (DISPLAY), PLUS JAKARTA SANS (UI), JETBRAINS MONO (CODE) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- THREE.JS 3D ENGINE -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- Xterm.js CSS -->
+    <link rel="stylesheet" href="/vendor/xterm/xterm/css/xterm.css">
+    <link rel="stylesheet" href="/style.css?v=7.0.0">
+</head>
+<body>
+    <!-- AUTHENTICATION MODAL (BỎ HOÀN TOÀN MÃ PIN - MẶC ĐỊNH ẨN 100%) -->
+    <div id="auth-modal" class="modal hidden">
+        <div class="modal-card auth-card">
+            <div class="wt-window-header">
+                <div class="wt-dots">
+                    <span class="dot red"></span>
+                    <span class="dot yellow"></span>
+                    <span class="dot green"></span>
+                </div>
+                <span class="wt-title-text">TeleTerm Passwordless</span>
+            </div>
+            <div class="auth-body">
+                <div class="auth-icon">⚡</div>
+                <h3>TeleTerm Sẵn Sàng</h3>
+                <p class="auth-desc">Tự động kết nối 1-Chạm không cần mật khẩu</p>
+                <form id="auth-form">
+                    <input type="password" id="pin-input" placeholder="••••••" autocomplete="off" inputmode="numeric" maxlength="12">
+                    <button type="submit" id="btn-login" class="btn-wt-primary">Vào Ngay ⏎</button>
+                </form>
+                <div id="auth-error" class="error-msg"></div>
+                <div class="auth-footer-link">
+                    <button type="button" id="btn-open-log-auth" class="btn-text-link">📜 Xem Nhật Ký / Lỗi Hệ Thống</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APPLICATION SHELL -->
+    <div id="app" class="app-layout terminal-active">
+        <!-- SYSTEM AUTO-UPDATE / HOT-RELOAD NOTIFICATION BANNER -->
+        <div id="system-update-banner" class="system-update-banner hidden">
+            <div class="update-banner-content">
+                <span class="pulse-icon">⚡</span>
+                <span id="update-banner-text">Đã phát hiện code mới! Đang tự động làm mới hệ thống...</span>
+            </div>
+        </div>
+
+        <!-- TOP APP BAR (TRANSLUCENT GLASS CLUSTERS) -->
+        <header class="mobile-top-bar glass-surface">
+            <!-- Cụm Trái: Active Terminal Capsule -->
+            <div class="top-bar-left">
+                <button id="btn-active-terminal" class="top-terminal-pill glass-pill haptic" title="Bấm để xem danh sách terminal & tiến trình">
+                    <span class="status-pulse-dot"></span>
+                    <span id="top-term-icon" class="top-term-icon">⚡</span>
+                    <span id="top-term-title" class="top-term-title">PowerShell</span>
+                    <span class="top-term-chevron">▾</span>
+                </button>
+            </div>
+
+            <!-- Cụm Phải: Action Pod (Mini HUD, Zen Mode, Quick Claude, Clipboard, Watchdog, Hub) -->
+            <div class="top-actions">
+                <span id="conn-mode-badge" class="conn-badge hidden">📶 Local (0ms)</span>
+                <!-- Mini CPU/RAM capsule for mobile (Saves 36px space) -->
+                <div id="top-mini-hud" class="top-mini-hud haptic" title="Chạm để xem chi tiết phần cứng">
+                    <span id="mini-cpu-val">CPU --%</span>
+                    <span class="mini-hud-sep">•</span>
+                    <span id="mini-ram-val">RAM --%</span>
+                </div>
+                <!-- Zen Mode / Fullscreen Toggle -->
+                <button id="btn-zen-mode" class="top-icon-btn glass-btn zen-btn haptic" title="Chế độ Tràn Viền Toàn Màn Hình (Zen Mode 96vh)">⛶</button>
+                <button id="btn-quick-claude" class="top-icon-btn btn-quick-claude haptic" title="Mở Claude Code 1-Chạm (claude --dangerously-skip-permissions)">
+                    <span class="claude-icon">🟣</span>
+                    <span class="claude-label">Claude</span>
+                </button>
+                <button id="btn-quick-photo-top" class="top-icon-btn glass-btn btn-photo-top haptic" title="📷 Gửi ảnh từ điện thoại lên PC cho Claude">📷</button>
+                <button id="btn-clipboard-sync" class="top-icon-btn glass-btn haptic" title="Đồng Bộ Clipboard 2 Chiều (PC ↔ Điện Thoại)">📋</button>
+                <button id="btn-watchdog-arm" class="top-icon-btn glass-btn haptic" title="Smart Watchdog: Báo qua ntfy.sh khi lệnh chạy xong">🔔</button>
+                <!-- 3D Holographic Quantum Core Toggle -->
+                <button id="btn-toggle-3d-deck" class="top-icon-btn glass-btn btn-3d-deck haptic" title="🪐 Mở Trung Tâm Điều Khiển 3D (Holographic Quantum Core)">
+                    <span class="holo-core-icon">🪐</span>
+                    <span class="holo-core-label">3D Core</span>
+                </button>
+                <button id="btn-quick-actions-hub" class="top-icon-btn glass-btn hub-trigger-btn haptic" title="Mở Trung Tâm Điều Khiển PC (Chụp màn hình, Web Preview, Tắt máy, Quản lý file...)">⚡</button>
+
+                <!-- Hidden legacy action buttons (retained for backward compatibility with app.js event listeners) -->
+                <div class="hidden-legacy-actions" style="display:none;" aria-hidden="true">
+                    <button id="btn-web-preview"></button>
+                    <button id="btn-desktop-peek"></button>
+                    <button id="btn-screen-off"></button>
+                    <button id="btn-touch-mouse"></button>
+                    <button id="btn-split-toggle"></button>
+                    <button id="btn-upload-cwd"></button>
+                    <button id="btn-process-inspector"></button>
+                    <button id="btn-file-explorer"></button>
+                    <button id="btn-snippets-toggle"></button>
+                    <button id="btn-dpad-toggle"></button>
+                    <button id="btn-task-alert"></button>
+                    <button id="btn-open-search"></button>
+                    <button id="btn-pc-keys-toggle"></button>
+                    <button id="btn-theme-toggle"></button>
+                    <button id="btn-app-lock"></button>
+                    <button id="btn-hud-toggle"></button>
+                    <button id="btn-refresh-term"></button>
+                </div>
+            </div>
+        </header>
+
+        <!-- REALTIME SYSTEM HARDWARE MONITOR HUD -->
+        <div id="system-hud-bar" class="system-hud-bar" title="Nhấn để xem chi tiết phần cứng">
+            <div class="hud-chip" id="hud-chip-cpu">
+                <span class="hud-chip-dot"></span>
+                <span class="hud-chip-label">CPU</span>
+                <span class="hud-chip-val" id="hud-cpu-val">--%</span>
+            </div>
+            <div class="hud-chip" id="hud-chip-ram">
+                <span class="hud-chip-label">RAM</span>
+                <span class="hud-chip-val" id="hud-ram-val">--%</span>
+            </div>
+            <div class="hud-chip" id="hud-chip-disk">
+                <span class="hud-chip-label">Disk</span>
+                <span class="hud-chip-val" id="hud-disk-val">--GB</span>
+            </div>
+            <div class="hud-chip" id="hud-chip-bat">
+                <span id="hud-bat-icon">⚡</span>
+                <span class="hud-chip-val" id="hud-bat-val">--%</span>
+            </div>
+            <div class="hud-chip hidden" id="hud-chip-git" title="Git Radar: Nhánh & Thay đổi code">
+                <span class="hud-chip-dot" style="background:#10b981;"></span>
+                <span class="hud-chip-label">🌿</span>
+                <span class="hud-chip-val" id="hud-git-val">--</span>
+            </div>
+        </div>
+
+        <!-- HORIZONTAL SCROLLABLE SESSION TAB STRIP -->
+        <div id="session-tab-container" class="session-tab-container">
+            <div id="session-tab-strip" class="session-tab-strip">
+                <!-- Dynamically rendered tabs -->
+            </div>
+            <div class="session-tab-controls">
+                <button id="btn-tab-add" class="tab-ctrl-btn haptic" title="Mở terminal mới (PowerShell, CMD, WSL, Git Bash, Python...)">➕</button>
+                <button id="btn-tab-menu" class="tab-ctrl-btn haptic" title="Tùy chọn session (Đổi tên, đổi màu, nhân bản)">⚙️</button>
+            </div>
+        </div>
+
+        <!-- MAIN VIEW CONTAINER (4 TABS CHÍNH ĐƯỢC CHUYỂN QUA BOTTOM NAV) -->
+        <div id="main-view-container" class="main-views">
+            
+            <!-- VIEW 1: TERMINAL VIEWPORT (MÀN HÌNH CHÍNH) -->
+            <section id="view-terminal" class="app-view active">
+                <div id="terminal-viewport">
+                    <!-- FLOATING TERMINAL SEARCH BAR -->
+                    <div id="terminal-search-bar" class="terminal-search-bar hidden">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="term-search-input" placeholder="Tìm kiếm text trong code terminal..." autocomplete="off">
+                        <span id="term-search-count" class="search-match-count">0/0</span>
+                        <button id="btn-search-prev" class="search-btn haptic" title="Kết quả trước (Shift+Enter)">▲</button>
+                        <button id="btn-search-next" class="search-btn haptic" title="Kết quả sau (Enter)">▼</button>
+                        <button id="btn-search-close" class="search-btn search-close haptic" title="Đóng tìm kiếm (Esc)">✕</button>
+                    </div>
+
+                    <!-- SPLIT PANES WRAPPER (TMUX STYLE MULTITASKING) -->
+                    <div id="split-panes-wrapper" class="split-mode-none">
+                        <div id="pane-primary" class="terminal-pane active-pane">
+                            <div id="terminal-container"></div>
+                        </div>
+                        <div id="pane-splitter" class="pane-splitter hidden"></div>
+                        <div id="pane-secondary" class="terminal-pane hidden">
+                            <div class="pane-header">
+                                <span id="pane-secondary-title" class="pane-title">⚡ Session 2</span>
+                                <div class="pane-actions">
+                                    <select id="pane-secondary-select" class="pane-select"></select>
+                                    <button id="btn-close-secondary-pane" class="pane-close-btn haptic" title="Đóng chia màn hình">✕</button>
+                                </div>
+                            </div>
+                            <div id="terminal-container-2" class="pane-term-host"></div>
+                        </div>
+                    </div>
+
+                    <!-- SLIDE-DOWN COMPACT HUD (KHÔNG CHE GÓC TERMINAL KHI ĐÓNG) -->
+                    <div id="terminal-hud" class="floating-hud collapsed">
+                        <div class="hud-expanded-bar">
+                            <button id="btn-scroll-top" class="hud-btn haptic" title="Lên đầu trang code">⏫</button>
+                            <button id="btn-scroll-up" class="hud-btn haptic" title="Cuộn lên">▲</button>
+                            <button id="btn-scroll-down" class="hud-btn haptic" title="Cuộn xuống">▼</button>
+                            <button id="btn-scroll-bottom" class="hud-btn haptic" title="Xuống cuối terminal">⏬</button>
+                            <div class="hud-sep"></div>
+                            <button id="btn-zoom-out" class="hud-btn haptic" title="Thu nhỏ font">A−</button>
+                            <span id="font-size-label" class="hud-label">11</span>
+                            <button id="btn-zoom-in" class="hud-btn haptic" title="Phóng to font">A+</button>
+                            <div class="hud-sep"></div>
+                            <button id="btn-fit-screen" class="hud-btn haptic" title="Căn vừa màn hình">📐</button>
+                            <button id="btn-view-history" class="hud-btn haptic" title="Toàn bộ lịch sử code">📋</button>
+                            <button id="btn-hud-theme" class="hud-btn haptic" title="Đổi màu theme">🎨</button>
+                            <div class="hud-sep"></div>
+                            <button id="btn-hud-close" class="hud-btn hud-close-btn haptic" title="Thu gọn lại">✕</button>
+                        </div>
+                    </div>
+
+                    <!-- SCROLL BOTTOM LOCK PILL -->
+                    <div id="scroll-bottom-pill" class="scroll-bottom-pill hidden">
+                        <span>⬇ Đang xem code cũ (Chạm để cuộn xuống cuối)</span>
+                    </div>
+
+                    <!-- VISUAL TOUCH SCROLL INDICATOR (HIỆN KHI VUỐT CUỘN) -->
+                    <div id="touch-scroll-indicator" class="touch-scroll-indicator hidden"></div>
+                </div>
+
+                <!-- EXTENDED PC VIRTUAL KEYBOARD PANEL (TƯƠNG TÁC ĐẦY ĐỦ NHƯ PC) -->
+                <div id="pc-keyboard-panel" class="pc-keyboard-panel hidden">
+                    <!-- Hàng Phím Chức Năng (F1 - F12) -->
+                    <div class="pc-key-row fn-row">
+                        <button class="pc-key fn-key haptic" data-pckey="F1">F1</button>
+                        <button class="pc-key fn-key haptic" data-pckey="F2">F2</button>
+                        <button class="pc-key fn-key haptic" data-pckey="F3">F3</button>
+                        <button class="pc-key fn-key haptic" data-pckey="F4">F4</button>
+                        <button class="pc-key fn-key haptic" data-pckey="F5">F5</button>
+                        <button class="pc-key fn-key haptic" data-pckey="F6">F6</button>
+                        <button class="pc-key fn-key haptic" data-pckey="F7">F7</button>
+                        <button class="pc-key fn-key haptic" data-pckey="F8">F8</button>
+                        <button class="pc-key fn-key haptic" data-pckey="F9">F9</button>
+                        <button class="pc-key fn-key haptic" data-pckey="F10">F10</button>
+                        <button class="pc-key fn-key haptic" data-pckey="F11">F11</button>
+                        <button class="pc-key fn-key haptic" data-pckey="F12">F12</button>
+                    </div>
+
+                    <!-- Hàng Phím Điều Hướng & Ký Tự PC -->
+                    <div class="pc-key-row nav-row">
+                        <button class="pc-key key-esc haptic" data-pckey="esc">Esc</button>
+                        <button class="pc-key haptic" data-pckey="tab">Tab</button>
+                        <button class="pc-key haptic" data-pckey="home">Home</button>
+                        <button class="pc-key haptic" data-pckey="end">End</button>
+                        <button class="pc-key haptic" data-pckey="pageup">PgUp</button>
+                        <button class="pc-key haptic" data-pckey="pagedown">PgDn</button>
+                        <button class="pc-key haptic" data-pckey="insert">Ins</button>
+                        <button class="pc-key key-del haptic" data-pckey="delete">Del</button>
+                        <button class="pc-key key-symbol haptic" data-pckey="|">|</button>
+                        <button class="pc-key key-symbol haptic" data-pckey="~">~</button>
+                        <button class="pc-key key-symbol haptic" data-pckey="^">^</button>
+                        <button class="pc-key key-symbol haptic" data-pckey="\">\</button>
+                    </div>
+
+                    <!-- Hàng Phím Bổ Trợ (Sticky Ctrl, Alt) & Tác Vụ Terminal -->
+                    <div class="pc-key-row mod-row">
+                        <button id="btn-sticky-ctrl" class="pc-key key-mod haptic" title="Bật/Tắt giữ Ctrl">Ctrl</button>
+                        <button id="btn-sticky-alt" class="pc-key key-mod haptic" title="Bật/Tắt giữ Alt">Alt</button>
+                        <button class="pc-key key-signal haptic" data-action="ctrl-c" title="Hủy lệnh (Ctrl+C)">^C</button>
+                        <button class="pc-key key-signal haptic" data-action="ctrl-z" title="Tạm dừng (Ctrl+Z)">^Z</button>
+                        <button class="pc-key key-signal haptic" data-action="ctrl-d" title="Kết thúc EOF (Ctrl+D)">^D</button>
+                        <button class="pc-key key-signal haptic" data-action="ctrl-l" title="Xóa màn hình (Ctrl+L)">^L</button>
+                        <button id="btn-copy-selection" class="pc-key key-tool haptic" title="Sao chép vùng chọn">📋 Copy</button>
+                        <button id="btn-paste-terminal" class="pc-key key-tool haptic" title="Dán nội dung vào terminal">📋 Paste</button>
+                        <button id="btn-select-all" class="pc-key key-tool haptic" title="Chọn toàn bộ">Select All</button>
+                    </div>
+                </div>
+
+                <!-- SMART VIETNAMESE COMMAND DOCK (HỖ TRỢ GÕ TIẾNG VIỆT 100% KHÔNG LẶP TỪ) -->
+                <div id="prompt-drawer" class="prompt-drawer hidden">
+                    <!-- Dynamic Context-Aware Macro Command Chips -->
+                    <div class="prompt-chips-row" id="dynamic-context-chips">
+                        <button class="chip-cmd haptic" data-cmd="ls -la">ls -la</button>
+                        <button class="chip-cmd haptic" data-cmd="git status">git status</button>
+                        <button class="chip-cmd haptic" data-cmd="git pull">git pull</button>
+                        <button class="chip-cmd haptic" data-cmd="clear">clear</button>
+                        <button class="chip-cmd haptic" data-cmd="node -v">node -v</button>
+                        <button class="chip-cmd haptic" data-cmd="python --version">python</button>
+                    </div>
+                    <div class="prompt-bar">
+                        <span class="prompt-sym" title="Bộ gõ tiếng Việt an toàn">🇻🇳 ❯</span>
+                        <input type="text" id="prompt-input" placeholder="Gõ tiếng Việt Telex/VNI thoải mái không bao giờ lặp từ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                        <button id="btn-prompt-attach-photo" class="btn-icon btn-attach-photo haptic" title="📷 Gửi ảnh từ điện thoại lên PC cho Claude">📷</button>
+                        <button id="btn-history-prev" class="btn-icon haptic" title="Lệnh trước đó trong lịch sử (▲)">▲</button>
+                        <button id="btn-history-next" class="btn-icon haptic" title="Lệnh sau đó trong lịch sử (▼)">▼</button>
+                        <button id="btn-clear-prompt" class="btn-icon hidden haptic" title="Xóa trắng">✕</button>
+                        <button id="btn-send-prompt" class="btn-send haptic" title="Gửi lệnh (Enter)">Gửi ⏎</button>
+                    </div>
+                </div>
+
+                <!-- TACTILE THUMB TOOLBAR (BÀN PHÍM PHÍM TẮT XÚC GIÁC CHO NGÓN CÁI - ĐẦY ĐỦ NHÃN CHỨC NĂNG RÕ RÀNG) -->
+                <div id="thumb-toolbar" class="thumb-toolbar">
+                    <!-- Nhóm 1: Các Hành Động Thường Dùng Nhất Với Claude Code & Terminal (Luôn hiển thị đầu tiên) -->
+                    <div class="toolbar-btn-group primary-actions">
+                        <button class="t-btn btn-y haptic" data-action="y" title="Đồng ý / Chấp thuận lệnh Claude (y)">
+                            <span class="t-btn-icon">✓</span>
+                            <span class="t-btn-text">Có (y)</span>
+                        </button>
+                        <button class="t-btn btn-n haptic" data-action="n" title="Từ chối / Hủy đề xuất Claude (n)">
+                            <span class="t-btn-icon">✕</span>
+                            <span class="t-btn-text">Không (n)</span>
+                        </button>
+                        <button class="t-btn btn-enter haptic" data-action="enter" title="Enter (Gửi lệnh / Xuống dòng)">
+                            <span class="t-btn-icon">⏎</span>
+                            <span class="t-btn-text">Enter</span>
+                        </button>
+                        <button id="btn-quick-photo-thumb" class="t-btn btn-photo haptic" title="Chụp ảnh hoặc gửi ảnh từ thư viện điện thoại lên PC cho Claude">
+                            <span class="t-btn-icon">📷</span>
+                            <span class="t-btn-text">Gửi Ảnh</span>
+                        </button>
+                        <button class="t-btn btn-c haptic" data-action="ctrl-c" title="Dừng ngay lệnh đang chạy (Ctrl+C)">
+                            <span class="t-btn-icon">⏹</span>
+                            <span class="t-btn-text">Dừng (^C)</span>
+                        </button>
+                    </div>
+
+                    <div class="toolbar-sep"></div>
+
+                    <!-- Nhóm 2: Bàn Phím & Nhập Lệnh Tiếng Việt -->
+                    <div class="toolbar-btn-group tool-actions">
+                        <button id="btn-toggle-prompt" class="t-btn btn-prompt-toggle haptic" title="Hộp gõ lệnh tiếng Việt Telex/VNI">
+                            <span class="t-btn-icon">🇻🇳</span>
+                            <span class="t-btn-text">Gõ Lệnh</span>
+                        </button>
+                        <button id="btn-toggle-pc-keys" class="t-btn btn-pc-toggle haptic" title="Bàn phím PC đầy đủ (F1-F12, Esc, Ctrl, Alt, Tab)">
+                            <span class="t-btn-icon">⌨️</span>
+                            <span class="t-btn-text">Phím PC</span>
+                        </button>
+                        <button class="t-btn haptic" data-action="tab" title="Phím Tab (Tự động hoàn thành lệnh)">
+                            <span class="t-btn-text">Tab</span>
+                        </button>
+                        <button class="t-btn haptic" data-action="esc" title="Phím Escape (Thoát)">
+                            <span class="t-btn-text">Esc</span>
+                        </button>
+                    </div>
+
+                    <div class="toolbar-sep"></div>
+
+                    <!-- Nhóm 3: Điều Hướng D-Pad & Broadcast -->
+                    <div class="toolbar-btn-group nav-group">
+                        <button class="t-btn haptic" data-action="up" title="Lệnh trước đó (Mũi tên lên)">▲</button>
+                        <button class="t-btn haptic" data-action="down" title="Lệnh sau đó (Mũi tên xuống)">▼</button>
+                        <button class="t-btn haptic" data-action="left" title="Di chuyển con trỏ sang trái">◀</button>
+                        <button class="t-btn haptic" data-action="right" title="Di chuyển con trỏ sang phải">▶</button>
+                        <button id="btn-broadcast-toggle" class="t-btn btn-broadcast-toggle haptic" title="Chế độ Broadcast: Gửi lệnh đồng loạt tới TẤT CẢ terminals">📡</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW 2: MINI-ANTIGRAVITY (BẢN THU NHỎ ANTIGRAVITY DESKTOP TRÊN ĐIỆN THOẠI) -->
+            <section id="view-antigravity" class="app-view agy-desktop-view">
+                <!-- SIDEBAR DRAWER (COLLAPSIBLE SIDEBAR CỦA ANTIGRAVITY) -->
+                <div id="agy-sidebar-backdrop" class="agy-sidebar-backdrop hidden"></div>
+                <aside id="agy-sidebar" class="agy-sidebar closed">
+                    <!-- Top brand & close -->
+                    <div class="agy-sb-top">
+                        <div class="agy-sb-brand">
+                            <span class="agy-sb-icon">🛸</span>
+                            <span class="agy-sb-name">Antigravity</span>
+                        </div>
+                        <button id="btn-close-agy-sb" class="agy-sb-close-btn haptic" title="Đóng danh sách">✕</button>
+                    </div>
+
+                    <!-- New Conversation Button -->
+                    <div class="agy-sb-actions">
+                        <button id="btn-agy-new-chat" class="btn-new-conversation haptic">
+                            <span class="plus-icon">＋</span>
+                            <span>New Conversation</span>
+                        </button>
+                    </div>
+
+                    <!-- Navigation shortcuts -->
+                    <div class="agy-sb-menu">
+                        <div class="agy-menu-item" id="btn-sb-history">
+                            <span class="menu-icon">🕒</span>
+                            <span>Conversation History</span>
+                        </div>
+                        <div class="agy-menu-item" id="btn-sb-tasks">
+                            <span class="menu-icon">⏰</span>
+                            <span>Scheduled Tasks</span>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar Scrollable Body -->
+                    <div class="agy-sb-scroll">
+                        <!-- Pinned Conversations -->
+                        <div class="agy-sb-section">
+                            <div class="agy-sb-section-title">Pinned Conversations</div>
+                            <div id="agy-pinned-list" class="agy-sessions-group">
+                                <div class="empty-state">Đang tải pinned...</div>
+                            </div>
+                        </div>
+
+                        <!-- Projects Tree -->
+                        <div class="agy-sb-section projects-section">
+                            <div class="agy-sb-section-title projects-title">
+                                <span>Projects</span>
+                                <span class="projects-toggle-icon">▾</span>
+                            </div>
+                            <div id="agy-projects-list" class="agy-projects-tree">
+                                <div class="empty-state">Đang tải projects...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar Footer: Account & Settings -->
+                    <div class="agy-sb-footer">
+                        <div id="btn-open-quota-sheet" class="agy-footer-account haptic" title="Xem Quota & Thông Tin AI">
+                            <span class="acc-avatar">👤</span>
+                            <div class="acc-meta">
+                                <div id="agy-sb-user-name" class="acc-name">Đang tải...</div>
+                                <div id="agy-sb-user-tier" class="acc-tier">Google AI • Unlimited Tier</div>
+                            </div>
+                            <span class="acc-vault-pill">⚡ Vault</span>
+                        </div>
+                        <button id="btn-open-app-settings" class="agy-footer-settings-btn haptic" title="Quản lý App & Quota">⚙️</button>
+                    </div>
+                </aside>
+
+                <!-- MAIN CHAT CLIENT (MÀN HÌNH CHÍNH ANTIGRAVITY) -->
+                <main class="agy-chat-workspace">
+                    <!-- Top Chat Bar -->
+                    <header class="agy-chat-header">
+                        <div class="agy-ch-left">
+                            <button id="btn-toggle-agy-sb" class="agy-hamburger-btn haptic" title="Mở danh sách phiên">☰</button>
+                            <div class="agy-breadcrumb-wrap">
+                                <span id="agy-chat-folder" class="agy-bc-folder">c:</span>
+                                <span class="agy-bc-slash">/</span>
+                                <span id="agy-chat-title" class="agy-bc-title">Eni Person Command</span>
+                            </div>
+                        </div>
+                        <div class="agy-ch-right">
+                            <button id="btn-open-plan" class="agy-hdr-btn haptic" title="Kế hoạch">📋 Plan</button>
+                            <button id="btn-open-walkthrough" class="agy-hdr-btn haptic" title="Kết quả">✅ Kết quả</button>
+                            <button id="btn-live-attach-terminal" class="agy-hdr-btn agy-hdr-term haptic" title="Mở Terminal">📟</button>
+                        </div>
+                    </header>
+
+                    <!-- Live Progress Alert Bar (Hiển thị khi Agent đang chạy ngầm hoặc suy nghĩ) -->
+                    <div id="agy-live-banner" class="agy-live-banner hidden">
+                        <div class="live-banner-left">
+                            <span id="agy-banner-icon" class="pulse-animation">⚡</span>
+                            <div class="live-banner-info">
+                                <div id="agy-banner-tool" class="banner-tool-name">Đang thực thi lệnh...</div>
+                                <div id="agy-banner-summary" class="banner-tool-summary">Đang đọc dữ liệu từ brain...</div>
+                            </div>
+                        </div>
+                        <div class="live-banner-right">
+                            <span id="agy-banner-step" class="banner-step-pill">Bước 1</span>
+                        </div>
+                    </div>
+
+                    <!-- Chat Stream Messages (Scrollable) -->
+                    <div id="agy-chat-messages" class="agy-chat-messages">
+                        <div class="agy-chat-loading">
+                            <div class="spinner"></div>
+                            <span>Đang tải hội thoại...</span>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Input Box (Replica của Antigravity Desktop) -->
+                    <div class="agy-input-container">
+                        <!-- Quick Slash Commands Chips Row -->
+                        <div class="agy-slash-chips-row" id="agy-slash-chips-row">
+                            <button type="button" class="agy-slash-chip haptic" data-cmd="/grill-me">🎯 /grill-me</button>
+                            <button type="button" class="agy-slash-chip haptic" data-cmd="/plan">📋 /plan</button>
+                            <button type="button" class="agy-slash-chip haptic" data-cmd="/boost">⚡ /boost</button>
+                            <button type="button" class="agy-slash-chip haptic" data-cmd="/goal">🏁 /goal</button>
+                            <button type="button" class="agy-slash-chip agy-chip-proceed haptic" data-cmd="Proceed">✅ Proceed</button>
+                        </div>
+                        <div class="agy-input-box">
+                            <textarea id="agy-chat-input" class="agy-input-textarea" placeholder="Nhập tin nhắn cho Antigravity..." rows="1"></textarea>
+                            <div class="agy-input-toolbar">
+                                <div class="agy-toolbar-left">
+                                    <button id="btn-agy-attach" class="agy-input-btn haptic" title="Thêm context / file">＋</button>
+                                    <div class="agy-model-selector-pill">
+                                        <span id="agy-selected-model-text">Gemini 3.8 Flash High</span>
+                                        <span class="chevron">▾</span>
+                                        <select id="agy-model-select" class="agy-native-select">
+                                            <option value="gemini-3.8-flash-high">Gemini 3.8 Flash High</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="agy-toolbar-right">
+                                    <button id="btn-send-agy-prompt" class="agy-send-btn haptic" title="Gửi (Enter)">➔</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </section>
+
+            <!-- VIEW 2.5: CODEX DESKTOP REPLICA (CHATGPT CODEX MODE) -->
+            <section id="view-codex" class="app-view codex-desktop-view">
+                <!-- FAR LEFT ICON RAIL -->
+                <nav class="codex-icon-rail" aria-label="Codex Navigation Rail">
+                    <div class="rail-top">
+                        <button class="rail-btn active" title="Home">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z"/></svg>
+                        </button>
+                        <button class="rail-btn" title="History">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+                        </button>
+                        <button class="rail-btn" title="Projects">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/><line x1="15" y1="4" x2="15" y2="20"/></svg>
+                        </button>
+                        <button class="rail-btn" title="Drive">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+                        </button>
+                        <button class="rail-btn" title="Mentions">
+                            <span style="font-weight: 700; font-size: 15px;">@</span>
+                        </button>
+                        <button class="rail-btn" title="More">
+                            <span>•••</span>
+                        </button>
+                        <button class="rail-btn" title="Workflows">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+                        </button>
+                    </div>
+                    <div class="rail-bottom">
+                        <div class="rail-user-avatar" title="Hoan Thien (HT)">HT</div>
+                    </div>
+                </nav>
+
+                <!-- CODEX SIDEBAR -->
+                <div id="codex-sidebar-backdrop" class="codex-sidebar-backdrop hidden"></div>
+                <aside id="codex-sidebar" class="codex-sidebar">
+                    <!-- Top header with 'Codex v' and action buttons -->
+                    <div class="codex-sb-header">
+                        <div class="codex-sb-dropdown-btn">
+                            <span class="codex-sb-title">Codex</span>
+                            <span class="codex-chevron">▾</span>
+                        </div>
+                        <div class="codex-sb-header-actions">
+                            <button id="btn-codex-notifications" class="codex-icon-action" title="Notifications">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                            </button>
+                            <button id="btn-codex-search" class="codex-icon-action" title="Search">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            </button>
+                            <button id="btn-close-codex-sb" class="codex-icon-action mobile-only-inline" title="Close">✕</button>
+                        </div>
+                    </div>
+
+                    <!-- New chat button -->
+                    <div class="codex-new-chat-wrap">
+                        <button id="btn-codex-new-chat" class="codex-btn-new-chat haptic">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                            <span>New chat</span>
+                        </button>
+                    </div>
+
+                    <!-- Scrollable list of Projects and Recents -->
+                    <div class="codex-sb-scroll" id="codex-sb-scroll">
+                        <!-- Projects Section -->
+                        <div class="codex-sb-group">
+                            <div class="codex-group-title">Projects</div>
+                            <div id="codex-projects-list" class="codex-projects-container">
+                                <div class="codex-sb-loading">Loading projects...</div>
+                            </div>
+                        </div>
+
+                        <!-- Recents Section -->
+                        <div class="codex-sb-group">
+                            <div class="codex-group-title">Recents</div>
+                            <div id="codex-recents-list" class="codex-recents-container">
+                                <div class="codex-sb-loading">Loading recents...</div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- CODEX MAIN CHAT WORKSPACE -->
+                <main class="codex-chat-workspace">
+                    <!-- Top Navigation Bar -->
+                    <header class="codex-chat-header">
+                        <div class="codex-hdr-left">
+                            <button id="btn-toggle-codex-sb" class="codex-sidebar-toggle-btn haptic" title="Open Sidebar">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                            </button>
+                            <div class="codex-title-wrap">
+                                <svg class="codex-doc-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                <span id="codex-active-title" class="codex-active-title">Verify AURA systems audit</span>
+                            </div>
+                        </div>
+                        <div class="codex-hdr-right">
+                            <button id="btn-refresh-codex-thread" class="codex-hdr-icon-btn haptic" title="Refresh">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                            </button>
+                            <button class="codex-hdr-icon-btn haptic" title="More options">•••</button>
+                            <button class="codex-hdr-icon-btn haptic" title="Split view">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+                            </button>
+                        </div>
+                    </header>
+
+                    <!-- Main Chat Messages & Content Stream -->
+                    <div id="codex-messages-scroll" class="codex-messages-scroll">
+                        <div class="codex-messages-inner">
+                            <!-- Blue Verified State Card (Exact replica) -->
+                            <div class="codex-verified-state-card" id="codex-verified-card">
+                                <div class="verified-card-lines">
+                                    <div class="card-line-top">=================================</div>
+                                    <div class="card-line-title">CURRENT VERIFIED STATE</div>
+                                    <div class="card-line-sub">_</div>
+                                </div>
+                                <button class="verified-card-expand-btn" id="btn-verified-expand">Show more ▾</button>
+                            </div>
+
+                            <!-- Working duration status -->
+                            <div class="codex-working-status" id="codex-working-status">
+                                <span id="codex-duration-text">Working for 6m 48s</span>
+                            </div>
+
+                            <!-- Messages and Turn Items Container -->
+                            <div id="codex-turns-container" class="codex-turns-container">
+                                <!-- Turn items rendered by JavaScript -->
+                            </div>
+
+                            <!-- Real-time Active Thought Line -->
+                            <div class="codex-active-thought" id="codex-active-thought">
+                                <span class="thought-spinner">◌</span>
+                                <span id="codex-active-thought-text">Restructuring startup setup</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Floating Composer Area (Exact Replica) -->
+                    <div class="codex-composer-wrapper">
+                        <!-- Floating Pill File Diff Badge -->
+                        <div class="codex-diff-badge" id="codex-diff-badge">
+                            <span id="codex-diff-files">1 file changed</span>
+                            <span class="diff-add" id="codex-diff-add">+9</span>
+                            <span class="diff-del" id="codex-diff-del">-12</span>
+                        </div>
+
+                        <!-- Main Pill Container -->
+                        <div class="codex-composer-pill">
+                            <div class="codex-input-row">
+                                <textarea id="codex-prompt-input" class="codex-textarea" placeholder="Do anything" rows="1"></textarea>
+                            </div>
+                            <div class="codex-actions-row">
+                                <div class="codex-act-left">
+                                    <button id="btn-codex-add" class="codex-circle-btn haptic" title="Attach file or context">＋</button>
+                                    <div class="codex-access-badge" title="Full workspace access enabled">
+                                        <span class="shield-icon">🛡️</span>
+                                        <span class="access-label">Full access</span>
+                                    </div>
+                                </div>
+                                <div class="codex-act-right">
+                                    <div class="codex-model-selector" id="codex-model-selector">
+                                        <span id="codex-model-name">G Luna High</span>
+                                        <span class="codex-chevron">▾</span>
+                                        <select id="codex-model-select" class="codex-native-select">
+                                            <option value="gpt-6-luna">G Luna High</option>
+                                            <option value="o3-mini">o3-mini</option>
+                                            <option value="gpt-4o">gpt-4o</option>
+                                            <option value="moonshotai/kimi-k3">kimi-k3</option>
+                                        </select>
+                                    </div>
+                                    <button id="btn-codex-mic" class="codex-circle-btn haptic" title="Voice input">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                                    </button>
+                                    <button id="btn-codex-send" class="codex-send-square-btn haptic" title="Send or Stop">
+                                        <span id="codex-send-icon">■</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </section>
+
+            <!-- VIEW 3: FAST ACCOUNT SWITCHER (ĐỔI TÀI KHOẢN SIÊU TỐC) -->
+            <section id="view-accounts" class="app-view">
+                <div class="view-scroll-content">
+                    <div class="view-header">
+                        <div class="view-header-title">
+                            <span class="view-icon">👥</span>
+                            <div>
+                                <h2>Đổi Tài Khoản Siêu Tốc</h2>
+                                <p>1 chạm để chuyển đổi tài khoản Claude & Antigravity từ xa</p>
+                            </div>
+                        </div>
+                        <button id="btn-open-add-account" class="btn-wt-primary">➕ Thêm Mới</button>
+                    </div>
+
+                    <!-- BANNER TIẾN ĐỘ TỰ ĐỘNG XÁC MINH (AUTO-VERIFY) -->
+                    <div id="auto-verify-banner" class="dash-card auto-verify-card hidden">
+                        <div class="auto-verify-header">
+                            <span class="auto-verify-icon pulse-animation">⌛</span>
+                            <div class="auto-verify-title-wrap">
+                                <span class="auto-verify-title" id="auto-verify-title">Đang tự động xác minh Antigravity...</span>
+                                <span class="auto-verify-status" id="auto-verify-status">Đang kết nối...</span>
+                            </div>
+                            <button id="btn-stop-verify" class="btn-verify-cancel haptic">✕ Hủy</button>
+                        </div>
+                        <div class="auto-verify-body">
+                            <p id="auto-verify-desc" class="auto-verify-desc">Hệ thống đang tự động bấm "Continue with Google" và chờ hoàn tất xác thực trên máy tính.</p>
+                            <div id="auto-verify-oauth-wrap" class="auto-verify-oauth-wrap hidden">
+                                <a id="auto-verify-oauth-link" href="#" target="_blank" class="btn-action-primary text-center">🔗 Mở Trang Xác Thực Google</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CARD BẢO VỆ CHỐNG BAN TÀI KHOẢN -->
+                    <div class="dash-card anti-ban-card">
+                        <div class="dash-card-header">
+                            <span class="dash-title">🛡️ Cơ Chế Bảo Vệ Chống Ban Tài Khoản</span>
+                            <span class="badge-status badge-online">● Sandbox Đang Bật</span>
+                        </div>
+                        <div class="anti-ban-body">
+                            <p class="anti-ban-highlight">TeleTerm tự động cô lập 100% Cookie, Tokens và Local Storage cho từng tài khoản trong thư mục Sandbox riêng. Google và Anthropic không thể phát hiện dính cookie chéo giữa các tài khoản.</p>
+                            <div class="anti-ban-tips-list">
+                                <div class="tip-item">
+                                    <span class="tip-icon">📁</span>
+                                    <div>
+                                        <strong>Thư Mục Dữ Liệu Độc Lập (Profile Sandboxing)</strong>
+                                        <span>Mỗi tài khoản chạy với <code>--user-data-dir</code> riêng biệt, tránh hoàn toàn bị quét đa tài khoản.</span>
+                                    </div>
+                                </div>
+                                <div class="tip-item">
+                                    <span class="tip-icon">⏱️</span>
+                                    <div>
+                                        <strong>Giãn Cách Khi Đổi Tài Khoản</strong>
+                                        <span>Nên cách nhau 10-15s khi chuyển đổi tài khoản để tránh bị nhận diện là bot tự động.</span>
+                                    </div>
+                                </div>
+                                <div class="tip-item">
+                                    <span class="tip-icon">📶</span>
+                                    <div>
+                                        <strong>Dùng Mạng Wi-Fi / 4G Dân Cư</strong>
+                                        <span>Nên dùng mạng gia đình sạch thông thường, tránh bật các VPN miễn phí hoặc proxy bẩn dễ bị khóa.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NHÓM CLAUDE CODE PROFILES -->
+                    <div class="account-group">
+                        <div class="group-header">
+                            <span class="group-icon">🟣</span>
+                            <h3>Tài Khoản Claude Code</h3>
+                        </div>
+                        <!-- CARD THEO DOI QUOTA/TOKENS -->
+                    <div class="dash-card quota-card" style="margin-bottom: 24px;">
+                        <div class="dash-card-header">
+                            <span class="dash-title">📊 Token / Quota Usage Analytics</span>
+                            <button id="btn-refresh-quota" class="btn-wt-secondary" style="padding: 2px 8px; font-size: 11px;">🔄 Cập nhật</button>
+                        </div>
+                        <div class="sys-info-grid" style="margin-top: 8px;">
+                            <div class="info-row">
+                                <span class="info-k">🤖 ChatGPT Codex (Ước tính):</span>
+                                <span id="quota-codex-val" class="info-v text-cyan" style="font-weight: 700;">Đang tải...</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-k">🚀 Antigravity / Gemini:</span>
+                                <span id="quota-agy-val" class="info-v text-green">Đang phát triển (chưa có API log)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="claude-accounts-list" class="accounts-grid">
+                            <!-- Render thẻ tài khoản Claude -->
+                        </div>
+                    </div>
+
+                    <!-- NHÓM ANTIGRAVITY / GOOGLE PROFILES -->
+                    <div class="account-group">
+                        <div class="group-header">
+                            <span class="group-icon">🛸</span>
+                            <h3>Tài Khoản Antigravity & Google</h3>
+                        </div>
+                        <div id="antigravity-accounts-list" class="accounts-grid">
+                            <!-- Render thẻ tài khoản Antigravity -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW 4: SYSTEM STATS & LOGS (HỆ THỐNG & NHẬT KÝ LỖI) -->
+            <section id="view-system" class="app-view">
+                <div class="view-scroll-content">
+                    <div class="view-header">
+                        <div class="view-header-title">
+                            <span class="view-icon">⚙️</span>
+                            <div>
+                                <h2>Hệ Thống & Nhật Ký (Logs)</h2>
+                                <p>Theo dõi hoạt động server 24/7, kết nối và lỗi đăng nhập</p>
+                            </div>
+                        </div>
+                        <div class="header-btns">
+                            <button id="btn-refresh-sys-logs" class="btn-wt-secondary">🔄</button>
+                            <button id="btn-clear-sys-logs" class="btn-wt-secondary">🗑️</button>
+                        </div>
+                    </div>
+
+                    <!-- CARD THÔNG TIN MÁY CHỦ -->
+                    <div class="dash-card">
+                        <div class="dash-card-header">
+                            <span class="dash-title">Trạng Thái Máy Chủ Laptop</span>
+                            <span class="badge-status badge-online">● Đang hoạt động 24/7</span>
+                        </div>
+                        <div class="sys-info-grid">
+                            <div class="info-row">
+                                <span class="info-k">Tên máy tính (Host):</span>
+                                <span id="sys-host-val" class="info-v">--</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-k">Hệ điều hành:</span>
+                                <span id="sys-platform-val" class="info-v">Windows (Win32)</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-k">Chống Sleep (Windows Sleep Inhibitor):</span>
+                                <span class="info-v text-green">🛡️ ĐANG BẬT (Không bị tắt khi đi xa)</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-k">Mã PIN dự phòng:</span>
+                                <span id="sys-pin-val" class="info-v text-cyan font-mono">--</span>
+                            </div>
+                        </div>
+                        <div class="dash-actions">
+                            <a href="/qr" target="_blank" class="btn-action-primary text-center">📱 Xem Trang Mã QR & Link 1-Chạm</a>
+                        </div>
+                    </div>
+
+                    <!-- CARD NHẬT KÝ REALTIME -->
+                    <div class="dash-card">
+                        <div class="dash-card-header">
+                            <span class="dash-title">Nhật Ký Sự Kiện Realtime</span>
+                            <div class="log-filter-chips">
+                                <button class="chip active" data-filter="ALL">Tất cả (<span id="count-all">0</span>)</button>
+                                <button class="chip chip-err" data-filter="ERRORS">Lỗi (<span id="count-err">0</span>)</button>
+                                <button class="chip chip-inf" data-filter="INFO">Hệ thống (<span id="count-info">0</span>)</button>
+                            </div>
+                        </div>
+                        <div id="sys-log-console" class="log-console-box">
+                            <div class="log-empty">Đang kết nối nhật ký realtime...</div>
+                        </div>
+                        <div class="log-box-footer">
+                            <button id="btn-copy-sys-logs" class="btn-wt-secondary">📋 Sao chép log</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- BOTTOM NAVIGATION BAR (THUMB ZONE - CHUẨN CÔNG THÁI HỌC CHO NGÓN CÁI) -->
+        <nav id="bottom-nav" class="bottom-nav">
+            <button class="nav-tab active haptic" data-view="view-terminal">
+                <span class="nav-tab-icon">📟</span>
+                <span class="nav-tab-label">Terminal</span>
+            </button>
+            <button class="nav-tab haptic" data-view="view-codex" id="nav-tab-codex">
+                <span class="nav-tab-icon">⚡</span>
+                <span class="nav-tab-label">Codex</span>
+            </button>
+            <button class="nav-tab haptic" data-view="view-antigravity">
+                <span class="nav-tab-icon">🛸</span>
+                <span class="nav-tab-label">Antigravity</span>
+            </button>
+            <button class="nav-tab haptic" data-view="view-accounts">
+                <span class="nav-tab-icon">👥</span>
+                <span class="nav-tab-label">Tài Khoản</span>
+            </button>
+            <button class="nav-tab haptic" data-view="view-system">
+                <span class="nav-tab-icon">⚙️</span>
+                <span class="nav-tab-label">Hệ Thống</span>
+                <span id="nav-log-badge" class="badge-dot hidden"></span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- BOTTOM SHEET: QUICK ACTIONS COMMAND CENTER (TRUNG TÂM ĐIỀU KHIỂN PC) -->
+    <div id="quick-actions-sheet" class="bottom-sheet-modal hidden">
+        <div class="bottom-sheet-backdrop" id="backdrop-quick-actions"></div>
+        <div class="bottom-sheet-content glass-sheet-content">
+            <div class="sheet-handle"></div>
+            <div class="sheet-header">
+                <div class="sheet-title-wrap">
+                    <span class="sheet-icon">⚡</span>
+                    <div>
+                        <h3>Trung Tâm Điều Khiển PC</h3>
+                        <p>Truy cập nhanh mọi công cụ & tác vụ hệ thống</p>
+                    </div>
+                </div>
+                <button id="btn-close-quick-actions" class="sheet-close-btn haptic">✕</button>
+            </div>
+            
+            <!-- QUICK VIEW SWITCHER TABS (ĐIỀU HƯỚNG NHANH GIỮA CÁC TAB KHÔNG CẦN BOTTOM NAV) -->
+            <div class="sheet-view-switcher">
+                <button class="sheet-view-btn active haptic" data-sheet-view="view-terminal">
+                    <span class="sheet-v-icon">📟</span>
+                    <span class="sheet-v-text">Terminal</span>
+                </button>
+                <button class="sheet-view-btn haptic" data-sheet-view="view-codex">
+                    <span class="sheet-v-icon">⚡</span>
+                    <span class="sheet-v-text">Codex</span>
+                </button>
+                <button class="sheet-view-btn haptic" data-sheet-view="view-antigravity">
+                    <span class="sheet-v-icon">🛸</span>
+                    <span class="sheet-v-text">Antigravity</span>
+                </button>
+                <button class="sheet-view-btn haptic" data-sheet-view="view-accounts">
+                    <span class="sheet-v-icon">👥</span>
+                    <span class="sheet-v-text">Tài Khoản</span>
+                </button>
+                <button class="sheet-view-btn haptic" data-sheet-view="view-system">
+                    <span class="sheet-v-icon">⚙️</span>
+                    <span class="sheet-v-text">Hệ Thống</span>
+                </button>
+            </div>
+
+            <div class="hub-grid">
+                <button class="hub-card haptic" id="hub-tile-desktop-peek">
+                    <div class="hub-icon-wrap"><span class="hub-icon">📸</span></div>
+                    <div class="hub-text-wrap">
+                        <span class="hub-label">Chụp Màn Hình</span>
+                        <span class="hub-desc">Desktop Peek realtime</span>
+                    </div>
+                </button>
+                <button class="hub-card haptic" id="hub-tile-screen-off">
+                    <div class="hub-icon-wrap"><span class="hub-icon">🌙</span></div>
+                    <div class="hub-text-wrap">
+                        <span class="hub-label">Tắt Màn Hình / Khóa</span>
+                        <span class="hub-desc">Win+L / Tiết kiệm pin</span>
+                    </div>
+                </button>
+                <button class="hub-card haptic" id="hub-tile-web-preview">
+                    <div class="hub-icon-wrap"><span class="hub-icon">🌐</span></div>
+                    <div class="hub-text-wrap">
+                        <span class="hub-label">Web Preview</span>
+                        <span class="hub-desc">Port 3000, 5173, 8080...</span>
+                    </div>
+                </button>
+                <button class="hub-card haptic" id="hub-tile-split-toggle">
+                    <div class="hub-icon-wrap"><span class="hub-icon">🪟</span></div>
+                    <div class="hub-text-wrap">
+                        <span class="hub-label">Chia Đôi Màn Hình</span>
+                        <span class="hub-desc">2 Terminal song song</span>
+                    </div>
+                </button>
+                <button class="hub-card haptic" id="hub-tile-file-explorer">
+                    <div class="hub-icon-wrap"><span class="hub-icon">📁</span></div>
+                    <div class="hub-text-wrap">
+                        <span class="hub-label">Quản Lý File</span>
+                        <span class="hub-desc">File Explorer từ xa</span>
+                    </div>
+                </button>
+                <button class="hub-card haptic" id="hub-tile-process-inspector">
+                    <div class="hub-icon-wrap"><span class="hub-icon">📊</span></div>
+                    <div class="hub-text-wrap">
+                        <span class="hub-label">Tiến Trình & Kill</span>
+                        <span class="hub-desc">Task Manager PC</span>
+                    </div>
+                </button>
+                <button class="hub-card haptic" id="hub-tile-upload-cwd">
+                    <div class="hub-icon-wrap"><span class="hub-icon">📤</span></div>
+                    <div class="hub-text-wrap">
+                        <span class="hub-label">Tải File Lên CWD</span>
+                        <span class="hub-desc">Bắn file/ảnh vào máy</span>
+                    </div>
+                </button>
+                <button class="hub-card haptic" id="hub-tile-dpad-toggle">
+                    <div class="hub-icon-wrap"><span class="hub-icon">🧭</span></div>
+                    <div class="hub-text-wrap">
+                        <span class="hub-label">Điều Hướng D-Pad</span>
+                        <span class="hub-desc">Cho nano, vim, htop</span>
+                    </div>
+                </button>
+                <button class="hub-card haptic" id="hub-tile-pc-keys-toggle">
+                    <div class="hub-icon-wrap"><span class="hub-icon">⌨️</span></div>
+                    <div class="hub-text-wrap">
+                        <span class="hub-label">Bàn Phím Ảo PC</span>
+                        <span class="hub-desc">F1-F12, Esc, Ctrl, Alt</span>
+                    </div>
+                </button>
+                <button class="hub-card haptic" id="hub-tile-theme-toggle">
+                    <div class="hub-icon-wrap"><span class="hub-icon">🎨</span></div>
+                    <div class="hub-text-wrap">
+                        <span class="hub-label">Đổi Theme Terminal</span>
+                        <span class="hub-desc">Cyberpunk, Matrix, Dark</span>
+                    </div>
+                </button>
+                <button class="hub-card haptic" id="hub-tile-open-search">
+                    <div class="hub-icon-wrap"><span class="hub-icon">🔍</span></div>
+                    <div class="hub-text-wrap">
+                        <span class="hub-label">Tìm Kiếm Text</span>
+                        <span class="hub-desc">Ctrl+F trong buffer</span>
+                    </div>
+                </button>
+                <button class="hub-card haptic" id="hub-tile-app-lock">
+                    <div class="hub-icon-wrap"><span class="hub-icon">🔒</span></div>
+                    <div class="hub-text-wrap">
+                        <span class="hub-label">Khóa Màn Hình</span>
+                        <span class="hub-desc">PIN / FaceID bảo vệ</span>
+                    </div>
+                </button>
+                <button class="hub-card haptic" id="hub-tile-refresh-term">
+                    <div class="hub-icon-wrap"><span class="hub-icon">🔄</span></div>
+                    <div class="hub-text-wrap">
+                        <span class="hub-label">Làm Mới Terminal</span>
+                        <span class="hub-desc">Fit lại kích thước màn hình</span>
+                    </div>
+                </button>
+                <a class="hub-card haptic" href="/qr" target="_blank" style="text-decoration:none;">
+                    <div class="hub-icon-wrap"><span class="hub-icon">📱</span></div>
+                    <div class="hub-text-wrap">
+                        <span class="hub-label">Mã QR & Link 1-Chạm</span>
+                        <span class="hub-desc">Mở trên thiết bị khác</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM SHEET: DANH SÁCH TERMINAL / TIẾN TRÌNH TRÊN LAPTOP -->
+    <div id="terminal-sheet" class="bottom-sheet-modal hidden">
+        <div class="bottom-sheet-backdrop"></div>
+        <div class="bottom-sheet-content">
+            <div class="sheet-handle"></div>
+            <div class="sheet-header">
+                <div class="sheet-title-wrap">
+                    <span class="sheet-icon">💻</span>
+                    <div>
+                        <h3>Chọn Terminal Đang Mở</h3>
+                        <p>Chạm vào một cửa sổ để điều khiển ngay lập tức</p>
+                    </div>
+                </div>
+                <button id="btn-close-term-sheet" class="sheet-close-btn">✕</button>
+            </div>
+            
+            <div id="sheet-process-list" class="sheet-list">
+                <!-- Danh sách terminal render tại đây -->
+            </div>
+
+            <div class="sheet-footer">
+                <button id="btn-sheet-create-term" class="btn-wt-primary">➕ Mở Terminal Mới (PowerShell)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM SHEET: THÊM / SỬA TÀI KHOẢN -->
+    <div id="account-sheet" class="bottom-sheet-modal hidden">
+        <div class="bottom-sheet-backdrop"></div>
+        <div class="bottom-sheet-content">
+            <div class="sheet-handle"></div>
+            <div class="sheet-header">
+                <div class="sheet-title-wrap">
+                    <span class="sheet-icon">➕</span>
+                    <div>
+                        <h3 id="account-sheet-title">Thêm Tài Khoản Mới</h3>
+                        <p>Lưu hồ sơ tài khoản để chuyển đổi nhanh khi cần</p>
+                    </div>
+                </div>
+                <button id="btn-close-account-sheet" class="sheet-close-btn">✕</button>
+            </div>
+            
+            <form id="account-form" class="sheet-form">
+                <input type="hidden" id="acc-id">
+                <div class="form-group">
+                    <label for="acc-provider">Loại tài khoản:</label>
+                    <select id="acc-provider" class="form-select" required>
+                        <option value="claude">Claude Code (Anthropic / Custom Proxy)</option>
+                        <option value="antigravity">Antigravity / Google Profile</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="acc-name">Tên hiển thị gợi nhớ:</label>
+                    <input type="text" id="acc-name" class="form-input" placeholder="Ví dụ: Claude Opus VIP, Google Cá Nhân..." required>
+                </div>
+
+                <!-- Fields cho Claude -->
+                <div id="claude-fields">
+                    <div class="form-group">
+                        <label for="acc-token">Anthropic Auth Token / API Key:</label>
+                        <input type="password" id="acc-token" class="form-input" placeholder="sk-ant-... hoặc token proxy">
+                    </div>
+                    <div class="form-group">
+                        <label for="acc-baseurl">API Base URL:</label>
+                        <input type="text" id="acc-baseurl" class="form-input" placeholder="https://api.justwoker.icu hoặc https://api.anthropic.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="acc-model">Model Claude:</label>
+                        <input type="text" id="acc-model" class="form-input" placeholder="claude-opus-4-8 hoặc claude-3-7-sonnet-20250219">
+                    </div>
+                </div>
+
+                <!-- Fields cho Antigravity -->
+                <div id="antigravity-fields" class="hidden">
+                    <div class="form-group">
+                        <label for="acc-email">Địa chỉ Email Google:</label>
+                        <input type="email" id="acc-email" class="form-input" placeholder="email@gmail.com">
+                    </div>
+                </div>
+
+                <div class="sheet-form-actions">
+                    <button type="submit" id="btn-save-account" class="btn-wt-primary">Lưu Hồ Sơ Tài Khoản</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- BOTTOM SHEET: TOÀN BỘ LỊCH SỬ CODE -->
+    <div id="history-sheet" class="bottom-sheet-modal hidden">
+        <div class="bottom-sheet-backdrop"></div>
+        <div class="bottom-sheet-content history-sheet-content">
+            <div class="sheet-handle"></div>
+            <div class="sheet-header">
+                <div class="sheet-title-wrap">
+                    <span class="sheet-icon">📋</span>
+                    <div>
+                        <h3>Toàn Bộ Lịch Sử Code & Terminal</h3>
+                        <p id="history-sheet-subtitle">Đang tải lịch sử...</p>
+                    </div>
+                </div>
+                <div class="history-actions">
+                    <button id="btn-copy-history" class="btn-wt-secondary">📋 Sao chép</button>
+                    <button id="btn-close-history-sheet" class="sheet-close-btn">✕</button>
+                </div>
+            </div>
+            <div class="history-search-wrap">
+                <input type="text" id="history-search-input" placeholder="🔍 Tìm kiếm hàm, file, lỗi trong code..." autocomplete="off">
+            </div>
+            <div id="history-text-view" class="history-text-view"></div>
+        </div>
+    </div>
+
+    <!-- BOTTOM SHEET: XEM KẾ HOẠCH & KẾT QUẢ (ARTIFACT VIEWER) -->
+    <div id="artifact-sheet" class="bottom-sheet-modal hidden">
+        <div class="bottom-sheet-backdrop"></div>
+        <div class="bottom-sheet-content artifact-sheet-content">
+            <div class="sheet-handle"></div>
+            <div class="sheet-header">
+                <div class="sheet-title-wrap">
+                    <span class="sheet-icon" id="artifact-sheet-icon">📋</span>
+                    <div>
+                        <h3 id="artifact-sheet-title">Kế Hoạch Thực Hiện</h3>
+                        <p id="artifact-sheet-subtitle">Đang tải tài liệu...</p>
+                    </div>
+                </div>
+                <div class="history-actions">
+                    <button id="btn-copy-artifact" class="btn-wt-secondary haptic">📋 Sao chép</button>
+                    <button id="btn-close-artifact-sheet" class="sheet-close-btn haptic">✕</button>
+                </div>
+            </div>
+            <div id="artifact-content-view" class="artifact-content-view">
+                <div class="empty-state">Đang tải nội dung...</div>
+            </div>
+            <div id="artifact-plan-footer" class="artifact-plan-footer hidden">
+                <button type="button" id="btn-artifact-proceed" class="btn-plan-proceed haptic">
+                    <span>✅ Phê duyệt & Thực thi kế hoạch (Proceed)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM SHEET: QUOTA & TIẾN TRÌNH DESKTOP (ANTIGRAVITY CONTROL) -->
+    <div id="quota-sheet" class="bottom-sheet-modal hidden">
+        <div class="bottom-sheet-backdrop"></div>
+        <div class="bottom-sheet-content">
+            <div class="sheet-handle"></div>
+            <div class="sheet-header">
+                <div class="sheet-title-wrap">
+                    <span class="sheet-icon">💎</span>
+                    <div>
+                        <h3>Quota & Tiến Trình Antigravity</h3>
+                        <p>Google AI Cloud Code & Desktop App Engine</p>
+                    </div>
+                </div>
+                <button id="btn-close-quota-sheet" class="sheet-close-btn haptic">✕</button>
+            </div>
+            
+            <div class="quota-sheet-body" style="padding: 16px;">
+                <div class="quota-account-row">
+                    <div class="account-pill-info">
+                        <span class="acc-pill-icon">👤</span>
+                        <div>
+                            <div class="acc-pill-name" id="quota-acc-name">Đang tải...</div>
+                            <div class="acc-pill-tier" id="quota-acc-tier">Google AI / Cloud Code Unlimited Tier</div>
+                        </div>
+                    </div>
+                    <span class="acc-vault-tag">⚡ Vault Active</span>
+                </div>
+
+                <div class="quota-stats-row" style="margin-bottom: 16px;">
+                    <div class="q-stat">
+                        <span class="q-stat-k">Hạn mức Quota</span>
+                        <span class="q-stat-v text-green">100% Khả dụng</span>
+                    </div>
+                    <div class="q-stat">
+                        <span class="q-stat-k">Rate limit</span>
+                        <span class="q-stat-v text-cyan">Không bị chặn</span>
+                    </div>
+                    <div class="q-stat">
+                        <span class="q-stat-k">Google Token</span>
+                        <span class="q-stat-v text-green">Tự động làm mới</span>
+                    </div>
+                </div>
+
+                <div class="dash-card-header" style="margin-bottom: 8px;">
+                    <span class="dash-title">Tiến Trình App Desktop</span>
+                    <span id="agy-status-badge" class="badge-status badge-online">● Đang hoạt động</span>
+                </div>
+                <div class="dash-grid" style="margin-bottom: 12px;">
+                    <div class="stat-box">
+                        <span class="stat-label">Tiến trình (PIDs)</span>
+                        <span id="agy-pids-val" class="stat-value">--</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">RAM tiêu thụ</span>
+                        <span id="agy-ram-val" class="stat-value">-- MB</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">CLI (agy.exe)</span>
+                        <span id="agy-cli-val" class="stat-value">--</span>
+                    </div>
+                </div>
+                <div class="dash-actions">
+                    <button id="btn-start-agy-app" class="btn-action-primary haptic">🚀 Mở Antigravity Desktop</button>
+                    <button id="btn-restart-agy-app" class="btn-action-warning haptic">🔄 Khởi Động Lại App</button>
+                    <button id="btn-stop-agy-app" class="btn-action-danger haptic">⏹️ Tắt App</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ĐỔI THEME TERMINAL -->
+    <div id="theme-modal" class="modal hidden">
+        <div class="modal-card theme-card">
+            <div class="wt-window-header">
+                <span class="wt-title-text">🎨 Đổi Giao Diện Terminal</span>
+                <button id="btn-close-theme-modal" class="modal-close-btn haptic">✕</button>
+            </div>
+            <div class="theme-modal-body">
+                <p class="theme-modal-desc">Chọn phong cách màu sắc hiển thị phù hợp với bạn:</p>
+                <div class="theme-options-grid">
+                    <button class="theme-card-btn active haptic" data-theme="cyberpunk">
+                        <span class="theme-color-preview" style="background:#0c0c16; border-left:4px solid #38bdf8;"></span>
+                        <div class="theme-text-info">
+                            <strong>Cyberpunk Neon</strong>
+                            <span>Deep Blue & Cyan Glow</span>
+                        </div>
+                    </button>
+                    <button class="theme-card-btn haptic" data-theme="default">
+                        <span class="theme-color-preview" style="background:#0c0c0c; border-left:4px solid #ffffff;"></span>
+                        <div class="theme-text-info">
+                            <strong>Windows Terminal</strong>
+                            <span>Classic Dark Standard</span>
+                        </div>
+                    </button>
+                    <button class="theme-card-btn haptic" data-theme="dracula">
+                        <span class="theme-color-preview" style="background:#282a36; border-left:4px solid #bd93f9;"></span>
+                        <div class="theme-text-info">
+                            <strong>Dracula Official</strong>
+                            <span>Purple & Soft Pastel</span>
+                        </div>
+                    </button>
+                    <button class="theme-card-btn haptic" data-theme="onedark">
+                        <span class="theme-color-preview" style="background:#1e1e1e; border-left:4px solid #61afef;"></span>
+                        <div class="theme-text-info">
+                            <strong>One Dark Pro</strong>
+                            <span>VS Code Iconic Dark</span>
+                        </div>
+                    </button>
+                    <button class="theme-card-btn haptic" data-theme="matrix">
+                        <span class="theme-color-preview" style="background:#050d05; border-left:4px solid #00ff66;"></span>
+                        <div class="theme-text-info">
+                            <strong>Matrix Green</strong>
+                            <span>Phosphor Hacker CRT</span>
+                        </div>
+                    </button>
+                    <button class="theme-card-btn haptic" data-theme="monokai">
+                        <span class="theme-color-preview" style="background:#272822; border-left:4px solid #f92672;"></span>
+                        <div class="theme-text-info">
+                            <strong>Monokai Vibrant</strong>
+                            <span>Sublime Text High Contrast</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL TẠO TERMINAL SESSION MỚI -->
+    <div id="modal-new-session" class="modal hidden">
+        <div class="modal-card session-create-card">
+            <div class="wt-window-header">
+                <span class="wt-title-text">➕ Tạo Terminal Session Mới</span>
+                <button id="btn-close-new-session" class="modal-close-btn haptic">✕</button>
+            </div>
+            <div class="session-modal-body">
+                <label class="form-label">Chọn Môi Trường Shell:</label>
+                <div id="shell-select-grid" class="shell-select-grid">
+                    <!-- Populated dynamically via /api/shells -->
+                </div>
+
+                <div class="form-group" style="margin-top: 14px;">
+                    <label class="form-label" for="new-session-name">Tên Gợi Nhớ (Tùy chọn):</label>
+                    <input type="text" id="new-session-name" class="modal-input" placeholder="Ví dụ: Dev Server, AI Bot, Build...">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Màu Sắc Nhận Diện Tab:</label>
+                    <div class="color-picker-row">
+                        <button type="button" class="color-dot active" data-color="#38bdf8" style="background:#38bdf8;"></button>
+                        <button type="button" class="color-dot" data-color="#a855f7" style="background:#a855f7;"></button>
+                        <button type="button" class="color-dot" data-color="#10b981" style="background:#10b981;"></button>
+                        <button type="button" class="color-dot" data-color="#f59e0b" style="background:#f59e0b;"></button>
+                        <button type="button" class="color-dot" data-color="#ec4899" style="background:#ec4899;"></button>
+                        <button type="button" class="color-dot" data-color="#3b82f6" style="background:#3b82f6;"></button>
+                    </div>
+                </div>
+
+                <div class="modal-actions-row">
+                    <button id="btn-cancel-create-session" class="btn-wt-secondary haptic">Hủy</button>
+                    <button id="btn-confirm-create-session" class="btn-wt-primary haptic">🚀 Khởi Chạy Ngay</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL QUẢN LÝ / TÙY CHỈNH SESSION -->
+    <div id="modal-session-manage" class="modal hidden">
+        <div class="modal-card">
+            <div class="wt-window-header">
+                <span class="wt-title-text">⚙️ Tùy Chỉnh Session</span>
+                <button id="btn-close-session-manage" class="modal-close-btn haptic">✕</button>
+            </div>
+            <div class="session-modal-body">
+                <div class="form-group">
+                    <label class="form-label" for="manage-session-name">Đổi Tên Session:</label>
+                    <input type="text" id="manage-session-name" class="modal-input" placeholder="Tên session...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Đổi Màu Sắc Tab:</label>
+                    <div class="color-picker-row" id="manage-color-picker">
+                        <button type="button" class="color-dot" data-color="#38bdf8" style="background:#38bdf8;"></button>
+                        <button type="button" class="color-dot" data-color="#a855f7" style="background:#a855f7;"></button>
+                        <button type="button" class="color-dot" data-color="#10b981" style="background:#10b981;"></button>
+                        <button type="button" class="color-dot" data-color="#f59e0b" style="background:#f59e0b;"></button>
+                        <button type="button" class="color-dot" data-color="#ec4899" style="background:#ec4899;"></button>
+                        <button type="button" class="color-dot" data-color="#3b82f6" style="background:#3b82f6;"></button>
+                    </div>
+                </div>
+                <div class="modal-actions-col">
+                    <button id="btn-save-session-name" class="btn-wt-primary haptic">💾 Lưu Thay Đổi</button>
+                    <button id="btn-duplicate-session" class="btn-wt-secondary haptic">📋 Nhân Bản Session (Copy)</button>
+                    <button id="btn-close-current-session" class="btn-wt-danger haptic">🗑️ Tắt / Đóng Session Này</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL REMOTE FILE EXPLORER & QUICK EDITOR -->
+    <div id="modal-file-explorer" class="modal file-modal hidden">
+        <div class="modal-card file-explorer-card">
+            <div class="wt-window-header">
+                <span class="wt-title-text">📁 Remote File Explorer</span>
+                <button id="btn-close-file-explorer" class="modal-close-btn haptic">✕</button>
+            </div>
+            
+            <!-- File Explorer View -->
+            <div id="fe-browser-view" class="fe-view">
+                <div class="fe-nav-bar">
+                    <button id="btn-fe-up" class="fe-nav-btn haptic" title="Lên thư mục cha">⬆️ Lên</button>
+                    <button id="btn-fe-refresh" class="fe-nav-btn haptic" title="Làm mới thư mục">🔄</button>
+                    <div id="fe-breadcrumbs" class="fe-breadcrumbs" title="Đường dẫn hiện tại">C:\</div>
+                </div>
+                <div class="fe-search-box">
+                    <input type="text" id="fe-filter-input" placeholder="Lọc nhanh file hoặc thư mục...">
+                </div>
+                <div id="fe-file-list" class="fe-file-list">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Quick Text/Code Editor View -->
+            <div id="fe-editor-view" class="fe-view hidden">
+                <div class="fe-editor-header">
+                    <div class="fe-editor-title">
+                        <span id="fe-editor-filename">filename.txt</span>
+                        <span id="fe-editor-filesize" class="badge">0 KB</span>
+                    </div>
+                    <div class="fe-editor-actions">
+                        <button id="btn-fe-download" class="fe-btn-action haptic" title="Tải file về điện thoại">⬇️ Tải Về</button>
+                        <button id="btn-fe-save" class="fe-btn-action btn-save haptic" title="Lưu file vào máy">💾 Lưu File</button>
+                        <button id="btn-fe-back-browser" class="fe-btn-action haptic" title="Quay lại danh sách">✕ Đóng</button>
+                    </div>
+                </div>
+                <div class="fe-editor-body">
+                    <textarea id="fe-editor-textarea" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CUSTOM SNIPPETS & MACRO HUB -->
+    <div id="modal-snippets" class="modal hidden">
+        <div class="modal-card snippets-card">
+            <div class="wt-window-header">
+                <span class="wt-title-text">⭐ Kho Lệnh Tắt & Snippets</span>
+                <button id="btn-close-snippets" class="modal-close-btn haptic">✕</button>
+            </div>
+            <div class="snippets-body">
+                <div class="snippets-categories" id="snippets-cat-filter">
+                    <button class="cat-pill active haptic" data-cat="all">Tất Cả</button>
+                    <button class="cat-pill haptic" data-cat="git">Git</button>
+                    <button class="cat-pill haptic" data-cat="docker">Docker</button>
+                    <button class="cat-pill haptic" data-cat="python">Python</button>
+                    <button class="cat-pill haptic" data-cat="dev">Dev</button>
+                    <button class="cat-pill haptic" data-cat="system">System</button>
+                    <button class="cat-pill haptic" data-cat="custom">Cá Nhân</button>
+                </div>
+
+                <!-- Form thêm snippet mới -->
+                <div class="add-snippet-box">
+                    <div class="add-snippet-inputs">
+                        <input type="text" id="new-snippet-title" placeholder="Tên gợi nhớ (ví dụ: Git Pull All)...">
+                        <input type="text" id="new-snippet-cmd" placeholder="Câu lệnh (ví dụ: git pull origin main)...">
+                    </div>
+                    <button id="btn-add-snippet" class="btn-wt-primary haptic">+ Thêm Lệnh Mới</button>
+                </div>
+
+                <!-- Danh sách snippets -->
+                <div id="snippets-list" class="snippets-list">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CHI TIẾT PHẦN CỨNG (SYSTEM DETAIL) -->
+    <div id="modal-system-detail" class="modal hidden">
+        <div class="modal-card sys-detail-card">
+            <div class="wt-window-header">
+                <span class="wt-title-text">📊 Giám Sát Phần Cứng Máy Tính</span>
+                <button id="btn-close-sys-detail" class="modal-close-btn haptic">✕</button>
+            </div>
+            <div class="sys-detail-body">
+                <div class="sys-metric-grid">
+                    <div class="sys-metric-box">
+                        <div class="sys-metric-header">
+                            <span>CPU Sử Dụng</span>
+                            <span id="sys-detail-cpu-val" class="highlight">--%</span>
+                        </div>
+                        <div class="progress-bar-bg"><div id="sys-detail-cpu-bar" class="progress-bar-fill" style="width: 0%"></div></div>
+                        <div class="sys-metric-sub" id="sys-detail-cpu-cores">-- Cores</div>
+                    </div>
+                    <div class="sys-metric-box">
+                        <div class="sys-metric-header">
+                            <span>Bộ Nhớ RAM</span>
+                            <span id="sys-detail-ram-val" class="highlight">--%</span>
+                        </div>
+                        <div class="progress-bar-bg"><div id="sys-detail-ram-bar" class="progress-bar-fill" style="width: 0%"></div></div>
+                        <div class="sys-metric-sub" id="sys-detail-ram-text">-- / -- MB</div>
+                    </div>
+                </div>
+
+                <div class="sys-section-title">Ổ Đĩa Lưu Trữ (SSD / HDD)</div>
+                <div id="sys-detail-disks" class="sys-disks-list">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <div class="sys-section-title">Nguồn Điện & Hệ Thống</div>
+                <div class="sys-info-table">
+                    <div class="sys-info-row">
+                        <span>Trạng thái Pin:</span>
+                        <strong id="sys-detail-battery">--</strong>
+                    </div>
+                    <div class="sys-info-row">
+                        <span>Thời gian máy chạy (Uptime):</span>
+                        <strong id="sys-detail-uptime">--</strong>
+                    </div>
+                    <div class="sys-info-row">
+                        <span>Máy chủ / Hostname:</span>
+                        <strong id="sys-detail-host">--</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIRTUAL TRACKPAD & D-PAD OVERLAY (NANO / VIM / HTOP TOUCH NAVIGATION) -->
+    <div id="virtual-dpad" class="virtual-dpad hidden">
+        <div class="dpad-header">
+            <span>🧭 D-Pad Điều Hướng</span>
+            <button id="btn-dpad-close" class="dpad-close-btn haptic">✕</button>
+        </div>
+        <div class="dpad-cluster">
+            <button class="dpad-btn dpad-up haptic" data-key="up" title="Mũi tên Lên">▲</button>
+            <div class="dpad-middle-row">
+                <button class="dpad-btn dpad-left haptic" data-key="left" title="Mũi tên Trái">◄</button>
+                <button class="dpad-btn dpad-center haptic" data-key="enter" title="Enter">⏎</button>
+                <button class="dpad-btn dpad-right haptic" data-key="right" title="Mũi tên Phải">►</button>
+            </div>
+            <button class="dpad-btn dpad-down haptic" data-key="down" title="Mũi tên Xuống">▼</button>
+        </div>
+        <div class="dpad-nav-row">
+            <button class="dpad-aux-btn haptic" data-key="home">Home</button>
+            <button class="dpad-aux-btn haptic" data-key="pageup">PgUp</button>
+            <button class="dpad-aux-btn haptic" data-key="pagedown">PgDn</button>
+            <button class="dpad-aux-btn haptic" data-key="end">End</button>
+            <button class="dpad-aux-btn haptic" data-key="esc">Esc</button>
+        </div>
+    </div>
+
+    <!-- MODAL PROCESS INSPECTOR & FORCE KILL -->
+    <div id="modal-process-inspector" class="modal hidden">
+        <div class="modal-card proc-card">
+            <div class="wt-window-header">
+                <span class="wt-title-text">📊 Quản Lý Tiến Trình Con (Task Manager)</span>
+                <div class="header-tools">
+                    <button id="btn-refresh-processes" class="proc-icon-btn haptic" title="Làm mới danh sách">🔄</button>
+                    <button id="btn-close-proc-inspector" class="modal-close-btn haptic">✕</button>
+                </div>
+            </div>
+            <div class="proc-body">
+                <div class="proc-summary-bar">
+                    <span id="proc-session-label">Session: <strong>--</strong></span>
+                    <span id="proc-root-label">Root PID: <strong>--</strong></span>
+                    <span id="proc-cwd-label" class="proc-cwd-text">CWD: <strong>--</strong></span>
+                </div>
+                <div class="proc-table-wrapper">
+                    <table class="proc-table">
+                        <thead>
+                            <tr>
+                                <th>PID</th>
+                                <th>Tiến Trình</th>
+                                <th>RAM</th>
+                                <th>Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="proc-table-body">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="proc-note">
+                    <span>💡 Gợi ý: Bấm <strong>Force Kill</strong> khi một lệnh hoặc script bị đơ mà phím Ctrl+C không ăn.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL UPLOAD TO CWD -->
+    <div id="modal-upload-cwd" class="modal hidden">
+        <div class="modal-card upload-card">
+            <div class="wt-window-header">
+                <span class="wt-title-text">📤 Tải File/Ảnh Lên Thư Mục Hiện Tại (CWD)</span>
+                <button id="btn-close-upload-cwd" class="modal-close-btn haptic">✕</button>
+            </div>
+            <div class="upload-body">
+                <div class="upload-target-info">
+                    <span>Thư mục đích (CWD):</span>
+                    <code id="upload-target-path" class="upload-cwd-path">--</code>
+                </div>
+
+                <div id="upload-dropzone" class="upload-dropzone">
+                    <div class="dropzone-icon">📁</div>
+                    <div class="dropzone-text">Kéo thả file vào đây, hoặc chạm để chọn file từ máy/ảnh camera</div>
+                    <input type="file" id="upload-file-input" multiple class="hidden-file-input">
+                    <div class="upload-pick-btns">
+                        <button id="btn-pick-file" class="btn-wt-secondary haptic">📂 Chọn File</button>
+                        <button id="btn-pick-camera" class="btn-wt-secondary haptic">📷 Chụp Ảnh / Camera</button>
+                    </div>
+                </div>
+
+                <div id="upload-preview-list" class="upload-preview-list"></div>
+
+                <div class="upload-actions">
+                    <button id="btn-start-upload" class="btn-wt-primary haptic" disabled>🚀 Bắt Đầu Tải Lên</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CYBERPUNK APP LOCK SCREEN OVERLAY (PIN & BIOMETRIC) -->
+    <div id="app-lock-overlay" class="app-lock-overlay hidden">
+        <div class="lock-container">
+            <div class="lock-shield-icon">🔒</div>
+            <h2 class="lock-title">TELETERM LOCKED</h2>
+            <div class="lock-time" id="lock-clock">00:00:00</div>
+            <p class="lock-subtitle">Nhập mã PIN hoặc dùng FaceID / Vân tay để mở khóa</p>
+
+            <div class="pin-display">
+                <span class="pin-dot" id="pindot-0"></span>
+                <span class="pin-dot" id="pindot-1"></span>
+                <span class="pin-dot" id="pindot-2"></span>
+                <span class="pin-dot" id="pindot-3"></span>
+                <span class="pin-dot" id="pindot-4"></span>
+                <span class="pin-dot" id="pindot-5"></span>
+            </div>
+
+            <div class="pin-keypad">
+                <button class="pin-key haptic" data-num="1">1</button>
+                <button class="pin-key haptic" data-num="2">2</button>
+                <button class="pin-key haptic" data-num="3">3</button>
+                <button class="pin-key haptic" data-num="4">4</button>
+                <button class="pin-key haptic" data-num="5">5</button>
+                <button class="pin-key haptic" data-num="6">6</button>
+                <button class="pin-key haptic" data-num="7">7</button>
+                <button class="pin-key haptic" data-num="8">8</button>
+                <button class="pin-key haptic" data-num="9">9</button>
+                <button class="pin-key pin-biometric haptic" id="btn-biometric-unlock" title="Mở khóa sinh trắc học">👆</button>
+                <button class="pin-key haptic" data-num="0">0</button>
+                <button class="pin-key pin-backspace haptic" id="btn-pin-backspace" title="Xóa">⌫</button>
+            </div>
+
+            <div class="lock-footer">
+                <span id="lock-error-msg" class="lock-error"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DESKTOP PEEK (CHỤP MÀN HÌNH PC THỜI GIAN THỰC) -->
+    <div id="modal-desktop-peek" class="modal hidden">
+        <div class="modal-card desktop-peek-card">
+            <div class="wt-window-header">
+                <span class="wt-title-text">📸 Desktop Screen Peek (Thời Gian Thực)</span>
+                <div class="header-tools">
+                    <button id="btn-refresh-peek" class="proc-icon-btn haptic" title="Chụp lại">🔄</button>
+                    <button id="btn-close-peek" class="modal-close-btn haptic">✕</button>
+                </div>
+            </div>
+            <div class="peek-body">
+                <div class="peek-meta">
+                    <span id="peek-timestamp">Đang tải ảnh chụp màn hình...</span>
+                    <button id="btn-full-peek" class="btn-wt-secondary haptic">🔍 Xem Toàn Màn Hình</button>
+                </div>
+                <div class="peek-image-container">
+                    <img id="peek-img" src="" alt="Desktop Screenshot" class="peek-img">
+                    <div id="peek-loading" class="peek-loading hidden">⚡ Đang chụp...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL LOCALHOST WEB PREVIEW (REVERSE PROXY) -->
+    <div id="modal-web-preview" class="modal hidden">
+        <div class="modal-card web-preview-card">
+            <div class="wt-window-header">
+                <span class="wt-title-text">🌐 Localhost Web Preview (Reverse Proxy)</span>
+                <div class="header-tools">
+                    <button id="btn-refresh-preview" class="proc-icon-btn haptic" title="Tải lại trang">🔄</button>
+                    <button id="btn-close-web-preview" class="modal-close-btn haptic">✕</button>
+                </div>
+            </div>
+            <div class="preview-body">
+                <div class="preview-controls">
+                    <div class="preview-port-selector">
+                        <label for="preview-port-select">Cổng đang chạy:</label>
+                        <select id="preview-port-select" class="pane-select"></select>
+                        <button id="btn-scan-ports" class="btn-wt-secondary haptic" title="Quét lại cổng">🔄 Quét cổng</button>
+                    </div>
+                    <div class="preview-url-bar">
+                        <input type="text" id="preview-url-input" readonly class="preview-url-text">
+                        <button id="btn-open-preview-tab" class="btn-wt-secondary haptic" title="Mở tab mới">↗</button>
+                    </div>
+                </div>
+                <div class="preview-iframe-wrapper">
+                    <iframe id="preview-iframe" src="" frameborder="0" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL SCREEN POWER / PC SECURITY -->
+    <div id="modal-screen-power" class="modal hidden">
+        <div class="modal-card power-card">
+            <div class="wt-window-header">
+                <span class="wt-title-text">🌙 Điều Khiển Màn Hình & Bảo Mật PC</span>
+                <button id="btn-close-screen-power" class="modal-close-btn haptic">✕</button>
+            </div>
+            <div class="power-body">
+                <p class="power-desc">Chọn thao tác muốn thực hiện trên PC từ xa:</p>
+                <div class="power-options">
+                    <button id="btn-action-screen-off" class="btn-power-opt haptic">
+                        <span class="power-opt-icon">🌙</span>
+                        <div class="power-opt-info">
+                            <strong>Tắt Màn Hình Vật Lý</strong>
+                            <span>Tiết kiệm điện & chống người khác nhìn trộm, PC vẫn chạy 24/7 (SC_MONITORPOWER)</span>
+                        </div>
+                    </button>
+                    <button id="btn-action-lock-pc" class="btn-power-opt haptic">
+                        <span class="power-opt-icon">🔒</span>
+                        <div class="power-opt-info">
+                            <strong>Khóa Máy Windows (Win + L)</strong>
+                            <span>Khóa ngay lập tức máy tính, bảo vệ dữ liệu</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL BI-DIRECTIONAL CLIPBOARD SYNC -->
+    <div id="modal-clipboard-sync" class="modal hidden">
+        <div class="modal-card clipboard-card">
+            <div class="wt-window-header">
+                <span class="wt-title-text">📋 Đồng Bộ Clipboard 2 Chiều (PC ↔ Điện Thoại)</span>
+                <button id="btn-close-clipboard" class="modal-close-btn haptic">✕</button>
+            </div>
+            <div class="clipboard-body">
+                <div class="clip-section">
+                    <div class="clip-section-hdr">
+                        <span>💻 Clipboard Hiện Tại Trên PC:</span>
+                        <button id="btn-refresh-clip-pc" class="proc-icon-btn haptic" title="Đọc lại từ PC">🔄</button>
+                    </div>
+                    <div id="clip-pc-preview" class="clip-preview-box">Đang đọc clipboard PC...</div>
+                    <div class="clip-actions-row">
+                        <button id="btn-copy-pc-to-phone" class="btn-wt-secondary haptic">📱 Chép Vào Điện Thoại</button>
+                        <button id="btn-paste-clip-to-term" class="btn-wt-primary haptic">⌨️ Dán Vào Terminal</button>
+                    </div>
+                </div>
+
+                <div class="clip-divider"></div>
+
+                <div class="clip-section">
+                    <div class="clip-section-hdr">
+                        <span>📱 Gửi Text Lên Clipboard PC:</span>
+                    </div>
+                    <textarea id="clip-phone-input" class="clip-textarea" placeholder="Nhập hoặc dán nội dung từ điện thoại để gửi lên clipboard của PC..."></textarea>
+                    <div class="clip-actions-row">
+                        <button id="btn-send-to-pc-clip" class="btn-wt-primary haptic">🚀 Gửi Lên Clipboard Windows</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HIDDEN DIRECT PHOTO UPLOAD INPUT -->
+    <input type="file" id="input-quick-photo" accept="image/*" class="hidden-file-input" style="display:none;" />
+
+    <!-- FLOATING PHOTO UPLOAD RESULT BANNER -->
+    <div id="photo-upload-banner" class="photo-upload-banner hidden">
+        <div class="pub-inner">
+            <div class="pub-thumb-wrap">
+                <img id="pub-preview-img" src="" alt="Photo" />
+            </div>
+            <div class="pub-content">
+                <div class="pub-title">✓ Đã gửi ảnh lên PC</div>
+                <div class="pub-name" id="pub-file-name">photo.jpg</div>
+            </div>
+            <button id="btn-pub-close" class="pub-btn-close haptic" title="Đóng">✕</button>
+        </div>
+        <div class="pub-actions">
+            <button id="btn-pub-insert" class="pub-btn pub-btn-insert haptic">📋 Dán vào Terminal</button>
+            <button id="btn-pub-claude" class="pub-btn pub-btn-claude haptic">🟣 Hỏi Claude phân tích ảnh</button>
+        </div>
+    </div>
+
+    <!-- 3D HOLOGRAPHIC COMMAND DECK MODAL -->
+    <div id="modal-3d-deck" class="modal modal-3d-deck hidden">
+        <div class="modal-card modal-card-3d glass-card-3d">
+            <div class="wt-window-header deck-header">
+                <div class="deck-title-cluster">
+                    <span class="deck-status-dot pulse-glow"></span>
+                    <span class="deck-title-text">TeleTerm Quantum Core 3D</span>
+                    <span class="deck-badge">HOLO-HUD v3.0</span>
+                </div>
+                <div class="deck-header-actions">
+                    <button id="btn-toggle-3d-bg" class="deck-btn-sm haptic" title="Bật/Tắt Lưới Cyber 3D Nền">🌐 Nền 3D</button>
+                    <button id="btn-close-3d-deck" class="deck-close-btn haptic" title="Đóng 3D Deck">✕</button>
+                </div>
+            </div>
+            
+            <!-- 3D Canvas Viewport -->
+            <div class="deck-canvas-viewport">
+                <canvas id="teleterm-3d-deck-canvas"></canvas>
+                <div class="deck-telemetry-overlay">
+                    <div class="deck-stat-chip">
+                        <span class="stat-lbl">CORE LOAD</span>
+                        <span id="deck-3d-cpu-val" class="stat-val text-cyan">--%</span>
+                    </div>
+                    <div class="deck-stat-chip">
+                        <span class="stat-lbl">RAM ALLOC</span>
+                        <span id="deck-3d-ram-val" class="stat-val text-violet">--%</span>
+                    </div>
+                    <div class="deck-stat-chip">
+                        <span class="stat-lbl">SYSTEM ORBIT</span>
+                        <span class="stat-val text-emerald">SYNCED 60 FPS</span>
+                    </div>
+                </div>
+                <div class="deck-interaction-hint">
+                    <span>🖱️ Kéo để xoay 3D • Cuộn để phóng to • Chạm vào vệ tinh để mở Tab</span>
+                </div>
+            </div>
+
+            <!-- Quick 3D Node Selector Ribbon -->
+            <div class="deck-nodes-ribbon">
+                <button class="deck-node-btn haptic" data-deck-target="view-terminal">
+                    <span class="node-icon">📟</span>
+                    <span class="node-txt">Terminal PTY</span>
+                </button>
+                <button class="deck-node-btn haptic" data-deck-target="view-codex">
+                    <span class="node-icon">⚡</span>
+                    <span class="node-txt">Codex AI</span>
+                </button>
+                <button class="deck-node-btn haptic" data-deck-target="view-antigravity">
+                    <span class="node-icon">🛸</span>
+                    <span class="node-txt">Antigravity</span>
+                </button>
+                <button class="deck-node-btn haptic" data-deck-target="view-accounts">
+                    <span class="node-icon">👥</span>
+                    <span class="node-txt">Tài Khoản</span>
+                </button>
+                <button class="deck-node-btn haptic" data-deck-target="view-system">
+                    <span class="node-icon">⚙️</span>
+                    <span class="node-txt">Hệ Thống</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- XTERM.JS & ADDONS -->
+    <script src="/vendor/xterm/xterm/lib/xterm.js"></script>
+    <script src="/vendor/xterm/addon-fit/lib/addon-fit.js"></script>
+    <script src="/vendor/xterm/addon-web-links/lib/addon-web-links.js"></script>
+    
+    <!-- 3D CYBER ENGINE & TELEMETRY VISUALIZER -->
+    <script src="/teleterm-3d.js?v=7.0.0"></script>
+
+    <!-- APPLICATION LOGIC (ANTI-CACHE VERSIONED) -->
+    <script src="/app.js?v=7.0.0"></script>
+</body>
+</html>
+
+
+
+

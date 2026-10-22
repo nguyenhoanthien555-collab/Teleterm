@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: teleterm-game
+    runtime: node
+    plan: standard
+    region: singapore
+    buildCommand: npm ci --omit=dev
+    startCommand: npm start
+    healthCheckPath: /api/version
+    autoDeploy: true
+    disk:
+      name: teleterm-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TELETERM_USER_DATA_PATH
+        value: /var/data
+      - key: TELETERM_PUBLIC_ORIGIN
+        fromService:
+          type: web
+          name: teleterm-game
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: TELETERM_TRUSTED_PROXY
+        value: cloudflare
+      - key: JWT_SECRET
+        generateValue: true
+      - key: TELETERM_IDENTITY_SECRET
+        generateValue: true
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+      - key: TELETERM_OWNER_IDS
+        sync: false

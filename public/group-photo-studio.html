@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeleTerm 3D — Official Commemorative Group Photo Scene</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: #04070e;
+        }
+        #webgl-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        #status-hud {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            color: #38bdf8;
+            font-family: monospace;
+            font-size: 14px;
+            background: rgba(4, 7, 14, 0.85);
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            z-index: 9999;
+        }
+    </style>
+    <!-- ES Module Import Map for Three.js -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "/vendor/three/build/three.module.js",
+            "three/addons/": "/vendor/three/examples/jsm/"
+        }
+    }
+    </script>
+</head>
+<body>
+    <canvas id="webgl-canvas"></canvas>
+    <div id="status-hud">Loading 3D Anime Models & World...</div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
+        import { HumanoidContract } from '/js/animation/humanoid-contract.js';
+
+        const statusHud = document.getElementById('status-hud');
+        const canvas = document.getElementById('webgl-canvas');
+
+        // 1. Renderer Setup
+        const renderer = new THREE.WebGLRenderer({
+            canvas,
+            antialias: true,
+            alpha: false,
+            preserveDrawingBuffer: true,
+            powerPreference: 'high-performance'
+        });
+        renderer.setPixelRatio(2.0);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.22;
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFShadowMap;
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color('#38bdf8');
+
+        // 2. Camera Setup (Portrait Lens, fov 35deg, framing waist up to head)
+        const camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.set(0.0, 1.15, 2.28);
+        camera.lookAt(0.0, 1.08, 0.0);
+
+        // 3. Atmosphere & Environment
+        // A. Radiant Anime Golden Hour Sunset Sky Dome
+        const skyGeo = new THREE.SphereGeometry(60, 32, 16);
+        const skyMat = new THREE.ShaderMaterial({
+            uniforms: {
+                topColor: { value: new THREE.Color('#38bdf8') },      // Crisp cerulean blue
+                horizonColor: { value: new THREE.Color('#f472b6') },  // Pastel sakura pink
+                bottomColor: { value: new THREE.Color('#fed7aa') },   // Soft warm peach gold
+                offset: { value: 12.0 },
+                exponent: { value: 0.55 }
+            },
+            vertexShader: `
+                varying vec3 vWorldPosition;
+                void main() {
+                    vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+                    vWorldPosition = worldPosition.xyz;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                uniform vec3 topColor;
+                uniform vec3 bottomColor;
+                uniform vec3 horizonColor;
+                uniform float offset;
+                uniform float exponent;
+                varying vec3 vWorldPosition;
+                void main() {
+                    float h = normalize(vWorldPosition + offset).y;
+                    vec3 col = mix(bottomColor, horizonColor, max(pow(max(h, 0.0), 0.45), 0.0));
+                    col = mix(col, topColor, max(pow(max(h, 0.0), exponent), 0.0));
+                    gl_FragColor = vec4(col, 1.0);
+                }
+            `,
+            side: THREE.BackSide
+        });
+        scene.add(new THREE.Mesh(skyGeo, skyMat));
+
+        // Soft Warm Ambient Glow (Golden hour horizon gradient)
+        // (Sun is represented by the radiant sky dome gradient and directional warm key light)
+
+        // B. Distant Mountain Silhouette (Soft lavender-blue Alpine Massif on Left Horizon)
+        const mtnGeo = new THREE.ConeGeometry(22, 10, 24);
+        const mtnMat = new THREE.MeshStandardMaterial({
+            color: new THREE.Color('#6366f1'),
+            roughness: 0.85,
+            metalness: 0.05
+        });
+        const mtn = new THREE.Mesh(mtnGeo, mtnMat);
+        mtn.position.set(-11, 1.2, -40);
+        mtn.scale.set(1.4, 0.9, 0.8);
+        scene.add(mtn);
+
+        // Snowy Peak on Left Mountain
+        const snowGeo = new THREE.ConeGeometry(6.6, 3.2, 24);
+        const snowMat = new THREE.MeshBasicMaterial({ color: 0xfff1f2 });
+        const snow = new THREE.Mesh(snowGeo, snowMat);
+        snow.position.set(-11, 4.9, -39.8);
+        snow.scale.set(1.4, 0.9, 0.8);
+        scene.add(snow);
+
+        // C. Rolling Green Countryside Hills in midground
+        const hillMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, roughness: 0.9 });
+        const hill1 = new THREE.Mesh(new THREE.SphereGeometry(20, 24, 12), hillMat);
+        hill1.position.set(13, -13, -28);
+        hill1.scale.set(1.8, 0.65, 1);
+        scene.add(hill1);
+
+        const hill2 = new THREE.Mesh(new THREE.SphereGeometry(18, 24, 12), hillMat);
+        hill2.position.set(-16, -12, -26);
+        hill2.scale.set(1.6, 0.75, 1);
+        scene.add(hill2);
+
+        // D. Wooden Co-Working Deck (Ground)
+        const deckGeo = new THREE.BoxGeometry(7.0, 0.4, 5.5);
+        const deckCanvas = document.createElement('canvas');
+        deckCanvas.width = 512;
+        deckCanvas.height = 512;
+        const dctx = deckCanvas.getContext('2d');
+        dctx.fillStyle = '#92400e';
+        dctx.fillRect(0, 0, 512, 512);
+        dctx.fillStyle = '#78350f';
+        for (let i = 0; i < 512; i += 32) {
+            dctx.fillRect(0, i, 512, 3);
+        }
+        for (let i = 0; i < 600; i++) {
+            dctx.fillStyle = Math.random() > 0.5 ? 'rgba(50,30,10,0.18)' : 'rgba(230,180,120,0.15)';
+            dctx.fillRect(Math.random() * 512, Math.random() * 512, Math.random() * 80, 2);
+        }
+        const deckTex = new THREE.CanvasTexture(deckCanvas);
+        deckTex.wrapS = THREE.RepeatWrapping;
+        deckTex.wrapT = THREE.RepeatWrapping;
+        deckTex.repeat.set(4, 3);
+        const deckMat = new THREE.MeshStandardMaterial({
+            map: deckTex,
+            roughness: 0.68,
+            metalness: 0.05
+        });
+        const deck = new THREE.Mesh(deckGeo, deckMat);
+        deck.position.set(0, -0.2, 0);
+        deck.receiveShadow = true;
+        scene.add(deck);
+
+        // Wooden Deck Railing sitting gracefully below characters' waists
+        const railMat = new THREE.MeshStandardMaterial({ color: 0x5c2b0c, roughness: 0.7 });
+        const topRail = new THREE.Mesh(new THREE.BoxGeometry(6.0, 0.06, 0.06), railMat);
+        topRail.position.set(0, 0.50, -1.2);
+        scene.add(topRail);
+        const midRail = new THREE.Mesh(new THREE.BoxGeometry(6.0, 0.05, 0.05), railMat);
+        midRail.position.set(0, 0.25, -1.2);
+        scene.add(midRail);
+        for (let rx = -2.8; rx <= 2.8; rx += 0.8) {
+            const post = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.62, 0.08), railMat);
+            post.position.set(rx, 0.26, -1.2);
+            scene.add(post);
+        }
+
+        // Japanese Wooden Lanterns with warm glow
+        function buildLantern(lx, lz) {
+            const lGroup = new THREE.Group();
+            lGroup.position.set(lx, 0.50, lz);
+            const woodMat = new THREE.MeshStandardMaterial({ color: 0x3e2723, roughness: 0.8 });
+            const glowMat = new THREE.MeshBasicMaterial({ color: 0xfef08a });
+
+            const base = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.05, 0.16), woodMat);
+            lGroup.add(base);
+            const paper = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.20, 0.12), glowMat);
+            paper.position.y = 0.12;
+            lGroup.add(paper);
+            const roof = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.10, 4), woodMat);
+            roof.position.y = 0.27;
+            roof.rotation.y = Math.PI / 4;
+            lGroup.add(roof);
+
+            const pLight = new THREE.PointLight(0xfef08a, 0.6, 2.5);
+            pLight.position.y = 0.12;
+            lGroup.add(pLight);
+            return lGroup;
+        }
+        scene.add(buildLantern(-2.4, -1.15));
+        scene.add(buildLantern(2.4, -1.15));
+
+        // E. Full Blooming Sakura Trees Flanking the Left & Right with Lush Clouds
+        function buildSakuraTree(x, z, scaleX = 1) {
+            const tree = new THREE.Group();
+            tree.position.set(x, 0, z);
+
+            const barkMat = new THREE.MeshStandardMaterial({ color: 0x4a2e1b, roughness: 0.9 });
+            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.16, 3.2, 8), barkMat);
+            trunk.position.set(0, 1.4, 0);
+            trunk.rotation.z = -0.15 * scaleX;
+            tree.add(trunk);
+
+            // Arching branch extending over top corner
+            const b1 = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.07, 2.0, 8), barkMat);
+            b1.position.set(0.7 * scaleX, 1.95, 0.2);
+            b1.rotation.z = -1.25 * scaleX;
+            tree.add(b1);
+
+            // Delicate watercolor petal puffs framing top corners
+            const petalMat = new THREE.MeshStandardMaterial({
+                color: 0xfce7f3,
+                emissive: 0xf472b6,
+                emissiveIntensity: 0.35,
+                roughness: 0.55
+            });
+            const coreMat = new THREE.MeshStandardMaterial({
+                color: 0xfbcfe8,
+                emissive: 0xf43f5e,
+                emissiveIntensity: 0.40,
+                roughness: 0.50
+            });
+
+            for (let i = 0; i < 55; i++) {
+                const isCore = Math.random() > 0.6;
+                const r = 0.08 + Math.random() * 0.14;
+                const puff = new THREE.Mesh(
+                    new THREE.SphereGeometry(r, 8, 8),
+                    isCore ? coreMat : petalMat
+                );
+                puff.position.set(
+                    (0.3 + Math.random() * 1.3) * scaleX,
+                    1.70 + Math.random() * 0.55,
+                    -0.2 + Math.random() * 0.6
+                );
+                puff.scale.set(1.2, 0.85, 1.0);
+                tree.add(puff);
+            }
+            return tree;
+        }
+
+        scene.add(buildSakuraTree(-2.3, -0.5, 1));
+        scene.add(buildSakuraTree(2.3, -0.5, -1));
+
+        // F. Floating Sakura Petals
+        const petalGeo = new THREE.BufferGeometry();
+        const petalCount = 200;
+        const petalPos = new Float32Array(petalCount * 3);
+        for (let i = 0; i < petalCount * 3; i += 3) {
+            petalPos[i] = (Math.random() - 0.5) * 4.6;
+            petalPos[i + 1] = 0.2 + Math.random() * 2.2;
+            petalPos[i + 2] = -0.5 + Math.random() * 2.5;
+        }
+        petalGeo.setAttribute('position', new THREE.BufferAttribute(petalPos, 3));
+        const particleMat = new THREE.PointsMaterial({
+            color: 0xf472b6,
+            size: 0.038,
+            transparent: true,
+            opacity: 0.9
+        });
+        const petalParticles = new THREE.Points(petalGeo, particleMat);
+        scene.add(petalParticles);
+
+        // 4. Lighting Rig
+        // Main Key Light
+        const sunLight = new THREE.DirectionalLight(0xfff7ed, 2.0);
+        sunLight.position.set(2.4, 4.0, 3.2);
+        sunLight.castShadow = true;
+        sunLight.shadow.mapSize.width = 2048;
+        sunLight.shadow.mapSize.height = 2048;
+        sunLight.shadow.bias = -0.0005;
+        scene.add(sunLight);
+
+        // Sky Ambient Hemisphere
+        const hemiLight = new THREE.HemisphereLight(0xe0f2fe, 0xfef08a, 1.1);
+        scene.add(hemiLight);
+
+        // Golden Rim Light from behind
+        const rimLight = new THREE.DirectionalLight(0xf59e0b, 2.2);
+        rimLight.position.set(-1.6, 2.6, -3.0);
+        scene.add(rimLight);
+
+        // Soft front face-fill light so cute expressions shine
+        const faceFill = new THREE.DirectionalLight(0xfff1f2, 0.95);
+        faceFill.position.set(0, 1.25, 3.0);
+        scene.add(faceFill);
+
+        // 5. Palettes Definition for all 5 characters
+        const PALETTES = {
+            kaede: {
+                hair: new THREE.Color('#d97706'),
+                brow: new THREE.Color('#b45309'),
+                eyes: new THREE.Color('#f59e0b'),
+                dress: new THREE.Color('#064e3b'),
+                ruffles: new THREE.Color('#78350f'),
+                ribbon: new THREE.Color('#b45309'),
+                shoes: new THREE.Color('#451a03'),
+                shoesTrim: new THREE.Color('#92400e')
+            },
+            ren: {
+                hair: new THREE.Color('#8b5cf6'),
+                brow: new THREE.Color('#7c3aed'),
+                eyes: new THREE.Color('#c084fc'),
+                dress: new THREE.Color('#1e1b4b'),
+                ruffles: new THREE.Color('#312e81'),
+                ribbon: new THREE.Color('#a855f7'),
+                shoes: new THREE.Color('#18181b'),
+                shoesTrim: new THREE.Color('#6366f1')
+            },
+            developer: {
+                hair: new THREE.Color('#334155'), // Soft slate cyber black with blue sheen
+                brow: new THREE.Color('#1e293b'),
+                eyes: new THREE.Color('#38bdf8'), // Radiant cyan eyes
+                dress: new THREE.Color('#0f172a'), // Cyber jacket
+                ruffles: new THREE.Color('#1e293b'),
+                ribbon: new THREE.Color('#00f0ff'), // Glowing cyan trim
+                shoes: new THREE.Color('#020617'),
+                shoesTrim: new THREE.Color('#00f0ff')
+            },
+            sakura: {
+                hair: new THREE.Color('#f472b6'),
+                brow: new THREE.Color('#fb7185'),
+                eyes: new THREE.Color('#fb7185'),
+                dress: new THREE.Color('#fce7f3'),
+                ruffles: new THREE.Color('#fff1f2'),
+                ribbon: new THREE.Color('#f43f5e'),
+                shoes: new THREE.Color('#e11d48'),
+                shoesTrim: new THREE.Color('#fda4af')
+            },
+            lumina: {
+                hair: new THREE.Color('#dbeafe'),
+                brow: new THREE.Color('#93c5fd'),
+                eyes: new THREE.Color('#00f0ff'),
+                dress: new THREE.Color('#1e293b'),
+                ruffles: new THREE.Color('#cbd5e1'),
+                ribbon: new THREE.Color('#00f0ff'),
+                shoes: new THREE.Color('#0f172a'),
+                shoesTrim: new THREE.Color('#38bdf8')
+            }
+        };
+
+        // 6. Accessories
+        function createSakuraAccessory() {
+            const group = new THREE.Group();
+            group.position.set(-0.085, 0.085, 0.045);
+            group.rotation.set(0.2, -0.6, 0.4);
+            const petalMat = new THREE.MeshStandardMaterial({
+                color: 0xf472b6,
+                emissive: 0xfb7185,
+                emissiveIntensity: 0.35,
+                roughness: 0.4
+            });
+            for (let i = 0; i < 5; i++) {
+                const angle = (i * Math.PI * 2) / 5;
+                const p = new THREE.Mesh(new THREE.ConeGeometry(0.015, 0.034, 6), petalMat);
+                p.rotation.z = angle + Math.PI / 2;
+                p.position.set(Math.cos(angle) * 0.016, Math.sin(angle) * 0.016, 0);
+                group.add(p);
+            }
+            const coreMat = new THREE.MeshStandardMaterial({ color: 0xfef08a, emissive: 0xfacc15, emissiveIntensity: 0.5 });
+            group.add(new THREE.Mesh(new THREE.SphereGeometry(0.01, 8, 8), coreMat));
+            return group;
+        }
+
+        function createLuminaAccessory() {
+            const group = new THREE.Group();
+            const clipMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.9, roughness: 0.2 });
+            const clip = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.04, 0.03), clipMat);
+            clip.position.set(0.088, 0.05, 0.04);
+            group.add(clip);
+            const visorGeo = new THREE.CylinderGeometry(0.098, 0.098, 0.032, 24, 1, true, -Math.PI * 0.15, Math.PI * 0.45);
+            const visorMat = new THREE.MeshStandardMaterial({
+                color: 0x00f0ff,
+                emissive: 0x00f0ff,
+                emissiveIntensity: 0.9,
+                transparent: true,
+                opacity: 0.8,
+                roughness: 0.1,
+                side: THREE.DoubleSide
+            });
+            const visor = new THREE.Mesh(visorGeo, visorMat);
+            visor.position.set(0.0, 0.048, 0.015);
+            group.add(visor);
+            return group;
+        }
+
+        function createKaedeAccessory() {
+            const group = new THREE.Group();
+            group.position.set(0.0, 0.088, 0.082);
+            group.rotation.set(-0.35, 0, 0);
+            const brassMat = new THREE.MeshStandardMaterial({ color: 0xb45309, metalness: 0.8, roughness: 0.3 });
+            const lensMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 0.4, transparent: true, opacity: 0.85 });
+            const leftRim = new THREE.Mesh(new THREE.TorusGeometry(0.024, 0.007, 8, 16), brassMat);
+            leftRim.position.set(-0.038, 0, 0);
+            group.add(leftRim);
+            const leftLens = new THREE.Mesh(new THREE.CircleGeometry(0.022, 16), lensMat);
+            leftLens.position.set(-0.038, 0, 0.002);
+            group.add(leftLens);
+            const rightRim = new THREE.Mesh(new THREE.TorusGeometry(0.024, 0.007, 8, 16), brassMat);
+            rightRim.position.set(0.038, 0, 0);
+            group.add(rightRim);
+            const rightLens = new THREE.Mesh(new THREE.CircleGeometry(0.022, 16), lensMat);
+            rightLens.position.set(0.038, 0, 0.002);
+            group.add(rightLens);
+            return group;
+        }
+
+        function createRenAccessory() {
+            const group = new THREE.Group();
+            group.position.set(0.088, 0.08, 0.035);
+            group.rotation.set(-0.2, 0.6, -0.3);
+            const barretteMat = new THREE.MeshStandardMaterial({ color: 0x1e1b4b, metalness: 0.9, roughness: 0.2 });
+            group.add(new THREE.Mesh(new THREE.BoxGeometry(0.01, 0.045, 0.012), barretteMat));
+            const gemMat = new THREE.MeshStandardMaterial({ color: 0x8b5cf6, emissive: 0xa855f7, emissiveIntensity: 0.8 });
+            const gem = new THREE.Mesh(new THREE.OctahedronGeometry(0.018, 0), gemMat);
+            gem.position.set(0.008, 0.0, 0.002);
+            group.add(gem);
+            return group;
+        }
+
+        function createDeveloperAccessory() {
+            const group = new THREE.Group();
+            const bandMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.8, roughness: 0.3 });
+            const cyanMat = new THREE.MeshStandardMaterial({ color: 0x00f0ff, emissive: 0x00f0ff, emissiveIntensity: 0.9 });
+            const earR = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.02, 12), bandMat);
+            earR.rotation.z = Math.PI / 2;
+            earR.position.set(0.095, 0.04, 0.01);
+            group.add(earR);
+            const glowDot = new THREE.Mesh(new THREE.SphereGeometry(0.009, 8, 8), cyanMat);
+            glowDot.position.set(0.108, 0.04, 0.01);
+            group.add(glowDot);
+            return group;
+        }
+
+        // Helper to apply Facial Morph Targets (Expressions)
+        function applyExpression(charModel, morphMap) {
+            charModel.traverse(child => {
+                if (child.isMesh && child.morphTargetDictionary && child.morphTargetInfluences) {
+                    for (const [name, val] of Object.entries(morphMap)) {
+                        const idx = child.morphTargetDictionary[name];
+                        if (idx !== undefined) {
+                            child.morphTargetInfluences[idx] = val;
+                        }
+                    }
+                }
+            });
+        }
+
+        // 7. Load GLB Model & Build Characters
+        statusHud.textContent = 'Loading in-game GLTF anime model...';
+        const loader = new GLTFLoader();
+
+        loader.load('/models/anime-character.glb', (gltf) => {
+            statusHud.textContent = 'Staging Characters, Expressions & Cute Poses...';
+            const baseModel = gltf.scene;
+
+            baseModel.traverse(child => {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                    if (child.material) {
+                        const m = child.material;
+                        m.roughness = 0.72;
+                        m.metalness = 0.05;
+                    }
+                }
+            });
+
+            function cloneCharacter(id, palette, accessoryCreator) {
+                const char = SkeletonUtils.clone(baseModel);
+                const localBones = {};
+                char.traverse(b => {
+                    if (b.isBone) localBones[b.name] = b;
+                });
+
+                char.traverse(child => {
+                    if (child.isSkinnedMesh) {
+                        child.frustumCulled = false;
+                        if (child.skeleton && child.skeleton.bones) {
+                            const cleanBones = child.skeleton.bones.map(b => localBones[b.name] || localBones['J_Bip_C_Hips'] || char);
+                            child.bind(new THREE.Skeleton(cleanBones, child.skeleton.boneInverses), child.bindMatrix);
+                        }
+                        if (child.material) {
+                            child.material = Array.isArray(child.material) ? child.material.map(m => m.clone()) : child.material.clone();
+                            const mats = Array.isArray(child.material) ? child.material : [child.material];
+                            mats.forEach(mat => {
+                                const name = mat.name || '';
+                                if (name.includes('HAIR')) mat.color.copy(palette.hair);
+                                else if (name.includes('FaceBrow')) mat.color.copy(palette.brow);
+                                else if (name.includes('EyeIris')) mat.color.copy(palette.eyes);
+                                else if (name.includes('Onepiece_00_CLOTH_01') || name.includes('Tops_01_CLOTH_01')) mat.color.copy(palette.dress);
+                                else if (name.includes('CLOTH_02') || name.includes('CLOTH_03')) mat.color.copy(palette.ruffles);
+                                else if (name.includes('CLOTH_04')) mat.color.copy(palette.ribbon);
+                                else if (name.includes('Shoes_01_CLOTH_01')) mat.color.copy(palette.shoes);
+                                else if (name.includes('Shoes_01_CLOTH_02')) mat.color.copy(palette.shoesTrim);
+                            });
+                        }
+                    }
+                });
+
+                const { mapped } = HumanoidContract.mapSkeleton(char);
+                if (mapped.Head && accessoryCreator) {
+                    const acc = accessoryCreator();
+                    mapped.Head.add(acc);
+                }
+
+                return { model: char, bones: mapped };
+            }
+
+            // Create All 5 Characters
+            const cKaede = cloneCharacter('kaede', PALETTES.kaede, createKaedeAccessory);
+            const cRen = cloneCharacter('ren', PALETTES.ren, createRenAccessory);
+            const cDev = cloneCharacter('developer', PALETTES.developer, createDeveloperAccessory);
+            const cSakura = cloneCharacter('sakura', PALETTES.sakura, createSakuraAccessory);
+            const cLumina = cloneCharacter('lumina', PALETTES.lumina, createLuminaAccessory);
+
+            // Positioning: Tight, intimate, shoulder-to-shoulder group photo arrangement!
+            // 1. Kaede (Far Left)
+            cKaede.model.position.set(-0.72, 0, 0.04);
+            cKaede.model.rotation.y = 0.15;
+            scene.add(cKaede.model);
+
+            // 2. Ren (Left of Dev)
+            cRen.model.position.set(-0.36, 0, 0.02);
+            cRen.model.rotation.y = 0.06;
+            scene.add(cRen.model);
+
+            // 3. Developer (Center Stage - proudly forward)
+            cDev.model.position.set(0.0, 0, 0.10);
+            cDev.model.rotation.y = 0.0;
+            scene.add(cDev.model);
+
+            // 4. Sakura (Right of Dev)
+            cSakura.model.position.set(0.36, 0, 0.02);
+            cSakura.model.rotation.y = -0.06;
+            scene.add(cSakura.model);
+
+            // 5. Lumina (Far Right)
+            cLumina.model.position.set(0.72, 0, 0.04);
+            cLumina.model.rotation.y = -0.15;
+            scene.add(cLumina.model);
+
+            // Set natural baseline resting posture for arms (from in-game solveIdle)
+            function setBasePose(b) {
+                if (b.Hips) b.Hips.position.y = 0.75;
+                if (b.LeftUpperArm) b.LeftUpperArm.rotation.set(-0.16, 0.08, -1.06);
+                if (b.RightUpperArm) b.RightUpperArm.rotation.set(-0.16, -0.08, 1.06);
+                if (b.LeftLowerArm) b.LeftLowerArm.rotation.set(-0.12, -0.24, 0.06);
+                if (b.RightLowerArm) b.RightLowerArm.rotation.set(-0.12, 0.24, -0.06);
+            }
+            [cKaede, cRen, cDev, cSakura, cLumina].forEach(c => setBasePose(c.bones));
+
+            // --- 1. SAKURA: Adorable Head Tilt Leaning on Dev + Winking Eye ---
+            applyExpression(cSakura.model, {
+                Fcl_ALL_Joy: 0.92,
+                Fcl_EYE_Close_R: 0.98, // Cute Winking Right Eye!
+                Fcl_MTH_Up: 0.88        // Beaming Smile
+            });
+            if (cSakura.bones.Spine) cSakura.bones.Spine.rotation.set(0.02, 0.03, -0.04);
+            if (cSakura.bones.Head) cSakura.bones.Head.rotation.set(-0.04, -0.04, -0.18); // Leaning cute toward Dev!
+            // Modest idol knees stance
+            if (cSakura.bones.LeftUpperLeg) cSakura.bones.LeftUpperLeg.rotation.set(0, 0, 0.03);
+            if (cSakura.bones.RightUpperLeg) cSakura.bones.RightUpperLeg.rotation.set(0, 0, -0.03);
+
+            // --- 2. DEVELOPER: Proud Confident Center Smile ---
+            applyExpression(cDev.model, {
+                Fcl_ALL_Joy: 0.85,
+                Fcl_MTH_Up: 0.80
+            });
+            if (cDev.bones.Head) cDev.bones.Head.rotation.set(0.0, 0.0, -0.02);
+            if (cDev.bones.Chest) cDev.bones.Chest.rotation.set(0.03, 0.0, 0.0);
+
+            // --- 3. LUMINA: Gentle Sweet Smile + Sweet Head Tilt ---
+            applyExpression(cLumina.model, {
+                Fcl_ALL_Fun: 0.80,
+                Fcl_MTH_Up: 0.72
+            });
+            if (cLumina.bones.Head) cLumina.bones.Head.rotation.set(-0.03, -0.05, 0.14);
+            if (cLumina.bones.Spine) cLumina.bones.Spine.rotation.set(0.02, -0.02, 0.04);
+
+            // --- 4. KAEDE: Energetic Cheerful Grin + Energetic Tilt ---
+            applyExpression(cKaede.model, {
+                Fcl_ALL_Fun: 0.95,
+                Fcl_MTH_Up: 0.95
+            });
+            if (cKaede.bones.Head) cKaede.bones.Head.rotation.set(-0.04, 0.05, -0.12);
+            if (cKaede.bones.Spine) cKaede.bones.Spine.rotation.set(0.02, -0.02, -0.04);
+
+            // --- 5. REN: Charming Cool Smirk + Relaxed Cool Posture ---
+            applyExpression(cRen.model, {
+                Fcl_ALL_Joy: 0.70,
+                Fcl_MTH_Up: 0.60
+            });
+            if (cRen.bones.Head) cRen.bones.Head.rotation.set(0.02, 0.03, 0.08);
+            if (cRen.bones.Spine) cRen.bones.Spine.rotation.set(0.01, 0.02, 0.04);
+
+            // Render Frame
+            renderer.render(scene, camera);
+            statusHud.textContent = '3D Photo Scene Ready! (5 In-Game Characters with Expressions & Cute Poses)';
+            window.__photoSceneReady = true;
+
+            // Render loop for smooth visuals
+            let clock = new THREE.Clock();
+            function animate() {
+                requestAnimationFrame(animate);
+                const t = clock.getElapsedTime();
+                const pos = petalGeo.attributes.position.array;
+                for (let i = 1; i < petalCount * 3; i += 3) {
+                    pos[i] -= 0.003;
+                    if (pos[i] < 0.1) pos[i] = 2.2;
+                }
+                petalGeo.attributes.position.needsUpdate = true;
+                renderer.render(scene, camera);
+            }
+            animate();
+        }, (xhr) => {
+            const pct = Math.round((xhr.loaded / (xhr.total || 20916440)) * 100);
+            statusHud.textContent = `Loading GLTF 3D Model: ${pct}%...`;
+        }, (err) => {
+            console.error('Failed to load GLTF model:', err);
+            statusHud.textContent = 'Error loading 3D model: ' + err.message;
+        });
+
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>

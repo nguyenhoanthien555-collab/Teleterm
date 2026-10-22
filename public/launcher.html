@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeleTerm — Official Desktop Launcher</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <!-- CSS -->
+    <link rel="stylesheet" href="/style.css?v=26">
+    <link rel="stylesheet" href="/css/desktop-launcher.css?v=2">
+    <script src="/js/ui/teleterm-icons.js?v=26"></script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: #04070e;
+            user-select: none;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            color: #f8fafc;
+        }
+
+        .standalone-launcher-window {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 50px 52px 32px 52px;
+            box-sizing: border-box;
+            background: radial-gradient(circle at 50% 45%, rgba(15, 23, 42, 0.18) 0%, rgba(4, 7, 14, 0.42) 65%, rgba(3, 6, 10, 0.72) 100%),
+                        linear-gradient(to top, rgba(2, 4, 8, 0.65) 0%, transparent 25%),
+                        linear-gradient(to bottom, rgba(2, 4, 8, 0.55) 0%, transparent 20%),
+                        url('/anime-world-preview.png') no-repeat center center / cover;
+            overflow: hidden;
+        }
+
+        /* Frameless Titlebar */
+        .standalone-titlebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 38px;
+            background: rgba(4, 7, 14, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10000;
+        }
+
+        .titlebar-drag-area {
+            -webkit-app-region: drag;
+            flex: 1;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            padding-left: 18px;
+            gap: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.12em;
+            color: #64748b;
+        }
+
+        .titlebar-brand-name {
+            color: #f1f5f9;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .titlebar-actions {
+            -webkit-app-region: no-drag;
+            display: flex;
+            height: 100%;
+        }
+
+        .tb-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            width: 46px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 11px;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+
+        .tb-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #f8fafc;
+        }
+
+        .tb-btn-close:hover {
+            background: #e11d48;
+            color: #ffffff;
+        }
+
+        /* Modals in standalone launcher */
+        .launcher-modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background: rgba(2, 4, 8, 0.75);
+            backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+            transition: opacity 0.25s ease;
+        }
+
+        .launcher-modal-overlay.hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body class="desktop-app launcher-active">
+
+    <!-- 1. Dedicated Frameless Titlebar -->
+    <header class="standalone-titlebar" id="desktop-titlebar">
+        <div class="titlebar-drag-area">
+            <span class="titlebar-brand-name">
+                <span class="tt-icon tt-icon-14 tt-icon-accent" data-icon="sparkles"></span> TELETERM LAUNCHER
+            </span>
+        </div>
+        <div class="titlebar-actions">
+            <button id="btn-tb-minimize" class="tb-btn" title="Minimize Window"><span class="tt-icon tt-icon-14" data-icon="minus"></span></button>
+            <button id="btn-tb-close" class="tb-btn tb-btn-close" title="Exit Launcher"><span class="tt-icon tt-icon-14" data-icon="x"></span></button>
+        </div>
+    </header>
+
+    <!-- 2. Standalone Launcher Viewport -->
+    <div class="standalone-launcher-window">
+
+        <!-- Sakura Canvas -->
+        <canvas id="launcher-petals-canvas" class="launcher-petals-canvas"></canvas>
+
+        <!-- Top Bar: Brand, Status & Settings Trigger -->
+        <header class="launcher-top-bar">
+            <div class="launcher-brand-mark">
+                <span class="brand-dot"></span>
+                <span>TELETERM 3D</span>
+            </div>
+            <div class="launcher-top-controls">
+                <div id="launcher-server-status" class="launcher-server-status status-connecting">
+                    <span class="status-dot"></span>
+                    <span id="launcher-server-text">Connecting</span>
+                </div>
+                <button id="btn-launcher-settings" class="launcher-btn-icon" title="Graphics & Display Settings"><span class="tt-icon tt-icon-16" data-icon="settings"></span></button>
+            </div>
+        </header>
+
+        <!-- Center Hero Anchor: START VIBING -->
+        <main class="launcher-hero-center">
+            <h1 class="launcher-hero-title">TELETERM</h1>
+            <p class="launcher-hero-subtitle">Enter the Cyber Valley</p>
+
+            <button id="btn-start-vibing" class="btn-start-vibing" autofocus>
+                <span>START VIBING</span>
+            </button>
+            <div class="vibing-subtext">Press [ Enter ] to launch</div>
+        </main>
+
+        <!-- Bottom Bar: Account Capsule & Metadata -->
+        <footer class="launcher-bottom-bar">
+            <div id="launcher-account-capsule" class="launcher-account-capsule" title="Click to manage account / sign in">
+                <div class="launcher-avatar-circle" id="launcher-avatar-circle"><span class="tt-icon tt-icon-18" data-icon="users"></span></div>
+                <div class="launcher-account-details">
+                    <span class="launcher-account-name" id="launcher-account-name">Traveler</span>
+                    <span class="launcher-account-rank" id="launcher-account-rank">Lv. 1 Novice</span>
+                </div>
+            </div>
+            <div class="launcher-meta-info">
+                <span>v5.0.0 • Desktop Client</span>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- 3. Launch Loader Overlay -->
+    <div id="launcher-launch-loader" class="launcher-launch-loader hidden">
+        <div class="launch-loader-text" id="launch-loader-title">WAKING THE VALLEY</div>
+        <div class="launch-loader-sub" id="launch-loader-sub">Connecting to ConPTY Gateway...</div>
+        <div class="launch-progress-track">
+            <div class="launch-progress-bar" id="launch-progress-bar" style="width: 20%;"></div>
+        </div>
+    </div>
+
+    <!-- 4. Login Modal -->
+    <div id="modal-launcher-login" class="launcher-modal-overlay hidden">
+        <div class="launcher-modal-card launcher-login-modal-card">
+            <button id="btn-close-login-modal" class="modal-close-btn login-modal-close" title="Close"><span class="tt-icon tt-icon-16" data-icon="x"></span></button>
+            
+            <div class="login-modal-header">
+                <h2 class="modal-title login-modal-title">TELETERM</h2>
+                <p class="modal-subtitle login-modal-subtitle">Welcome back. Your developer world is waiting.</p>
+            </div>
+
+            <div class="auth-btn-stack login-modal-actions">
+                <button id="btn-login-google" class="btn-auth-provider btn-oauth-provider btn-provider-google">
+                    <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.9C6.2 7.3 8.9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/><path fill="#FBBC05" d="M5.3 14.7c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.6 7.2C.6 9.2 0 11.5 0 14s.6 4.8 1.6 6.8l3.7-3.1z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.3-6.7-5.3L1.6 16C3.5 19.9 7.4 23 12 23z"/></svg>
+                    <span>Continue with Google</span>
+                </button>
+
+                <button id="btn-login-github" class="btn-auth-provider btn-oauth-provider btn-provider-github">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+                    <span>Continue with GitHub</span>
+                </button>
+                <button id="btn-logout-account" type="button" hidden style="margin-top:18px;color:#cbd5e1;background:transparent;border:1px solid #334155;padding:9px 12px;border-radius:8px">Sign out</button>
+                <button id="btn-delete-account" type="button" hidden style="margin-top:18px;color:#fda4af;background:transparent;border:1px solid #7f1d1d;padding:9px 12px;border-radius:8px">Delete account and game data</button>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Settings Modal (Includes 3 Screen Modes: Fullscreen, Borderless, Window) -->
+    <div id="modal-graphics-settings" class="launcher-modal-overlay hidden">
+        <div class="cyber-modal-card gfx-modal-card" style="max-width: 680px; width: 92%;">
+            <div class="modal-header">
+                <span class="modal-title" data-i18n="gfx_title"><span class="tt-icon tt-icon-18 tt-icon-accent" data-icon="palette"></span> <span class="tt-label">Graphics & Performance Settings</span></span>
+                <button id="btn-close-graphics-modal" class="modal-close-btn" title="Close"><span class="tt-icon tt-icon-16" data-icon="x"></span></button>
+            </div>
+            <div class="gfx-modal-body" style="max-height: 72vh; overflow-y: auto; padding: 18px 22px;">
+                
+                <!-- 0. Language Selector Setting -->
+                <div class="gfx-section-block">
+                    <div class="gfx-section-label" data-i18n="gfx_lang_label"><span class="tt-icon tt-icon-16" data-icon="globe"></span> <span class="tt-label">Interface Language / Ngôn Ngữ</span></div>
+                    <div class="gfx-field-desc" data-i18n="gfx_lang_desc">Select preferred language (saved in localStorage)</div>
+                    <div style="margin-top: 6px;">
+                        <select id="gfx-language-select" class="gfx-select" style="max-width: 260px; cursor: pointer;">
+                            <option value="en">English (Default)</option>
+                            <option value="vi">Tiếng Việt</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 1. Display Mode Selector (Fullscreen, Borderless, Window) -->
+                <div class="gfx-section-block">
+                    <div class="gfx-section-label" data-i18n="gfx_display_mode_section"><span class="tt-icon tt-icon-16" data-icon="monitor"></span> <span class="tt-label">1. Display Mode / Chế Độ Hiển Thị</span></div>
+                    <div class="gfx-field-desc" data-i18n="gfx_display_mode_desc">Choose between Fullscreen, Borderless Windowed, and standard Windowed modes</div>
+                    <div class="gfx-display-mode-toggle">
+                        <button id="gfx-mode-fullscreen" class="gfx-mode-btn" type="button" data-mode="fullscreen">
+                            <span class="gfx-icon"><span class="tt-icon tt-icon-20" data-icon="maximize-2"></span></span>
+                            <div class="gfx-btn-text">
+                                <div class="gfx-btn-main" data-i18n="gfx_mode_fullscreen">Fullscreen</div>
+                                <div class="gfx-btn-sub" data-i18n="gfx_mode_fullscreen_sub">Exclusive Fullscreen • Max Immersion</div>
+                            </div>
+                        </button>
+                        <button id="gfx-mode-borderless" class="gfx-mode-btn active" type="button" data-mode="borderless">
+                            <span class="gfx-icon"><span class="tt-icon tt-icon-20" data-icon="app-window"></span></span>
+                            <div class="gfx-btn-text">
+                                <div class="gfx-btn-main" data-i18n="gfx_mode_borderless">Borderless</div>
+                                <div class="gfx-btn-sub" data-i18n="gfx_mode_borderless_sub">Borderless Window • Instant Alt+Tab</div>
+                            </div>
+                        </button>
+                        <button id="gfx-mode-window" class="gfx-mode-btn" type="button" data-mode="window">
+                            <span class="gfx-icon"><span class="tt-icon tt-icon-20" data-icon="square"></span></span>
+                            <div class="gfx-btn-text">
+                                <div class="gfx-btn-main" data-i18n="gfx_mode_window">Window</div>
+                                <div class="gfx-btn-sub" data-i18n="gfx_mode_window_sub">Floating Window • Flexible Resizing</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. Platform Profile Switcher -->
+                <div class="gfx-section-block">
+                    <div class="gfx-section-label" data-i18n="gfx_profile_section">2. Platform Profile</div>
+                    <div class="gfx-platform-toggle">
+                        <button id="gfx-platform-pc" class="gfx-platform-btn active" type="button">
+                            <span class="gfx-icon"><span class="tt-icon tt-icon-20" data-icon="monitor"></span></span>
+                            <div class="gfx-btn-text">
+                                <div class="gfx-btn-main" data-i18n="gfx_profile_pc">PC Graphics</div>
+                                <div class="gfx-btn-sub" data-i18n="gfx_profile_pc_desc">High resolution, full shaders & dynamic shadows</div>
+                            </div>
+                        </button>
+                        <button id="gfx-platform-mobile" class="gfx-platform-btn" type="button">
+                            <span class="gfx-icon"><span class="tt-icon tt-icon-20" data-icon="smartphone"></span></span>
+                            <div class="gfx-btn-text">
+                                <div class="gfx-btn-main" data-i18n="gfx_profile_mobile">Mobile Graphics</div>
+                                <div class="gfx-btn-sub" data-i18n="gfx_profile_mobile_desc">Cool thermals, battery saver, prevents overheating</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. Quality Presets -->
+                <div class="gfx-section-block">
+                    <div class="gfx-section-label" data-i18n="gfx_presets_section">3. Quick Quality Presets</div>
+                    <div class="gfx-presets-row">
+                        <button id="gfx-preset-low" class="gfx-preset-btn" type="button" data-i18n="preset_btn_low">Low</button>
+                        <button id="gfx-preset-medium" class="gfx-preset-btn" type="button" data-i18n="preset_btn_medium">Medium</button>
+                        <button id="gfx-preset-high" class="gfx-preset-btn active" type="button" data-i18n="preset_btn_high">High</button>
+                        <button id="gfx-preset-max" class="gfx-preset-btn" type="button" data-i18n="preset_btn_max">Max / Ultra</button>
+                        <button id="gfx-preset-custom" class="gfx-preset-btn" type="button" data-i18n="preset_btn_custom">Custom</button>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer gfx-modal-footer">
+                <button id="btn-reset-graphics-settings" class="cyber-btn-outline" type="button" data-i18n="gfx_btn_reset"><span class="tt-icon tt-icon-14" data-icon="rotate-ccw"></span> <span class="tt-label">Restore Defaults</span></button>
+                <button id="btn-done-graphics-settings" class="cyber-btn-primary" type="button" data-i18n="gfx_btn_done"><span class="tt-icon tt-icon-14" data-icon="check"></span> <span class="tt-label">Apply & Close</span></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module">
+        import { UniversalPlatformAdapter } from '/js/platform/teleterm-platform.js';
+        import { TRANSLATIONS } from '/js/i18n.js';
+        import { GraphicsSettingsManager } from '/js/ui/graphics-settings-manager.js';
+
+        // 1. Initialize Platform Adapter
+        window.TeleTermPlatform = new UniversalPlatformAdapter();
+
+        // 2. Initialize i18n
+        class I18nManager {
+            constructor() {
+                this.lang = localStorage.getItem('teleterm_language') || 'en';
+                this.applyLanguage(this.lang);
+            }
+            getLanguage() { return this.lang; }
+            setLanguage(l) {
+                this.lang = l;
+                localStorage.setItem('teleterm_language', l);
+                this.applyLanguage(l);
+                window.dispatchEvent(new CustomEvent('teleterm-language-changed', { detail: { language: l } }));
+            }
+            t(key, params = {}) {
+                let text = TRANSLATIONS[this.lang]?.[key] || TRANSLATIONS.en?.[key] || key;
+                for (const [k, v] of Object.entries(params)) {
+                    text = text.replace(`{${k}}`, v);
+                }
+                return text;
+            }
+            applyLanguage(l) {
+                document.querySelectorAll('[data-i18n]').forEach(el => {
+                    const k = el.getAttribute('data-i18n');
+                    if (k) el.textContent = this.t(k);
+                });
+            }
+        }
+        window.TeleTermI18n = new I18nManager();
+
+        // 3. Initialize Graphics / Display Settings
+        window.graphicsSettingsManager = new GraphicsSettingsManager({
+            onToast: (msg, type) => console.log(`[Settings] ${type}: ${msg}`)
+        });
+
+        // 4. Standalone Launcher Script Logic
+        import('/js/launcher/standalone-launcher.js').then(({ initStandaloneLauncher }) => {
+            initStandaloneLauncher();
+        });
+    </script>
+</body>
+</html>

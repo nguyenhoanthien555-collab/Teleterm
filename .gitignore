@@ -1,0 +1,64 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment variables & secrets (CRITICAL: DO NOT COMMIT)
+.env
+.env.*
+!.env.example
+.tokens.json
+.active_target_email.txt
+.desktop_sessions.json
+.tunnel_session.json
+.profiles.json
+.dev_metaverse_profiles.json
+
+# Database & local tools
+marketintel.db*
+gemini-web-to-api/
+.flowseeker/
+.gemini/
+
+# Build artifacts & binary executables
+dist/
+build/win-unpacked/
+*.exe
+bin/cloudflared.exe
+
+# Logs and runtime sessions
+logs/
+*.log
+
+# Scratch, temp scripts & local shortcuts
+scratch/
+scratch*
+_*.ps1
+*.lnk
+extracted_prompt*.txt
+repair.js
+test_resolve.js
+test-toggle.js
+test-mobile-experience.js
+test-final-preview.js
+test-world-view.js
+find-public-emojis.*
+argon_*.md
+
+# Screenshots & Images
+*.png
+*.jpg
+*.jpeg
+!public/assets/**/*.png
+!public/textures/**/*.png
+!public/icons/**/*.png
+!public/favicon.png
+!build/*.png
+public/teleterm_qr.png
+
+# OS / Editor junk
+*.bak
+*.tmp
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

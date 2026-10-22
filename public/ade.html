@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeleTerm ADE — Agentic Development Environment</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23da7756' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polygon points='13 2 3 14 12 14 11 22 21 10 12 10 13 2'></polygon></svg>">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Vendor CSS -->
+    <link rel="stylesheet" href="/vendor/xterm/xterm/css/xterm.css">
+    <!-- ADE Master CSS -->
+    <link rel="stylesheet" href="/css/ade.css?v=1">
+</head>
+<body>
+    <div id="ade-app">
+        <!-- 1. TOP BAR -->
+        <header class="ade-topbar">
+            <div class="topbar-left">
+                <div class="ade-logo">
+                    <span class="ade-logo-icon"><span class="tt-icon" data-icon="terminal" data-size="16" style="color:#da7756;"></span></span>
+                    <span>TeleTerm ADE</span>
+                </div>
+                <div class="workspace-badge">
+                    <span><span class="tt-icon" data-icon="folder" data-size="14" style="margin-right:4px;"></span></span>
+                    <span id="workspace-name">Loading...</span>
+                </div>
+                <div id="topbar-git-badge" class="git-badge">
+                    <span><span class="tt-icon" data-icon="compass" data-size="13" style="margin-right:4px;"></span></span>
+                    <span id="git-branch-name">main</span>
+                </div>
+            </div>
+
+            <div class="topbar-center">
+                <button id="btn-quick-open-trigger" class="ade-quick-open-pill" title="Quick Open File (Ctrl+P)">
+                    <span><span class="tt-icon" data-icon="search" data-size="13" style="margin-right:4px;"></span></span>
+                    <span>Files</span>
+                    <kbd>Ctrl+P</kbd>
+                </button>
+                <button id="btn-symbol-outline-trigger" class="ade-quick-open-pill" title="Symbol Outline (Ctrl+Shift+O)">
+                    <span><span class="tt-icon" data-icon="tag" data-size="13" style="margin-right:4px;"></span></span>
+                    <span>Symbols</span>
+                    <kbd>Ctrl+Shift+O</kbd>
+                </button>
+                <div class="session-indicator">
+                    <span id="agent-status-dot" class="status-dot idle"></span>
+                    <span id="agent-status-text">IDLE</span>
+                </div>
+                <select id="select-agent-provider" class="ade-select" title="Active AI Engine">
+                    <option value="universal">Universal Agent</option>
+                    <option value="codex">OpenAI Codex</option>
+                    <option value="antigravity">Google Antigravity</option>
+                </select>
+                <select id="select-permission-policy" class="ade-select" title="Permission Policy">
+                    <option value="ASK_OUTSIDE_SCOPE">Policy: Ask Outside Scope</option>
+                    <option value="ASK_ALWAYS">Policy: Ask Always</option>
+                    <option value="AUTO_APPROVE">Policy: Auto Approve</option>
+                    <option value="DENY">Policy: Read Only</option>
+                </select>
+            </div>
+
+            <div class="topbar-right">
+                <span id="topbar-conn-status" class="conn-pill">● Connecting...</span>
+                <button id="btn-run-tests" class="ade-btn ade-btn-sm" title="Run Workspace Tests"><span class="tt-icon" data-icon="play" data-size="12" style="margin-right:4px;"></span>Verify</button>
+                <button id="btn-new-agent-session" class="ade-btn ade-btn-sm" title="New Agent Co-worker">+ Agent</button>
+                <a href="/" id="btn-return-3d-world" class="ade-btn ade-btn-sm" style="text-decoration:none;" title="Open 3D World"><span class="tt-icon" data-icon="orbit" data-size="13" style="margin-right:4px;color:#da7756;"></span>3D World</a>
+            </div>
+        </header>
+
+        <!-- 2. LEFT SIDEBAR -->
+        <aside class="ade-sidebar">
+            <nav class="sidebar-tabs">
+                <button class="sidebar-tab-btn active" data-tab="files">Files</button>
+                <button class="sidebar-tab-btn" data-tab="search" id="tab-btn-search">Search</button>
+                <button class="sidebar-tab-btn" data-tab="git">Git</button>
+                <button class="sidebar-tab-btn" data-tab="sessions">Sessions</button>
+            </nav>
+
+            <div class="sidebar-content">
+                <!-- Pane 1: Files -->
+                <div id="pane-files" class="sidebar-pane active">
+                    <div class="pane-header">
+                        <span>Project Files</span>
+                        <div class="pane-actions">
+                            <button id="btn-refresh-files" class="ade-btn ade-btn-sm" title="Refresh">↻</button>
+                        </div>
+                    </div>
+                    <ul id="file-tree-host" class="file-tree"></ul>
+                </div>
+
+                <!-- Pane 2: Search (Full-Text & Regex Workspace Search) -->
+                <div id="pane-search" class="sidebar-pane">
+                    <div class="pane-header">
+                        <span>Workspace Search</span>
+                    </div>
+                    <div class="search-controls-container">
+                        <div class="search-input-wrapper">
+                            <input type="text" id="workspace-search-input" class="search-input" placeholder="Search (Enter to search)" autocomplete="off" spellcheck="false">
+                            <div class="search-options-buttons">
+                                <button id="btn-search-case" class="search-opt-btn" title="Match Case (Alt+C)">Aa</button>
+                                <button id="btn-search-word" class="search-opt-btn" title="Match Whole Word (Alt+W)">\b</button>
+                                <button id="btn-search-regex" class="search-opt-btn" title="Use Regular Expression (Alt+R)">.*</button>
+                            </div>
+                        </div>
+                        <div class="search-filter-row">
+                            <input type="text" id="workspace-search-include" class="search-filter-input" placeholder="e.g. *.js, src/**" autocomplete="off" spellcheck="false" title="Files to include">
+                            <button id="btn-execute-search" class="ade-btn ade-btn-sm ade-btn-primary" title="Execute Search">Find</button>
+                            <button id="btn-clear-search" class="ade-btn ade-btn-sm" title="Clear Search" aria-label="Clear"><span class="tt-icon" data-icon="x" data-size="11"></span></button>
+                        </div>
+                        <div id="workspace-search-meta" class="search-meta-bar"></div>
+                    </div>
+                    <div id="workspace-search-results" class="search-results-list"></div>
+                </div>
+
+                <!-- Pane 3: Git -->
+                <div id="pane-git" class="sidebar-pane">
+                    <div class="pane-header">
+                        <span>Working Tree Changes</span>
+                    </div>
+                    <ul id="git-changed-files-list" class="git-file-list"></ul>
+                </div>
+
+                <!-- Pane 3: Sessions -->
+                <div id="pane-sessions" class="sidebar-pane">
+                    <div class="pane-header">
+                        <span>Agent Sessions</span>
+                        <div class="pane-actions">
+                            <button id="btn-pane-new-session" class="ade-btn ade-btn-sm" title="New Agent Session">+ New</button>
+                        </div>
+                    </div>
+                    <ul id="agent-sessions-list" class="session-list"></ul>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 3. CENTER EDITOR & DIFF -->
+        <main class="ade-editor-area">
+            <!-- Tabs -->
+            <div id="editor-tabbar" class="editor-tabbar"></div>
+
+            <!-- External File Change Reconcile Banner -->
+            <div id="reconcile-banner" class="reconcile-banner">
+                <span><span class="tt-icon" data-icon="alert-triangle" data-size="14" style="margin-right:6px;color:#da7756;"></span><strong id="reconcile-file-name">file</strong> was modified on disk. Local edits exist.</span>
+                <div style="display:flex; gap:6px;">
+                    <button id="btn-reconcile-reload" class="ade-btn ade-btn-sm ade-btn-danger">Reload from Disk</button>
+                    <button id="btn-reconcile-keep" class="ade-btn ade-btn-sm">Keep Local Buffer</button>
+                </div>
+            </div>
+
+            <!-- Monaco Editor Container -->
+            <div id="monaco-editor-host" class="monaco-container"></div>
+
+            <!-- Diff Viewer Container -->
+            <div id="ade-diff-container" class="diff-container">
+                <div class="diff-toolbar">
+                    <span id="diff-file-title" class="diff-meta">Proposed Diff</span>
+                    <div id="diff-actions-group" style="display:flex; gap:6px;">
+                        <button id="btn-diff-apply" class="ade-btn ade-btn-sm ade-btn-primary">Apply Decisions</button>
+                        <button id="btn-diff-accept-all" class="ade-btn ade-btn-sm ade-btn-success">Accept All Changes</button>
+                        <button id="btn-diff-reject-all" class="ade-btn ade-btn-sm ade-btn-danger">Reject All</button>
+                    </div>
+                </div>
+                <div id="diff-hunks-container" class="diff-hunk-list"></div>
+            </div>
+        </main>
+
+        <!-- 4. RIGHT AGENT COMMAND CENTER -->
+        <aside class="ade-agent-panel">
+            <div class="agent-header">
+                <div class="agent-title">
+                    <span><span class="tt-icon" data-icon="bot" data-size="15" style="margin-right:4px;color:#da7756;"></span></span>
+                    <span id="active-agent-name">Agent Command Center</span>
+                </div>
+                <button id="btn-agent-interrupt" class="ade-btn ade-btn-sm ade-btn-danger" style="display:none;" title="Interrupt Running Agent">⏹ Abort</button>
+            </div>
+
+            <!-- AI Reasoning Model Selector Bar -->
+            <div class="agent-model-bar">
+                <div class="model-select-label">
+                    <span><span class="tt-icon" data-icon="sparkles" data-size="14" style="margin-right:4px;color:#da7756;"></span></span>
+                    <span>Model:</span>
+                </div>
+                <div class="model-select-wrapper">
+                    <select id="select-agent-model" class="ade-model-select" title="Select AI Reasoning Model">
+                        <option value="claude-3-7-sonnet" selected>Claude 3.7 Sonnet (Hybrid Reasoning)</option>
+                        <option value="claude-3-5-sonnet">Claude 3.5 Sonnet (Coding Speed)</option>
+                        <option value="gpt-4o">GPT-4o (Omni Multimodal)</option>
+                        <option value="o3-mini">o3-mini (Deep Logic & Math)</option>
+                        <option value="gemini-2-flash">Gemini 2.0 Flash (Ultra Fast)</option>
+                        <option value="deepseek-r1">DeepSeek R1 (Full Reasoning)</option>
+                        <option value="local-ollama">Local Ollama (Offline / Private)</option>
+                    </select>
+                </div>
+                <span id="agent-active-model-tag" class="active-model-tag" title="Active Model">Claude 3.7</span>
+            </div>
+
+            <!-- Truthful Activity Stream Box -->
+            <div class="agent-activity-box">
+                <div class="activity-status-line">
+                    <span><span class="tt-icon" data-icon="zap" data-size="13" style="margin-right:4px;color:#da7756;"></span>Activity:</span>
+                </div>
+                <div id="agent-activity-detail" class="activity-detail">Ready for instructions.</div>
+            </div>
+
+            <!-- Approval Alert Box (Real execution pause) -->
+            <div id="approval-alert-card" class="approval-alert-card">
+                <div class="approval-title">
+                    <span><span class="tt-icon" data-icon="alert-triangle" data-size="14" style="margin-right:4px;color:#da7756;"></span>Approval Required</span>
+                </div>
+                <div id="approval-target-desc" class="approval-target">file write requested</div>
+                <div class="approval-actions">
+                    <button id="btn-approve-req" class="ade-btn ade-btn-sm ade-btn-success">Approve Action</button>
+                    <button id="btn-reject-req" class="ade-btn ade-btn-sm ade-btn-danger">Reject</button>
+                </div>
+            </div>
+
+            <!-- Messages Stream -->
+            <div id="agent-history-stream" class="agent-history-stream"></div>
+
+            <!-- Input & Context Engine Box -->
+            <div class="agent-input-container">
+                <div id="context-pills-tray" class="context-pills-tray"></div>
+                <div class="quick-chip-bar">
+                    <button class="quick-chip" data-type="code">+ @code</button>
+                    <button class="quick-chip" data-type="file">+ @file</button>
+                    <button class="quick-chip" data-type="terminal_error">+ @terminal:error</button>
+                    <button class="quick-chip" data-type="git">+ @git</button>
+                </div>
+                <div class="agent-prompt-box">
+                    <textarea id="agent-prompt-input" class="agent-prompt-input" placeholder="Ask agent or type instructions... (Ctrl+Enter to send)"></textarea>
+                    <div class="prompt-footer">
+                        <span id="context-budget-meter" class="budget-meter">Context Budget: 0 / 32,000</span>
+                        <button id="btn-agent-send" class="ade-btn ade-btn-primary">Send ⏎</button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 5. BOTTOM TERMINAL & TEST DOCK -->
+        <section class="ade-terminal-dock">
+            <div class="terminal-header">
+                <div class="terminal-tabs" id="terminal-dock-tabs">
+                    <div id="terminal-tabs-host" style="display:flex; gap:4px;">
+                        <button class="term-tab active">ConPTY Terminal</button>
+                    </div>
+                    <button class="term-tab" id="dock-tab-btn-tests" data-dock-tab="tests">
+                        <span class="tab-icon"><span class="tt-icon" data-icon="activity" data-size="13" style="margin-right:4px;"></span></span>
+                        <span>Test Suites</span>
+                        <span id="tests-summary-badge" class="test-badge-idle">Idle</span>
+                    </button>
+                </div>
+                <div class="terminal-controls">
+                    <button class="ade-btn ade-btn-sm" onclick="window.AdeTerminal.sendErrorToAgent()" title="Send last terminal error to agent prompt"><span class="tt-icon" data-icon="zap" data-size="12" style="margin-right:4px;"></span>Send Error to Agent</button>
+                    <button id="btn-term-collapse" class="ade-btn ade-btn-sm" title="Toggle Terminal Dock" aria-label="Minimize"><span class="tt-icon" data-icon="minus" data-size="12"></span></button>
+                    <button id="btn-term-maximize" class="ade-btn ade-btn-sm" title="Maximize Terminal" aria-label="Maximize"><span class="tt-icon" data-icon="square" data-size="12"></span></button>
+                </div>
+            </div>
+            <div id="terminal-dock-body" class="terminal-dock-body">
+                <div id="xterm-container" class="xterm-viewport-container"></div>
+                <!-- Visual Test Dashboard Panel -->
+                <div id="dock-tests-panel" class="dock-tests-panel" style="display:none;">
+                    <!-- 1. Header Toolbar -->
+                    <div class="tests-dashboard-header">
+                        <div class="tests-summary-stats">
+                            <div class="stat-pill"><span class="stat-num" id="tests-count-total">0</span> Total</div>
+                            <div class="stat-pill stat-pass"><span class="stat-num" id="tests-count-passed">0</span> Passed</div>
+                            <div class="stat-pill stat-fail" id="pill-stat-failed"><span class="stat-num" id="tests-count-failed">0</span> Failed</div>
+                            <div class="stat-pill"><span class="stat-num" id="tests-duration-total">0ms</span> Duration</div>
+                        </div>
+
+                        <!-- Filter Pills -->
+                        <div class="tests-filter-bar">
+                            <button class="filter-pill active" data-filter="all">All</button>
+                            <button class="filter-pill pill-filter-fail" data-filter="failed" id="btn-filter-failed"><span class="tt-icon" data-icon="x" data-size="11" style="margin-right:3px;"></span>Failed (0)</button>
+                            <button class="filter-pill" data-filter="running" id="btn-filter-running"><span class="tt-icon" data-icon="refresh-cw" data-size="11" style="margin-right:3px;"></span>Running</button>
+                            <button class="filter-pill" data-filter="passed" id="btn-filter-passed"><span class="tt-icon" data-icon="check" data-size="11" style="margin-right:3px;"></span>Passed</button>
+                            <button class="filter-pill" data-filter="core" id="btn-filter-core"><span class="tt-icon" data-icon="star" data-size="11" style="margin-right:3px;"></span>Core</button>
+                        </div>
+
+                        <!-- Quick Search Filter -->
+                        <div class="tests-search-box">
+                            <span class="tests-search-icon"><span class="tt-icon" data-icon="search" data-size="13"></span></span>
+                            <input type="text" id="tests-search-input" class="tests-search-input" placeholder="Search suites..." spellcheck="false" autocomplete="off">
+                            <button id="btn-tests-clear-search" class="tests-clear-search" style="display:none;" title="Clear search" aria-label="Clear"><span class="tt-icon" data-icon="x" data-size="11"></span></button>
+                        </div>
+
+                        <!-- Progress Bar Track -->
+                        <div class="tests-progress-track">
+                            <div id="tests-progress-bar" class="tests-progress-bar" style="width: 0%;"></div>
+                        </div>
+
+                        <!-- Action Triggers -->
+                        <div class="tests-header-actions">
+                            <button id="btn-tests-run-core" class="ade-btn ade-btn-sm ade-btn-primary" title="Run fast core verification suites (~5s)">▶ Verify Core</button>
+                            <button id="btn-tests-run-all" class="ade-btn ade-btn-sm" title="Run all test suites sequentially">▶ Run All</button>
+                            <button id="btn-tests-refresh" class="ade-btn ade-btn-sm" title="Refresh discovered suites">↻</button>
+                        </div>
+                    </div>
+
+                    <!-- 2. Dual-Pane Body -->
+                    <div class="tests-dashboard-body">
+                        <!-- Left Pane: Suites Explorer -->
+                        <div class="tests-suites-sidebar">
+                            <div id="dock-tests-tree" class="dock-tests-tree"></div>
+                        </div>
+
+                        <!-- Right Pane: Live Log & Error Inspector -->
+                        <div class="tests-log-inspector">
+                            <div class="inspector-header">
+                                <div class="inspector-title-row">
+                                    <span class="inspector-icon"><span class="tt-icon" data-icon="file-text" data-size="14"></span></span>
+                                    <span id="tests-inspector-title" class="inspector-title">Select a test suite to view live output</span>
+                                    <span id="tests-inspector-badge" class="suite-pill pill-idle">○ Idle</span>
+                                </div>
+                                <div class="inspector-actions">
+                                    <button id="btn-test-send-agent" class="ade-btn ade-btn-sm ade-btn-warning" style="display:none;" title="Send failed test error to Agent for AI fix"><span class="tt-icon" data-icon="zap" data-size="12" style="margin-right:4px;"></span>Send Error to Agent</button>
+                                    <button id="btn-test-copy-log" class="ade-btn ade-btn-sm" title="Copy output log to clipboard"><span class="tt-icon" data-icon="clipboard" data-size="12" style="margin-right:4px;"></span>Copy</button>
+                                    <button id="btn-test-clear-log" class="ade-btn ade-btn-sm" title="Clear console output"><span class="tt-icon" data-icon="rotate-ccw" data-size="12" style="margin-right:4px;"></span>Clear</button>
+                                    <button id="btn-test-open-file" class="ade-btn ade-btn-sm" title="Open test in Monaco Editor"><span class="tt-icon" data-icon="folder" data-size="12" style="margin-right:4px;"></span>View File</button>
+                                </div>
+                            </div>
+
+                            <!-- Failure Root-Cause Alert Banner -->
+                            <div id="test-error-banner" class="test-error-banner" style="display:none;">
+                                <div class="error-banner-header">
+                                    <span class="error-banner-icon"><span class="tt-icon" data-icon="alert-triangle" data-size="14"></span></span>
+                                    <strong id="test-error-title">Suite Execution Failed</strong>
+                                </div>
+                                <div id="test-error-snippet" class="error-banner-snippet"></div>
+                            </div>
+
+                            <!-- Live Monospace Output Console -->
+                            <div class="tests-live-console" id="tests-live-console">
+                                <pre id="tests-log-content" class="tests-log-content">Click "Verify Core" or select a test suite to inspect stdout/stderr logs in real time.</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Verification Toast/Card -->
+            <div id="verification-card" class="verification-card">
+                <span id="verification-summary-text"></span>
+            </div>
+        </section>
+    </div>
+
+    <!-- Quick Open / Fuzzy File Search Modal (Ctrl+P) -->
+    <div id="quick-open-modal" class="quick-open-overlay" style="display:none;">
+        <div class="quick-open-container">
+            <div class="quick-open-input-row">
+                <span class="quick-open-icon"><span class="tt-icon" data-icon="search" data-size="14"></span></span>
+                <input type="text" id="quick-open-input" class="quick-open-input" placeholder="Type a file name to search... (:line to jump, @ for symbols)" autocomplete="off" spellcheck="false">
+                <span id="quick-open-count" class="quick-open-counter">0 files</span>
+            </div>
+            <ul id="quick-open-results" class="quick-open-list"></ul>
+            <div class="quick-open-footer">
+                <span><kbd>↑</kbd> <kbd>↓</kbd> to navigate</span>
+                <span><kbd>Enter</kbd> to open</span>
+                <span><kbd>Esc</kbd> to dismiss</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vendor Scripts: Load UMD modules before Monaco AMD loader -->
+    <script src="/vendor/xterm/xterm/lib/xterm.js"></script>
+    <script src="/vendor/xterm/addon-fit/lib/addon-fit.js"></script>
+    <script src="/vendor/monaco/vs/loader.js"></script>
+
+    <!-- TeleTerm Central Icon System -->
+    <script src="/js/ui/teleterm-icons.js?v=26"></script>
+
+    <!-- ADE Client Architecture -->
+    <script src="/js/ade/state/ade-state.js"></script>
+    <script src="/js/ade/workspace/ade-client.js"></script>
+    <script src="/js/ade/editor/ade-monaco.js"></script>
+    <script src="/js/ade/diffs/ade-diff-viewer.js"></script>
+    <script src="/js/ade/terminal/ade-terminal.js"></script>
+    <script src="/js/ade/agents/ade-agent-deck.js"></script>
+    <script src="/js/ade/symbol-indexer.js"></script>
+    <script src="/js/ade/quick-open.js"></script>
+    <script src="/js/ade/ade-search.js"></script>
+    <script src="/js/ade/test-dashboard.js"></script>
+    <script src="/js/ade/ade-app.js"></script>
+</body>
+</html>

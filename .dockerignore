@@ -1,0 +1,9 @@
+node_modules
+dist
+build
+.git
+.gemini
+bin/cloudflared.exe
+*.log
+.dev_metaverse_profiles.json
+.tunnel_session.json
