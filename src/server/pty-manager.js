@@ -38,12 +38,21 @@ class PtySessionManager extends EventEmitter {
         // Tìm thông tin shell
         let shellConfig = config.AVAILABLE_SHELLS.find(s => s.id === shellId);
         if (!shellConfig) {
-            shellConfig = config.AVAILABLE_SHELLS[0] || {
-                id: 'powershell',
-                name: 'Windows PowerShell',
-                path: 'powershell.exe',
-                args: ['-NoLogo']
-            };
+            if (process.platform === 'win32') {
+                shellConfig = config.AVAILABLE_SHELLS[0] || {
+                    id: 'powershell',
+                    name: 'Windows PowerShell',
+                    path: 'powershell.exe',
+                    args: ['-NoLogo']
+                };
+            } else {
+                shellConfig = config.AVAILABLE_SHELLS[0] || {
+                    id: 'bash',
+                    name: 'Bash',
+                    path: process.env.SHELL || '/bin/bash',
+                    args: []
+                };
+            }
         }
 
         const sessionName = name || `${shellConfig.name} (${id})`;
@@ -587,6 +596,17 @@ class PtySessionManager extends EventEmitter {
         }];
 
         return new Promise((resolve) => {
+            if (process.platform !== 'win32') {
+                return resolve({
+                    success: true,
+                    rootPid,
+                    sessionName: session.name,
+                    shellId: session.shellId,
+                    cwd: session.cwd,
+                    processes: fallback
+                });
+            }
+
             // Sử dụng C# ConsoleBridge tree (tốc độ < 10ms qua Toolhelp Snapshot, không tốn CPU)
             execFile(bridgePath, ['tree', String(rootPid)], { timeout: 1500, windowsHide: true }, (err, stdout) => {
                 if (!err && stdout) {

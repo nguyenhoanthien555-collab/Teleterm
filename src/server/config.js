@@ -43,6 +43,22 @@ if (fs.existsSync(envPath)) {
 function detectAvailableShells() {
     const shells = [];
 
+    // Hỗ trợ môi trường Linux / Cloud VPS / Docker
+    if (process.platform !== 'win32') {
+        const bashPath = process.env.SHELL || '/bin/bash';
+        if (fs.existsSync(bashPath)) {
+            shells.push({ id: 'bash', name: '🐧 Bash', path: bashPath, args: [] });
+        } else if (fs.existsSync('/bin/sh')) {
+            shells.push({ id: 'sh', name: '🐧 Shell (sh)', path: '/bin/sh', args: [] });
+        }
+        if (fs.existsSync('/bin/zsh')) {
+            shells.push({ id: 'zsh', name: '⚡ Zsh', path: '/bin/zsh', args: [] });
+        }
+        shells.push({ id: 'python', name: '🐍 Python Interactive REPL', path: 'python3', args: ['-i'] });
+        shells.push({ id: 'node', name: '🟩 Node.js REPL', path: process.execPath || 'node', args: [] });
+        return shells;
+    }
+
     // 1. PowerShell 7 (pwsh.exe) nếu có
     const pwshPaths = [
         'C:\\Program Files\\PowerShell\\7\\pwsh.exe',

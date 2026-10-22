@@ -49,16 +49,21 @@ class TunnelManager extends EventEmitter {
         const potentialPaths = [
             defaultBin,
             'cloudflared', // Trong PATH hệ thống
+            '/usr/local/bin/cloudflared',
+            '/usr/bin/cloudflared',
+            '/bin/cloudflared',
             'C:\\Program Files (x86)\\cloudflared\\cloudflared.exe',
             'C:\\Program Files\\cloudflared\\cloudflared.exe',
             path.join(os.homedir(), 'AppData\\Local\\Microsoft\\WinGet\\Links\\cloudflared.exe'),
             path.join(os.homedir(), 'AppData\\Local\\Microsoft\\WinGet\\Packages\\Cloudflare.cloudflared_Microsoft.Winget.Source_8wekyb3d8bbwe\\cloudflared.exe')
         ];
 
+        const whichCmd = process.platform === 'win32' ? 'where cloudflared' : 'which cloudflared';
+
         for (const bin of potentialPaths) {
             try {
                 if (bin === 'cloudflared') {
-                    execSync('where cloudflared', { stdio: 'ignore' });
+                    execSync(whichCmd, { stdio: 'ignore' });
                     this.binPath = 'cloudflared';
                     return this.binPath;
                 } else if (fs.existsSync(bin)) {

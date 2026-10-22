@@ -173,6 +173,7 @@ class ProcessTracker {
      * Quét tất cả các terminal và tiến trình AI/CLI đang chạy trên laptop
      */
     async listSystemTerminals() {
+        if (process.platform !== 'win32') return [];
         try {
             const text = await this.ipc.execute('list');
             const list = JSON.parse(text);
@@ -207,6 +208,7 @@ class ProcessTracker {
      * Lấy toàn bộ màn hình ANSI nguyên bản qua Persistent IPC Daemon
      */
     async getAnsiScreen(pid) {
+        if (process.platform !== 'win32') return { success: false, error: 'ANSI screen capture is only supported on Windows' };
         try {
             const textOutput = await this.ipc.execute(`ansi ${pid}`);
             const data = JSON.parse(textOutput);

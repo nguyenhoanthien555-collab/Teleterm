@@ -21,6 +21,7 @@ class PowerManager {
      * Ngăn chặn Windows tự động Sleep / Standby và ngắt mạng Wi-Fi khi đi xa
      */
     preventSleep() {
+        if (process.platform !== 'win32') return false;
         if (this.isActive && this.process) return;
 
         if (!fs.existsSync(bridgePath)) {
