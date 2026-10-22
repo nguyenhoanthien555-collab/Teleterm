@@ -4,6 +4,8 @@ using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Pipes;
+using System.Threading;
 
 namespace TeleTerm {
     class Program {
@@ -42,6 +44,32 @@ namespace TeleTerm {
 
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern uint SetThreadExecutionState(uint esFlags);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern IntPtr CreateToolhelp32Snapshot(uint dwFlags, uint th32ProcessID);
+
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern bool Process32First(IntPtr hSnapshot, ref PROCESSENTRY32 lppe);
+
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern bool Process32Next(IntPtr hSnapshot, ref PROCESSENTRY32 lppe);
+
+        public const uint TH32CS_SNAPPROCESS = 0x00000002;
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        public struct PROCESSENTRY32 {
+            public uint dwSize;
+            public uint cntUsage;
+            public uint th32ProcessID;
+            public IntPtr th32DefaultHeapID;
+            public uint th32ModuleID;
+            public uint cntThreads;
+            public uint th32ParentProcessID;
+            public int pcPriClassBase;
+            public uint dwFlags;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
+            public string szExeFile;
+        }
 
         public const uint ES_CONTINUOUS = 0x80000000;
         public const uint ES_SYSTEM_REQUIRED = 0x00000001;
@@ -110,28 +138,92 @@ namespace TeleTerm {
         static void Main(string[] args) {
             g_origStdOut = GetStdHandle(-11);
             if (args.Length == 0) {
-                WriteOutput("Usage: ConsoleBridge.exe <list|ansi|write> [args]");
+                WriteOutput("Usage: ConsoleBridge.exe <daemon|list|ansi|tree|write|keepalive> [args]");
                 return;
             }
 
             string command = args[0].ToLower();
 
-            if (command == "list") {
-                ListProcesses();
+            if (command == "daemon") {
+                RunDaemon();
+                return;
             } else if (command == "keepalive") {
                 RunKeepAlive();
-            } else if (command == "info" && args.Length >= 2) {
-                uint pid = uint.Parse(args[1]);
-                GetBufferInfo(pid);
-            } else if (command == "ansi" && args.Length >= 2) {
-                uint pid = uint.Parse(args[1]);
-                GetAnsiScreen(pid);
-            } else if (command == "write" && args.Length >= 3) {
-                uint pid = uint.Parse(args[1]);
-                string inputBase64 = args[2];
-                byte[] bytes = Convert.FromBase64String(inputBase64);
-                string text = Encoding.UTF8.GetString(bytes);
-                WriteProcessInput(pid, text);
+                return;
+            }
+
+            string result = Execute(string.Join(" ", args));
+            WriteOutput(result);
+        }
+
+        static string Execute(string commandLine) {
+            if (string.IsNullOrEmpty(commandLine)) return "{\"error\":\"Empty command\"}";
+            string[] parts = commandLine.Trim().Split(new char[] { ' ' }, 3);
+            if (parts.Length == 0) return "{\"error\":\"Empty command\"}";
+
+            string command = parts[0].ToLower();
+            try {
+                if (command == "ping") {
+                    return "{\"pong\":true}";
+                } else if (command == "list") {
+                    return ListProcesses();
+                } else if (command == "info" && parts.Length >= 2) {
+                    uint pid = uint.Parse(parts[1]);
+                    return GetBufferInfo(pid);
+                } else if (command == "ansi" && parts.Length >= 2) {
+                    uint pid = uint.Parse(parts[1]);
+                    return GetAnsiScreen(pid);
+                } else if (command == "tree" && parts.Length >= 2) {
+                    uint pid = uint.Parse(parts[1]);
+                    return GetProcessTree(pid);
+                } else if (command == "write" && parts.Length >= 3) {
+                    uint pid = uint.Parse(parts[1]);
+                    string inputBase64 = parts[2];
+                    byte[] bytes = Convert.FromBase64String(inputBase64);
+                    string text = Encoding.UTF8.GetString(bytes);
+                    return WriteProcessInput(pid, text);
+                }
+            } catch (Exception ex) {
+                return string.Format("{{\"success\":false,\"error\":{0}}}", QuoteJson(ex.Message));
+            }
+            return "{\"error\":\"Unknown command\"}";
+        }
+
+        static void RunDaemon() {
+            bool createdNew;
+            using (Mutex mutex = new Mutex(true, "Global\\TeleTermConsoleBridgeMutex", out createdNew)) {
+                if (!createdNew) {
+                    WriteOutput("{\"error\":\"Daemon already running\"}");
+                    return;
+                }
+
+                WriteOutput("{\"success\":true,\"message\":\"ConsoleBridge daemon listening on \\\\\\\\.\\\\pipe\\\\TeleTermConsoleBridge\"}");
+
+                while (true) {
+                    try {
+                        using (var server = new NamedPipeServerStream(
+                            "TeleTermConsoleBridge",
+                            PipeDirection.InOut,
+                            NamedPipeServerStream.MaxAllowedServerInstances,
+                            PipeTransmissionMode.Byte,
+                            PipeOptions.Asynchronous))
+                        {
+                            server.WaitForConnection();
+                            using (var reader = new StreamReader(server, Encoding.UTF8))
+                            using (var writer = new StreamWriter(server, Encoding.UTF8) { AutoFlush = true })
+                            {
+                                while (server.IsConnected) {
+                                    string line = reader.ReadLine();
+                                    if (line == null) break;
+                                    string response = Execute(line);
+                                    writer.WriteLine(response);
+                                }
+                            }
+                        }
+                    } catch {
+                        Thread.Sleep(50);
+                    }
+                }
             }
         }
 
@@ -150,36 +242,32 @@ namespace TeleTerm {
             }
         }
 
-        static void GetBufferInfo(uint pid) {
+        static string GetBufferInfo(uint pid) {
             FreeConsole();
             if (!AttachConsole(pid)) {
-                WriteOutput("{\"success\":false,\"error\":\"Attach failed\"}");
-                return;
+                return "{\"success\":false,\"error\":\"Attach failed\"}";
             }
             IntPtr hOut = CreateFile("CONOUT$", 0x80000000 | 0x40000000, 1 | 2, IntPtr.Zero, 3, 0, IntPtr.Zero);
             if (hOut == (IntPtr)(-1) || hOut == IntPtr.Zero) {
                 FreeConsole();
-                WriteOutput("{\"success\":false,\"error\":\"Open CONOUT$ failed\"}");
-                return;
+                return "{\"success\":false,\"error\":\"Open CONOUT$ failed\"}";
             }
             CONSOLE_SCREEN_BUFFER_INFO csbi;
             if (!GetConsoleScreenBufferInfo(hOut, out csbi)) {
                 CloseHandle(hOut);
                 FreeConsole();
-                WriteOutput("{\"success\":false,\"error\":\"GetBufferInfo failed\"}");
-                return;
+                return "{\"success\":false,\"error\":\"GetBufferInfo failed\"}";
             }
             CloseHandle(hOut);
             FreeConsole();
-            string json = string.Format(
+            return string.Format(
                 "{{\"success\":true,\"dwSize\":{{\"x\":{0},\"y\":{1}}},\"cursor\":{{\"x\":{2},\"y\":{3}}},\"window\":{{\"left\":{4},\"top\":{5},\"right\":{6},\"bottom\":{7}}}}}",
                 csbi.dwSize.X, csbi.dwSize.Y, csbi.dwCursorPosition.X, csbi.dwCursorPosition.Y,
                 csbi.srWindow.Left, csbi.srWindow.Top, csbi.srWindow.Right, csbi.srWindow.Bottom
             );
-            WriteOutput(json);
         }
 
-        static void ListProcesses() {
+        static string ListProcesses() {
             var targetNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
                 "claude", "powershell", "pwsh", "cmd", "wsl", "bash", "node", "python", "git", "ssh"
             };
@@ -252,29 +340,26 @@ namespace TeleTerm {
                 }
             }
 
-            WriteOutput("[" + string.Join(",", results.ToArray()) + "]");
+            return "[" + string.Join(",", results.ToArray()) + "]";
         }
 
-        static void GetAnsiScreen(uint pid) {
+        static string GetAnsiScreen(uint pid) {
             FreeConsole();
             if (!AttachConsole(pid)) {
-                WriteOutput("{\"success\":false,\"error\":\"Attach failed\"}");
-                return;
+                return "{\"success\":false,\"error\":\"Attach failed\"}";
             }
 
             IntPtr hOut = CreateFile("CONOUT$", 0x80000000 | 0x40000000, 1 | 2, IntPtr.Zero, 3, 0, IntPtr.Zero);
             if (hOut == (IntPtr)(-1) || hOut == IntPtr.Zero) {
                 FreeConsole();
-                WriteOutput("{\"success\":false,\"error\":\"Open CONOUT$ failed\"}");
-                return;
+                return "{\"success\":false,\"error\":\"Open CONOUT$ failed\"}";
             }
 
             CONSOLE_SCREEN_BUFFER_INFO csbi;
             if (!GetConsoleScreenBufferInfo(hOut, out csbi)) {
                 CloseHandle(hOut);
                 FreeConsole();
-                WriteOutput("{\"success\":false,\"error\":\"GetBufferInfo failed\"}");
-                return;
+                return "{\"success\":false,\"error\":\"GetBufferInfo failed\"}";
             }
 
             short width = (short)(csbi.srWindow.Right - csbi.srWindow.Left + 1);
@@ -368,22 +453,97 @@ namespace TeleTerm {
             }
             string textBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(plainText.ToString()));
 
-            WriteOutput(string.Format("{{\"success\":true,\"pid\":{0},\"cols\":{1},\"rows\":{2},\"cursorX\":{3},\"cursorY\":{4},\"ansiBase64\":\"{5}\",\"textBase64\":\"{6}\"}}",
-                pid, width, height, csbi.dwCursorPosition.X, csbi.dwCursorPosition.Y, ansiBase64, textBase64));
+            return string.Format("{{\"success\":true,\"pid\":{0},\"cols\":{1},\"rows\":{2},\"cursorX\":{3},\"cursorY\":{4},\"ansiBase64\":\"{5}\",\"textBase64\":\"{6}\"}}",
+                pid, width, height, csbi.dwCursorPosition.X, csbi.dwCursorPosition.Y, ansiBase64, textBase64);
         }
 
-        static void WriteProcessInput(uint pid, string text) {
+        static string GetProcessTree(uint rootPid) {
+            IntPtr hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+            if (hSnapshot == IntPtr.Zero || hSnapshot == (IntPtr)(-1)) {
+                return "[]";
+            }
+
+            var parentToChildren = new Dictionary<uint, List<uint>>();
+            var pidToEntry = new Dictionary<uint, PROCESSENTRY32>();
+
+            PROCESSENTRY32 pe = new PROCESSENTRY32();
+            pe.dwSize = (uint)Marshal.SizeOf(typeof(PROCESSENTRY32));
+
+            if (Process32First(hSnapshot, ref pe)) {
+                do {
+                    pidToEntry[pe.th32ProcessID] = pe;
+                    if (!parentToChildren.ContainsKey(pe.th32ParentProcessID)) {
+                        parentToChildren[pe.th32ParentProcessID] = new List<uint>();
+                    }
+                    parentToChildren[pe.th32ParentProcessID].Add(pe.th32ProcessID);
+                } while (Process32Next(hSnapshot, ref pe));
+            }
+            CloseHandle(hSnapshot);
+
+            // BFS traverse from rootPid
+            var descendants = new List<uint>();
+            var visited = new HashSet<uint>();
+            var queue = new Queue<uint>();
+
+            if (pidToEntry.ContainsKey(rootPid)) {
+                queue.Enqueue(rootPid);
+                visited.Add(rootPid);
+            }
+
+            while (queue.Count > 0) {
+                uint current = queue.Dequeue();
+                descendants.Add(current);
+                if (parentToChildren.ContainsKey(current)) {
+                    foreach (uint child in parentToChildren[current]) {
+                        if (!visited.Contains(child)) {
+                            visited.Add(child);
+                            queue.Enqueue(child);
+                        }
+                    }
+                }
+            }
+
+            var results = new List<string>();
+            foreach (uint pid in descendants) {
+                string name = "";
+                uint ppid = 0;
+                if (pidToEntry.ContainsKey(pid)) {
+                    name = pidToEntry[pid].szExeFile;
+                    ppid = pidToEntry[pid].th32ParentProcessID;
+                }
+
+                long ramMb = 0;
+                try {
+                    Process p = Process.GetProcessById((int)pid);
+                    ramMb = p.WorkingSet64 / (1024 * 1024);
+                } catch {
+                    // process may have exited
+                }
+
+                results.Add(string.Format(
+                    "{{\"pid\":{0},\"ppid\":{1},\"name\":{2},\"ramMb\":{3},\"cmd\":{4},\"isRoot\":{5}}}",
+                    pid,
+                    ppid,
+                    QuoteJson(name),
+                    ramMb,
+                    QuoteJson(""),
+                    pid == rootPid ? "true" : "false"
+                ));
+            }
+
+            return "[" + string.Join(",", results.ToArray()) + "]";
+        }
+
+        static string WriteProcessInput(uint pid, string text) {
             FreeConsole();
             if (!AttachConsole(pid)) {
-                WriteOutput("{\"success\":false,\"error\":\"Attach failed\"}");
-                return;
+                return "{\"success\":false,\"error\":\"Attach failed\"}";
             }
 
             IntPtr hIn = CreateFile("CONIN$", 0x80000000 | 0x40000000, 1 | 2, IntPtr.Zero, 3, 0, IntPtr.Zero);
             if (hIn == (IntPtr)(-1) || hIn == IntPtr.Zero) {
                 FreeConsole();
-                WriteOutput("{\"success\":false,\"error\":\"Open CONIN$ failed\"}");
-                return;
+                return "{\"success\":false,\"error\":\"Open CONIN$ failed\"}";
             }
 
             List<INPUT_RECORD> records = new List<INPUT_RECORD>();
@@ -478,7 +638,7 @@ namespace TeleTerm {
             CloseHandle(hIn);
             FreeConsole();
 
-            WriteOutput(string.Format("{{\"success\":{0},\"count\":{1}}}", ok ? "true" : "false", written));
+            return string.Format("{{\"success\":{0},\"count\":{1}}}", ok ? "true" : "false", written);
         }
 
         static void AddKeyRecord(List<INPUT_RECORD> records, ushort vk, ushort scanCode, char ch, uint ctrlState) {

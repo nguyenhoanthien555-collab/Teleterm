@@ -1754,13 +1754,13 @@ wss.on('connection', (ws, req) => {
                             }
                         }, 80);
                     } else if (currentTarget && typeof payload.data === 'string') {
-                        ptyManager.write(currentTarget, payload.data);
+                        ptyManager.write(currentTarget, payload.data, ws);
                     }
                     break;
 
                 case 'resize':
                     if (!currentTarget.startsWith('sys-') && currentTarget && payload.cols && payload.rows) {
-                        ptyManager.resize(currentTarget, payload.cols, payload.rows);
+                        ptyManager.resize(currentTarget, payload.cols, payload.rows, ws);
                     }
                     break;
 

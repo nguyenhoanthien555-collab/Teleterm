@@ -110,7 +110,10 @@ class WorkspaceTerminal extends EventEmitter {
 
     getBuffer(terminalId) {
         const ptySession = ptyManager.getSession(terminalId);
-        return ptySession ? ptySession.buffer : '';
+        if (!ptySession) return '';
+        return typeof ptySession.buffer?.getContents === 'function'
+            ? ptySession.buffer.getContents()
+            : (ptySession.buffer || '');
     }
 
     listSessions() {
@@ -127,7 +130,7 @@ class WorkspaceTerminal extends EventEmitter {
 
     /**
      * Extract relevant error details from the most recent terminal output
-     * For use with Context Engine (@terminal:error)
+     * P2.1 Line-Buffering, Robust ANSI Stripping & Throttle Cache (@terminal:error)
      */
     extractLastError(terminalId = null) {
         let targetId = terminalId;
@@ -140,56 +143,80 @@ class WorkspaceTerminal extends EventEmitter {
 
         if (!targetId) return null;
 
+        const session = this.activeSessions.get(targetId);
+
+        // Throttle Cache: Tránh re-parse liên tục nếu output không đổi trong 300ms
+        const now = Date.now();
+        if (session && session._lastErrorCache && (now - session._lastErrorCacheTime < 300)) {
+            return session._lastErrorCache;
+        }
+
         const buffer = this.getBuffer(targetId);
         if (!buffer) return null;
 
-        // Clean ANSI escape sequences
-        const cleanText = buffer.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
-        const lines = cleanText.split('\n');
+        // P2.1 Comprehensive ANSI cleaning (handles CSI, OSC, hyperlinks & 24-bit TrueColor)
+        const cleanText = buffer.replace(/[\u001b\u009b](?:\[[0-?]*[ -/]*[@-~]|\].*?(?:\x07|\u001b\\)|[@-Z\\-_])/g, '');
+        const allLines = cleanText.split('\n');
 
-        // Look for error patterns from bottom up
-        const errorKeywords = [
-            'Error:', 'error:', 'Exception:', 'FAIL:', 'FAILED', 'npm ERR!', 'SyntaxError:',
-            'TypeError:', 'ReferenceError:', 'AssertionError:', 'UnhandledPromiseRejection',
-            'panic:', 'Traceback (most recent call last):', 'fatal:'
+        // Chỉ quét tối đa 150 dòng gần nhất để tối ưu CPU và tránh nhặt nhầm lỗi cũ
+        const recentLines = allLines.length > 150 ? allLines.slice(-150) : allLines;
+
+        // Pattern regex kiểm tra lỗi có độ tin cậy cao, tránh false positive từ git diff / commit
+        const errorPatterns = [
+            /(?:^|\s)(?:Error|error|Exception|SyntaxError|TypeError|ReferenceError|AssertionError|UnhandledPromiseRejection):/,
+            /(?:^|\s)(?:FAIL|FAILED)\b/,
+            /npm ERR!/,
+            /(?:^|\s)panic:/,
+            /Traceback \(most recent call last\):/,
+            /(?:^|\s)fatal:\s+/
         ];
 
         let errorLineIndex = -1;
-        for (let i = lines.length - 1; i >= 0; i--) {
-            const line = lines[i];
-            if (errorKeywords.some(kw => line.includes(kw))) {
+        for (let i = recentLines.length - 1; i >= 0; i--) {
+            const line = recentLines[i];
+            // Bỏ qua dòng git diff (+ hoặc - ở đầu) hoặc commit message
+            if (line.startsWith('+') || line.startsWith('-') || line.startsWith('commit ')) {
+                continue;
+            }
+            if (errorPatterns.some(pt => pt.test(line))) {
                 errorLineIndex = i;
                 break;
             }
         }
 
-        const session = this.activeSessions.get(targetId);
-
+        let result;
         if (errorLineIndex === -1) {
-            // Take the last 30 lines as context
-            const snippet = lines.slice(-30).join('\n').trim();
-            return {
+            // Lấy 30 dòng gần nhất làm ngữ cảnh
+            const snippet = recentLines.slice(-30).join('\n').trim();
+            result = {
                 terminalId: targetId,
                 cwd: session ? session.cwd : this.rootPath,
                 command: session ? session.lastCommand : '',
                 hasErrorPattern: false,
                 snippet
             };
+        } else {
+            // Lấy từ 5 dòng trước lỗi đến 35 dòng sau lỗi
+            const start = Math.max(0, errorLineIndex - 5);
+            const end = Math.min(recentLines.length, errorLineIndex + 35);
+            const snippet = recentLines.slice(start, end).join('\n').trim();
+
+            result = {
+                terminalId: targetId,
+                cwd: session ? session.cwd : this.rootPath,
+                command: session ? session.lastCommand : '',
+                hasErrorPattern: true,
+                errorLine: recentLines[errorLineIndex].trim(),
+                snippet
+            };
         }
 
-        // Capture from 5 lines before error to 35 lines after error
-        const start = Math.max(0, errorLineIndex - 5);
-        const end = Math.min(lines.length, errorLineIndex + 35);
-        const snippet = lines.slice(start, end).join('\n').trim();
+        if (session) {
+            session._lastErrorCache = result;
+            session._lastErrorCacheTime = now;
+        }
 
-        return {
-            terminalId: targetId,
-            cwd: session ? session.cwd : this.rootPath,
-            command: session ? session.lastCommand : '',
-            hasErrorPattern: true,
-            errorLine: lines[errorLineIndex].trim(),
-            snippet
-        };
+        return result;
     }
 }
 

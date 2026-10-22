@@ -1,8 +1,23 @@
 const pty = require('node-pty');
 const os = require('os');
+const path = require('path');
+const fs = require('fs');
 const EventEmitter = require('events');
-const { exec } = require('child_process');
+const { exec, execFile } = require('child_process');
 const config = require('./config');
+const AnsiRingBuffer = require('./ansi-ring-buffer');
+
+let bridgePath = path.join(__dirname, '../../bin/ConsoleBridge.exe');
+if (bridgePath.includes('app.asar')) {
+    const unpacked = bridgePath.replace('app.asar', 'app.asar.unpacked');
+    if (fs.existsSync(unpacked)) {
+        bridgePath = unpacked;
+    }
+}
+
+// Argon Watermark Spec (P0.2): Flow Control thresholds
+const HIGH_WATERMARK = 512 * 1024; // 512KB queue -> Pause PTY
+const LOW_WATERMARK = 64 * 1024;   // 64KB queue -> Resume PTY
 
 class PtySessionManager extends EventEmitter {
     constructor() {
@@ -79,58 +94,16 @@ class PtySessionManager extends EventEmitter {
             cwd: targetCwd,
             createdAt: new Date(),
             status: 'running',
-            buffer: '', // Lưu buffer dạng chuỗi cuộn
+            buffer: new AnsiRingBuffer({ maxChars: 200000, maxLines: 5000 }),
+            isPaused: false,
+            masterClientId: null,
+            _drainInterval: null,
+            _resizeDebounceTimer: null,
             unreadCount: 0,
             subscribers: new Set()
         };
 
-        // Lắng nghe output từ PTY
-        ptyProcess.onData((data) => {
-            // Cập nhật scrollback buffer (tối đa ~200KB dữ liệu gần nhất)
-            session.buffer += data;
-            const maxChars = 200000;
-            if (session.buffer.length > maxChars) {
-                session.buffer = session.buffer.slice(session.buffer.length - maxChars);
-            }
-
-            // Tăng unreadCount nếu không có subscriber trực tiếp đang xem
-            if (session.subscribers.size === 0) {
-                session.unreadCount = (session.unreadCount || 0) + 1;
-            }
-
-            this.emit('data', { id, data });
-
-            // Broadcast dữ liệu cho tất cả client đang kết nối vào session này
-            for (const ws of session.subscribers) {
-                if (ws.readyState === 1 /* OPEN */) {
-                    ws.send(JSON.stringify({
-                        type: 'output',
-                        sessionId: id,
-                        data
-                    }));
-                }
-            }
-        });
-
-        // Xử lý khi tiến trình kết thúc (ví dụ người dùng gõ exit)
-        ptyProcess.onExit(({ exitCode, signal }) => {
-            session.status = 'exited';
-            session.exitCode = exitCode;
-
-            for (const ws of session.subscribers) {
-                if (ws.readyState === 1) {
-                    ws.send(JSON.stringify({
-                        type: 'exit',
-                        sessionId: id,
-                        exitCode,
-                        signal
-                    }));
-                }
-            }
-
-            this.emit('sessionExited', { id, exitCode });
-        });
-
+        this._bindPtySession(session, ptyProcess, id);
         this.sessions.set(id, session);
         return session;
     }
@@ -173,28 +146,61 @@ class PtySessionManager extends EventEmitter {
             cwd: targetCwd,
             createdAt: new Date(),
             status: 'running',
-            buffer: '',
+            buffer: new AnsiRingBuffer({ maxChars: 200000, maxLines: 5000 }),
+            isPaused: false,
+            masterClientId: null,
+            _drainInterval: null,
+            _resizeDebounceTimer: null,
             unreadCount: 0,
             subscribers: new Set()
         };
 
+        this._bindPtySession(session, ptyProcess, id);
+        this.sessions.set(id, session);
+        return session;
+    }
+
+    /**
+     * Gắn kết lắng nghe sự kiện từ PTY và kiểm soát Backpressure Flow Control
+     * @private
+     */
+    _bindPtySession(session, ptyProcess, id) {
         ptyProcess.onData((data) => {
-            session.buffer += data;
-            const maxChars = 200000;
-            if (session.buffer.length > maxChars) {
-                session.buffer = session.buffer.slice(session.buffer.length - maxChars);
-            }
+            session.buffer.append(data);
+
             if (session.subscribers.size === 0) {
                 session.unreadCount = (session.unreadCount || 0) + 1;
             }
+
             this.emit('data', { id, data });
+
+            // Broadcast dữ liệu cho tất cả client đang kết nối vào session này
+            let maxBuffered = 0;
             for (const ws of session.subscribers) {
-                if (ws.readyState === 1) {
+                if (ws.readyState === 1 /* OPEN */) {
                     ws.send(JSON.stringify({
                         type: 'output',
                         sessionId: id,
                         data
                     }));
+                    if (ws.bufferedAmount && ws.bufferedAmount > maxBuffered) {
+                        maxBuffered = ws.bufferedAmount;
+                    }
+                }
+            }
+
+            // P0.2 Flow Control: Tạm dừng PTY nếu bộ đệm WebSocket của client vượt ngưỡng HIGH_WATERMARK
+            if (!session.isPaused && maxBuffered > HIGH_WATERMARK) {
+                session.isPaused = true;
+                try {
+                    session.pty.pause();
+                } catch (e) {}
+
+                if (!session._drainInterval) {
+                    session._drainInterval = setInterval(() => {
+                        this._checkDrain(session);
+                    }, 50);
+                    session._drainInterval.unref?.();
                 }
             }
         });
@@ -202,6 +208,12 @@ class PtySessionManager extends EventEmitter {
         ptyProcess.onExit(({ exitCode, signal }) => {
             session.status = 'exited';
             session.exitCode = exitCode;
+
+            if (session._drainInterval) {
+                clearInterval(session._drainInterval);
+                session._drainInterval = null;
+            }
+
             for (const ws of session.subscribers) {
                 if (ws.readyState === 1) {
                     ws.send(JSON.stringify({
@@ -212,11 +224,36 @@ class PtySessionManager extends EventEmitter {
                     }));
                 }
             }
+
             this.emit('sessionExited', { id, exitCode });
         });
+    }
 
-        this.sessions.set(id, session);
-        return session;
+    /**
+     * Kiểm tra xả đệm để khôi phục luồng PTY (Resume)
+     * @private
+     */
+    _checkDrain(session) {
+        if (!session.isPaused) return;
+
+        let maxBuffered = 0;
+        for (const ws of session.subscribers) {
+            if (ws.readyState === 1 && ws.bufferedAmount && ws.bufferedAmount > maxBuffered) {
+                maxBuffered = ws.bufferedAmount;
+            }
+        }
+
+        // Nếu tất cả client đều đã xả dưới ngưỡng LOW_WATERMARK hoặc không còn subscriber nào
+        if (maxBuffered < LOW_WATERMARK || session.subscribers.size === 0) {
+            if (session._drainInterval) {
+                clearInterval(session._drainInterval);
+                session._drainInterval = null;
+            }
+            session.isPaused = false;
+            try {
+                session.pty.resume();
+            } catch (e) {}
+        }
     }
 
     /**
@@ -288,14 +325,34 @@ class PtySessionManager extends EventEmitter {
 
     /**
      * Gắn client WebSocket vào session và phát lại buffer lịch sử
+     * Áp dụng Viewport Arbitration (P1.2): Gán quyền Master/Follower
      */
     attach(id, ws) {
         const session = this.sessions.get(id);
         if (!session) return false;
 
+        if (!ws.id) {
+            ws.id = 'client-' + Math.random().toString(36).slice(2, 9);
+        }
+
         session.subscribers.add(ws);
 
-        // Gửi thông báo kết nối thành công kèm toàn bộ buffer lịch sử
+        // Active Writer Wins / Master-Follower:
+        // Nếu session chưa có Master hoặc Master cũ đã ngắt kết nối, promote client này lên làm Master
+        let isMaster = false;
+        if (!session.masterClientId || !this._isClientConnected(session, session.masterClientId)) {
+            session.masterClientId = ws.id;
+            isMaster = true;
+        } else {
+            isMaster = (session.masterClientId === ws.id);
+        }
+
+        // Lấy chuỗi lịch sử chuẩn hóa từ AnsiRingBuffer
+        const history = typeof session.buffer?.getContents === 'function'
+            ? session.buffer.getContents()
+            : (session.buffer || '');
+
+        // Gửi thông báo kết nối thành công kèm toàn bộ buffer lịch sử và vai trò Master/Follower
         ws.send(JSON.stringify({
             type: 'attached',
             sessionId: id,
@@ -303,7 +360,9 @@ class PtySessionManager extends EventEmitter {
             cols: session.cols,
             rows: session.rows,
             status: session.status,
-            history: session.buffer
+            history,
+            isMaster,
+            masterId: session.masterClientId
         }));
 
         return true;
@@ -316,15 +375,62 @@ class PtySessionManager extends EventEmitter {
         const session = this.sessions.get(id);
         if (session) {
             session.subscribers.delete(ws);
+            // Kiểm tra xả đệm để resume PTY nếu client bị nghẽn ngắt kết nối
+            this._checkDrain(session);
+
+            // Graceful Master Handover: nếu Master ngắt kết nối, chuyển quyền cho Follower kế tiếp
+            if (ws && ws.id && session.masterClientId === ws.id) {
+                session.masterClientId = null;
+                for (const candidate of session.subscribers) {
+                    if (candidate.readyState === 1) {
+                        session.masterClientId = candidate.id;
+                        candidate.send(JSON.stringify({
+                            type: 'master_promoted',
+                            sessionId: id,
+                            cols: session.cols,
+                            rows: session.rows
+                        }));
+                        break;
+                    }
+                }
+            }
         }
     }
 
     /**
-     * Ghi input từ điện thoại vào terminal PTY
+     * Kiểm tra xem một clientId có đang kết nối mở hay không
+     * @private
      */
-    write(id, data) {
+    _isClientConnected(session, clientId) {
+        for (const ws of session.subscribers) {
+            if (ws.id === clientId && ws.readyState === 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Ghi input từ điện thoại vào terminal PTY
+     * Active Writer Wins (P1.2): Client gửi input tự động giành quyền Master
+     */
+    write(id, data, ws = null) {
         const session = this.sessions.get(id);
         if (session && session.status === 'running') {
+            if (ws && ws.id && session.masterClientId !== ws.id) {
+                session.masterClientId = ws.id;
+                for (const sub of session.subscribers) {
+                    if (sub.readyState === 1) {
+                        sub.send(JSON.stringify({
+                            type: 'master_changed',
+                            sessionId: id,
+                            masterId: ws.id,
+                            isMaster: sub === ws
+                        }));
+                    }
+                }
+            }
+
             session.pty.write(data);
             return true;
         }
@@ -333,20 +439,59 @@ class PtySessionManager extends EventEmitter {
 
     /**
      * Thay đổi kích thước terminal (Resize)
+     * P1.2 Viewport Arbitration: Chỉ chấp nhận resize từ Master + Debounce 120ms
      */
-    resize(id, cols, rows) {
+    resize(id, cols, rows, ws = null) {
         const session = this.sessions.get(id);
-        if (session && session.status === 'running') {
-            try {
-                session.cols = cols;
-                session.rows = rows;
-                session.pty.resize(cols, rows);
-                return true;
-            } catch (err) {
-                console.error(`[PtyManager] Resize error for session ${id}:`, err.message);
+        if (!session || session.status !== 'running') return false;
+
+        // Nếu client gọi resize không phải là Master -> Từ chối và gửi lại kích thước Master hiện tại
+        if (ws && ws.id && session.masterClientId && session.masterClientId !== ws.id) {
+            if (ws.readyState === 1) {
+                ws.send(JSON.stringify({
+                    type: 'pty_dimensions',
+                    sessionId: id,
+                    cols: session.cols,
+                    rows: session.rows,
+                    masterId: session.masterClientId,
+                    rejected: true
+                }));
             }
+            return false;
         }
-        return false;
+
+        // Debounce resize 120ms chống spam lệnh khi kéo thả cửa sổ
+        if (session._resizeDebounceTimer) {
+            clearTimeout(session._resizeDebounceTimer);
+        }
+
+        session._resizeDebounceTimer = setTimeout(() => {
+            session._resizeDebounceTimer = null;
+            if (session.status === 'running') {
+                try {
+                    session.cols = cols;
+                    session.rows = rows;
+                    session.pty.resize(cols, rows);
+
+                    // Đồng bộ kích thước mới tới các client Follower
+                    for (const sub of session.subscribers) {
+                        if (sub !== ws && sub.readyState === 1) {
+                            sub.send(JSON.stringify({
+                                type: 'pty_dimensions',
+                                sessionId: id,
+                                cols,
+                                rows,
+                                masterId: session.masterClientId
+                            }));
+                        }
+                    }
+                } catch (err) {
+                    console.error(`[PtyManager] Resize error for session ${id}:`, err.message);
+                }
+            }
+        }, 120);
+
+        return true;
     }
 
     /**
@@ -355,6 +500,21 @@ class PtySessionManager extends EventEmitter {
     closeSession(id) {
         const session = this.sessions.get(id);
         if (!session) return false;
+
+        // Dọn dẹp bộ đệm và timer kiểm soát luồng
+        if (session._drainInterval) {
+            clearInterval(session._drainInterval);
+            session._drainInterval = null;
+        }
+
+        if (session._resizeDebounceTimer) {
+            clearTimeout(session._resizeDebounceTimer);
+            session._resizeDebounceTimer = null;
+        }
+
+        if (session.buffer && typeof session.buffer.clear === 'function') {
+            session.buffer.clear();
+        }
 
         if (session.status === 'running') {
             try {
@@ -386,77 +546,50 @@ class PtySessionManager extends EventEmitter {
     }
 
     /**
-     * Lấy cây tiến trình con của session (Task Manager Inspector)
+     * Lấy cây tiến trình con của session (P0.3 High-Speed Process Tree via Toolhelp Snapshot)
      */
     async getChildProcesses(sessionId) {
         const session = this.sessions.get(sessionId);
         if (!session || !session.pty) return { success: false, error: 'Session not found' };
 
         const rootPid = session.pty.pid;
+        const fallback = [{
+            pid: rootPid,
+            name: session.shellName,
+            ppid: 0,
+            ramMb: 0,
+            isRoot: true,
+            cmd: ''
+        }];
+
         return new Promise((resolve) => {
-            const cmd = `powershell -NoProfile -Command "Get-CimInstance Win32_Process | Select-Object ProcessId, ParentProcessId, Name, @{Name='WorkingSetMb';Expression={[math]::Round($_.WorkingSetSize / 1MB, 1)}}, CommandLine | ConvertTo-Json -Compress"`;
-            exec(cmd, { maxBuffer: 10 * 1024 * 1024, timeout: 6000 }, (err, stdout) => {
-                if (err) {
-                    return resolve({
-                        success: true,
-                        rootPid,
-                        sessionName: session.name,
-                        shellId: session.shellId,
-                        cwd: session.cwd,
-                        processes: [{ pid: rootPid, name: session.shellName, ppid: 0, ramMb: 0, isRoot: true, cmd: '' }]
-                    });
-                }
-                try {
-                    let allProcesses = JSON.parse(stdout.trim());
-                    if (!Array.isArray(allProcesses)) {
-                        allProcesses = [allProcesses];
-                    }
-
-                    // Tìm root process và các tiến trình con cháu (descendants)
-                    const pids = new Set([rootPid]);
-                    let added = true;
-                    while (added) {
-                        added = false;
-                        for (const p of allProcesses) {
-                            if (p && p.ParentProcessId && pids.has(p.ParentProcessId) && !pids.has(p.ProcessId)) {
-                                pids.add(p.ProcessId);
-                                added = true;
-                            }
-                        }
-                    }
-
-                    const result = [];
-                    for (const p of allProcesses) {
-                        if (p && pids.has(p.ProcessId)) {
-                            result.push({
-                                pid: p.ProcessId,
-                                ppid: p.ParentProcessId,
-                                name: p.Name,
-                                ramMb: p.WorkingSetMb || 0,
-                                cmd: p.CommandLine || '',
-                                isRoot: p.ProcessId === rootPid
+            // Sử dụng C# ConsoleBridge tree (tốc độ < 10ms qua Toolhelp Snapshot, không tốn CPU)
+            execFile(bridgePath, ['tree', String(rootPid)], { timeout: 1500, windowsHide: true }, (err, stdout) => {
+                if (!err && stdout) {
+                    try {
+                        const processes = JSON.parse(stdout.trim());
+                        if (Array.isArray(processes) && processes.length > 0) {
+                            return resolve({
+                                success: true,
+                                rootPid,
+                                sessionName: session.name,
+                                shellId: session.shellId,
+                                cwd: session.cwd,
+                                processes
                             });
                         }
-                    }
-
-                    resolve({
-                        success: true,
-                        rootPid,
-                        sessionName: session.name,
-                        shellId: session.shellId,
-                        cwd: session.cwd,
-                        processes: result
-                    });
-                } catch (parseErr) {
-                    resolve({
-                        success: true,
-                        rootPid,
-                        sessionName: session.name,
-                        shellId: session.shellId,
-                        cwd: session.cwd,
-                        processes: [{ pid: rootPid, name: session.shellName, ppid: 0, ramMb: 0, isRoot: true, cmd: '' }]
-                    });
+                    } catch (_) {}
                 }
+
+                // Fallback an toàn nếu bridge chưa sẵn sàng
+                resolve({
+                    success: true,
+                    rootPid,
+                    sessionName: session.name,
+                    shellId: session.shellId,
+                    cwd: session.cwd,
+                    processes: fallback
+                });
             });
         });
     }
