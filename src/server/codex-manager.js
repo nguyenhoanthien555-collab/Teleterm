@@ -9,7 +9,12 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { spawn, exec } = require('child_process');
-const { DatabaseSync } = require('node:sqlite');
+let DatabaseSync = null;
+try {
+    DatabaseSync = require('node:sqlite').DatabaseSync;
+} catch (e) {
+    DatabaseSync = null;
+}
 const logger = require('./logger');
 
 const CODEX_DIR = path.join(os.homedir(), '.codex');
@@ -69,6 +74,9 @@ class CodexManager {
      * Get sidebar data: Projects and Recents with status
      */
     async getSidebar() {
+        if (!DatabaseSync) {
+            return { success: false, error: 'SQLite not supported on this Node.js version', projects: [], recents: [] };
+        }
         if (!fs.existsSync(STATE_DB_PATH)) {
             return { success: false, error: 'Codex state database not found', projects: [], recents: [] };
         }
@@ -154,6 +162,9 @@ class CodexManager {
      * Get full thread details: turns, thoughts, commands, diffs
      */
     async getThreadDetails(threadId) {
+        if (!DatabaseSync) {
+            return { success: false, error: 'SQLite not supported on this Node.js version' };
+        }
         if (!fs.existsSync(STATE_DB_PATH) || !fs.existsSync(HISTORY_DB_PATH)) {
             return { success: false, error: 'Database not found' };
         }
