@@ -1,4 +1,9 @@
-const pty = require('node-pty');
+let pty = null;
+try {
+    pty = require('node-pty');
+} catch (e) {
+    console.warn('[PTY] node-pty not available in this environment (cloud MMO mode):', e.message);
+}
 const os = require('os');
 const path = require('path');
 const fs = require('fs');
@@ -59,6 +64,9 @@ class PtySessionManager extends EventEmitter {
         const spawnArgs = customArgs !== undefined ? customArgs : (shellConfig.args || []);
 
         // Khởi chạy Windows ConPTY qua node-pty
+        if (!pty) {
+            throw new Error('Local PTY terminal is disabled on Cloud Multiplayer Gateway.');
+        }
         const ptyProcess = pty.spawn(shellConfig.path, spawnArgs, {
             name: 'xterm-256color',
             cols: targetCols,
