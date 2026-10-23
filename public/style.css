@@ -623,6 +623,47 @@ input[type="checkbox"] {
     box-shadow: none;
 }
 
+.cyber-btn-download-pc {
+    background: linear-gradient(135deg, rgba(0, 240, 255, 0.15) 0%, rgba(139, 92, 246, 0.12) 100%) !important;
+    border: 1px solid rgba(0, 240, 255, 0.45) !important;
+    color: #00f0ff !important;
+    font-weight: 700 !important;
+    text-decoration: none !important;
+    box-shadow: 0 0 14px rgba(0, 240, 255, 0.22) !important;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+[data-theme="light"] .cyber-btn-download-pc {
+    background: linear-gradient(135deg, rgba(201, 100, 66, 0.15) 0%, rgba(201, 100, 66, 0.08) 100%) !important;
+    border: 1px solid var(--claude-accent) !important;
+    color: var(--claude-accent) !important;
+    box-shadow: 0 2px 10px rgba(201, 100, 66, 0.18) !important;
+}
+
+.cyber-btn-download-pc:hover {
+    background: #00f0ff !important;
+    color: #040711 !important;
+    border-color: #00f0ff !important;
+    transform: translateY(-2px) scale(1.02) !important;
+    box-shadow: 0 4px 22px rgba(0, 240, 255, 0.5) !important;
+}
+
+[data-theme="light"] .cyber-btn-download-pc:hover {
+    background: var(--claude-accent) !important;
+    color: #ffffff !important;
+    border-color: var(--claude-accent) !important;
+    box-shadow: 0 4px 18px rgba(201, 100, 66, 0.4) !important;
+}
+
+.cyber-btn-download-pc:active {
+    transform: translateY(0) scale(0.98) !important;
+}
+
+.cyber-btn-download-pc:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.5), 0 0 20px rgba(0, 240, 255, 0.4) !important;
+}
+
 .btn-theme-toggle {
     background: var(--claude-surface);
     border: 1px solid var(--claude-border);
@@ -6570,38 +6611,38 @@ body.mode-focus .player-inventory-hotbar {
     display: flex;
     gap: 6px;
     padding: 6px 10px;
-    background: rgba(15, 23, 42, 0.88);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1.5px solid rgba(56, 189, 248, 0.35);
+    background: var(--claude-surface-translucent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--claude-border);
     border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 16px rgba(56, 189, 248, 0.2);
+    box-shadow: var(--claude-card-shadow);
 }
 
 .inventory-slot {
     position: relative;
     width: 44px;
     height: 44px;
-    background: rgba(30, 41, 59, 0.7);
-    border: 1.5px solid rgba(148, 163, 184, 0.2);
+    background: var(--claude-surface);
+    border: 1px solid var(--claude-border-subtle);
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all 0.2s var(--spring-ease);
 }
 
 .inventory-slot:hover {
-    border-color: rgba(0, 240, 255, 0.6);
-    background: rgba(30, 41, 59, 0.9);
+    border-color: var(--claude-border-hover);
+    background: var(--claude-surface-hover);
     transform: translateY(-2px);
 }
 
 .inventory-slot.active {
-    border-color: #00f0ff;
-    box-shadow: 0 0 12px rgba(0, 240, 255, 0.5);
-    background: rgba(14, 165, 233, 0.25);
+    border-color: var(--claude-accent);
+    box-shadow: 0 0 14px var(--claude-accent-soft);
+    background: var(--claude-accent-soft);
     transform: translateY(-3px);
 }
 
@@ -6610,13 +6651,13 @@ body.mode-focus .player-inventory-hotbar {
     top: 2px;
     left: 4px;
     font-size: 10px;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-weight: 700;
-    color: rgba(148, 163, 184, 0.7);
+    color: var(--claude-text-tertiary);
 }
 
 .inventory-slot.active .slot-key {
-    color: #00f0ff;
+    color: var(--claude-accent);
 }
 
 .slot-icon {
@@ -6628,13 +6669,14 @@ body.mode-focus .player-inventory-hotbar {
     position: absolute;
     bottom: -4px;
     right: -4px;
-    background: #00f0ff;
-    color: #04060a;
+    background: var(--claude-accent);
+    color: #ffffff;
     font-size: 8px;
     font-weight: 900;
     padding: 1px 4px;
     border-radius: 4px;
     text-transform: uppercase;
+    font-family: var(--font-mono);
 }
 
 @media (max-width: 640px) {
