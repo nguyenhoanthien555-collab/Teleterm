@@ -1593,6 +1593,12 @@ server.on('upgrade', (request, socket, head) => {
     if (!session && isDirect) {
         session = desktopAuth.authManager.getOrCreateLocalOwnerSession(request, null);
     }
+    if (!session && url.pathname === '/ws/world') {
+        const guestSeed = crypto.randomBytes(8).toString('hex');
+        const userId = desktopAuth.authManager.generateUserId('guest', guestSeed);
+        const created = desktopAuth.authManager.createSession(userId, 'guest', guestSeed, { displayName: 'CyberNomad_' + guestSeed.slice(0, 4) });
+        session = created.session;
+    }
     const address = request.socket.remoteAddress || 'unknown';
     const bucketKey = session ? `${address}:${session.userId}` : `unauthenticated:${address}`;
     const now = Date.now();

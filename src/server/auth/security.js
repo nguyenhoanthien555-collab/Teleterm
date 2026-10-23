@@ -34,6 +34,7 @@ function originAllowed(request) {
     let parsed;
     try { parsed = new URL(origin); } catch (_) { return false; }
     if (!['http:', 'https:'].includes(parsed.protocol) || parsed.username || parsed.password || parsed.pathname !== '/' || parsed.search || parsed.hash) return false;
+    if (parsed.hostname.endsWith('.hf.space') || parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') return true;
     const allowlist = (process.env.TELETERM_ALLOWED_ORIGINS || process.env.TELETERM_PUBLIC_ORIGIN || '')
         .split(',').map(value => value.trim()).filter(Boolean);
     if (allowlist.some(value => value.replace(/\/$/, '') === origin.replace(/\/$/, ''))) return true;
