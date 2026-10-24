@@ -82,9 +82,9 @@ export class CinematicPostProcessing {
             // 2. Cinematic Anime Bloom Pass (Kawase pyramid, half-resolution 0.5x for 75% GPU blur fill-rate saving)
             this.bloomPass = new UnrealBloomPass(
                 new THREE.Vector2(Math.max(1, Math.floor(this.width * 0.5)), Math.max(1, Math.floor(this.height * 0.5))),
-                0.20,  // strength: gentle cinematic glow without blinding whiteout
-                0.35,  // radius
-                0.94   // threshold: only radiant highlights bloom, keeping skies & water crisp
+                0.30,  // strength: radiant anime glow without blinding whiteout
+                0.44,  // radius: soft cinematic light dispersion
+                0.83   // threshold: emissive cyber items, fireflies & sun flare bloom beautifully
             );
             this.composer.addPass(this.bloomPass);
 
@@ -125,9 +125,9 @@ export class CinematicPostProcessing {
                 this.composer.setPixelRatio(pixelRatio);
                 if (this.bloomPass) {
                     this.bloomPass.enabled = true;
-                    this.bloomPass.strength = 0.24;
-                    this.bloomPass.radius = 0.38;
-                    this.bloomPass.threshold = 0.93;
+                    this.bloomPass.strength = 0.35;
+                    this.bloomPass.radius = 0.48;
+                    this.bloomPass.threshold = 0.82;
                 }
 
                 // Subpixel Morphological Anti-Aliasing for crisp anime outlines
@@ -147,9 +147,9 @@ export class CinematicPostProcessing {
                 this.composer.setPixelRatio(pixelRatio);
                 if (this.bloomPass) {
                     this.bloomPass.enabled = true;
-                    this.bloomPass.strength = 0.20;
-                    this.bloomPass.radius = 0.35;
-                    this.bloomPass.threshold = 0.94;
+                    this.bloomPass.strength = 0.30;
+                    this.bloomPass.radius = 0.44;
+                    this.bloomPass.threshold = 0.84;
                 }
                 this._fallbackToFXAA(pixelRatio);
                 break;
@@ -159,9 +159,9 @@ export class CinematicPostProcessing {
                 this.composer.setPixelRatio(Math.max(0.75, pixelRatio * 0.75));
                 if (this.bloomPass) {
                     this.bloomPass.enabled = true;
-                    this.bloomPass.strength = 0.15;
-                    this.bloomPass.radius = 0.30;
-                    this.bloomPass.threshold = 0.95;
+                    this.bloomPass.strength = 0.22;
+                    this.bloomPass.radius = 0.36;
+                    this.bloomPass.threshold = 0.88;
                 }
                 this._fallbackToFXAA(pixelRatio * 0.75);
                 break;

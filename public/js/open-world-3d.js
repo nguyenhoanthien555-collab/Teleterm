@@ -2152,37 +2152,38 @@ export class OpenWorld3D {
        ========================================================================= */
     initSunShaderFx() {
         if (this.sunFlareMesh) return;
-        // Procedural Radiant Sun Flare Billboard in sky (Minecraft BSL/Complementary style)
+        // Procedural Volumetric Radiant Sun Flare Billboard in sky (Ghibli God Rays & Corona)
         const canvas = document.createElement('canvas');
-        canvas.width = 256;
-        canvas.height = 256;
+        canvas.width = 512;
+        canvas.height = 512;
         const ctx = canvas.getContext('2d');
-        const rad = ctx.createRadialGradient(128, 128, 6, 128, 128, 124);
+        const rad = ctx.createRadialGradient(256, 256, 12, 256, 256, 248);
         rad.addColorStop(0.0, 'rgba(255, 255, 255, 1.0)');
-        rad.addColorStop(0.18, 'rgba(254, 240, 138, 0.95)'); // Sunburst golden yellow
-        rad.addColorStop(0.44, 'rgba(251, 146, 60, 0.42)');  // Warm peach flare
-        rad.addColorStop(0.75, 'rgba(244, 63, 94, 0.12)');   // Atmospheric sunset corona
+        rad.addColorStop(0.12, 'rgba(255, 248, 220, 0.98)'); // Radiant anime sun core
+        rad.addColorStop(0.28, 'rgba(254, 240, 138, 0.85)'); // Golden Ghibli corona
+        rad.addColorStop(0.55, 'rgba(251, 146, 60, 0.35)');  // Warm peach atmospheric dispersion
+        rad.addColorStop(0.80, 'rgba(244, 63, 94, 0.10)');   // Subtle sunset hue
         rad.addColorStop(1.0, 'rgba(0, 0, 0, 0.0)');
         ctx.fillStyle = rad;
-        ctx.fillRect(0, 0, 256, 256);
+        ctx.fillRect(0, 0, 512, 512);
 
-        // Add 8 subtle golden lens rays
-        ctx.strokeStyle = 'rgba(254, 240, 138, 0.38)';
-        ctx.lineWidth = 3;
-        for (let i = 0; i < 4; i++) {
+        // Add 12 golden cinematic volumetric god-rays
+        ctx.lineWidth = 4;
+        for (let i = 0; i < 6; i++) {
+            const angle = (i * Math.PI) / 6;
+            ctx.strokeStyle = (i % 2 === 0) ? 'rgba(254, 240, 138, 0.45)' : 'rgba(255, 255, 255, 0.30)';
             ctx.beginPath();
-            const angle = (i * Math.PI) / 4;
-            ctx.moveTo(128 + Math.cos(angle) * 122, 128 + Math.sin(angle) * 122);
-            ctx.lineTo(128 - Math.cos(angle) * 122, 128 - Math.sin(angle) * 122);
+            ctx.moveTo(256 + Math.cos(angle) * 240, 256 + Math.sin(angle) * 240);
+            ctx.lineTo(256 - Math.cos(angle) * 240, 256 - Math.sin(angle) * 240);
             ctx.stroke();
         }
 
         const tex = new THREE.CanvasTexture(canvas);
-        const geo = new THREE.PlaneGeometry(55, 55);
+        const geo = new THREE.PlaneGeometry(85, 85);
         const mat = new THREE.MeshBasicMaterial({
             map: tex,
             transparent: true,
-            opacity: 0.92,
+            opacity: 0.95,
             blending: THREE.AdditiveBlending,
             depthWrite: false,
             side: THREE.DoubleSide
@@ -2368,7 +2369,7 @@ export class OpenWorld3D {
     }
 
     updatePcMaxEnvironmentMaterials() {
-        const enabled = this.graphicsSettings?.platform === 'pc' && this.graphicsSettings?.preset === 'max';
+        const enabled = this.graphicsSettings?.platform === 'pc' && (this.graphicsSettings?.preset === 'max' || this.graphicsSettings?.preset === 'high');
         if (!enabled) {
             this.pcMaxMaterialEnhancer?.setEnabled(false);
             return;
@@ -2382,7 +2383,7 @@ export class OpenWorld3D {
         this.pcMaxMaterialEnhancerLoad ||= import('./world/pc-max-materials.js?v=37')
             .then(({ PcMaxMaterialEnhancer }) => {
                 this.pcMaxMaterialEnhancer ||= new PcMaxMaterialEnhancer(this.scene);
-                const stillEnabled = this.graphicsSettings?.platform === 'pc' && this.graphicsSettings?.preset === 'max';
+                const stillEnabled = this.graphicsSettings?.platform === 'pc' && (this.graphicsSettings?.preset === 'max' || this.graphicsSettings?.preset === 'high');
                 this.pcMaxMaterialEnhancer.setEnabled(stillEnabled);
             })
             .catch((error) => console.warn('[PC Max] Could not load environment material upgrade:', error));
@@ -2391,37 +2392,37 @@ export class OpenWorld3D {
     setShaderMode(mode) {
         const isEnhanced = (mode === 'enhanced');
 
-        // Sun corona & bloom
+        // Sun corona, god rays & bloom
         if (this.sunFlareMesh) {
             this.sunFlareMesh.visible = isEnhanced;
         }
 
         // Tone Mapping Exposure & Warmth - Perfectly balanced anime daylight, crisp and gentle on the eyes
         if (this.renderer) {
-            this.renderer.toneMappingExposure = isEnhanced ? 1.05 : 1.00;
+            this.renderer.toneMappingExposure = isEnhanced ? 1.08 : 1.00;
         }
 
         // Camera-mounted soft avatar fill light
         if (this.avatarFrontLight) {
-            this.avatarFrontLight.intensity = isEnhanced ? 0.22 : 0.18;
+            this.avatarFrontLight.intensity = isEnhanced ? 0.28 : 0.18;
         }
 
         // Water System: Specular glint & caustics shimmer
         const ws = this.worldComposition?.waterSystem || this.worldComposition?.water;
         if (ws) {
             if (ws.waterMat) {
-                ws.waterMat.roughness = isEnhanced ? 0.02 : 0.04;
-                ws.waterMat.metalness = isEnhanced ? 0.32 : 0.18;
-                ws.waterMat.bumpScale = isEnhanced ? 0.022 : 0.012;
+                ws.waterMat.roughness = isEnhanced ? 0.015 : 0.04;
+                ws.waterMat.metalness = isEnhanced ? 0.42 : 0.18;
+                ws.waterMat.bumpScale = isEnhanced ? 0.026 : 0.012;
             }
             if (ws.streamMat) {
-                ws.streamMat.roughness = isEnhanced ? 0.02 : 0.05;
-                ws.streamMat.metalness = isEnhanced ? 0.36 : 0.22;
-                ws.streamMat.bumpScale = isEnhanced ? 0.024 : 0.014;
+                ws.streamMat.roughness = isEnhanced ? 0.015 : 0.05;
+                ws.streamMat.metalness = isEnhanced ? 0.45 : 0.22;
+                ws.streamMat.bumpScale = isEnhanced ? 0.028 : 0.014;
             }
             if (ws.paddyWaterMat) {
-                ws.paddyWaterMat.roughness = isEnhanced ? 0.03 : 0.06;
-                ws.paddyWaterMat.metalness = isEnhanced ? 0.28 : 0.15;
+                ws.paddyWaterMat.roughness = isEnhanced ? 0.025 : 0.06;
+                ws.paddyWaterMat.metalness = isEnhanced ? 0.35 : 0.15;
             }
         }
 
@@ -2429,11 +2430,20 @@ export class OpenWorld3D {
         const as = this.worldComposition?.atmosphereSystem || this.worldComposition?.atmosphere;
         if (as) {
             if (as.rimLight) {
-                as.rimLight.intensity = isEnhanced ? 0.85 : 0.65;
-                as.rimLight.color.setHex(0xffedd5);
+                as.rimLight.intensity = isEnhanced ? 1.15 : 0.65;
+                as.rimLight.color.setHex(0xfff1e6); // Radiant warm golden anime rim
             }
             if (as.sunLight) {
-                as.sunLight.intensity = isEnhanced ? 0.55 : 0.45;
+                as.sunLight.intensity = isEnhanced ? 0.65 : 0.45;
+            }
+        }
+
+        // Ghibli Atmospheric Depth Fog (Soft horizon haze)
+        if (this.scene) {
+            if (isEnhanced) {
+                this.scene.fog = new THREE.FogExp2(0xb8d5f4, 0.0022);
+            } else {
+                this.scene.fog = null;
             }
         }
     }

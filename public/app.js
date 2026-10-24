@@ -4,7 +4,7 @@
  * Xterm.js ConPTY, Codex AI, Interactive Antigravity Web Chat, and Accounts/Quota Switcher.
  */
 
-import { OpenWorld3D } from './js/open-world-3d.js?v=47';
+import { OpenWorld3D } from './js/open-world-3d.js?v=48';
 import { NpcDialogueSystem } from './js/npc-dialogue-system.js';
 import { AntigravityWebChat } from './js/antigravity-web-chat.js';
 import { TerminalManager } from './js/terminal-manager.js';
