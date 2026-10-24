@@ -6,37 +6,37 @@
 
 :root,
 [data-theme="dark"] {
-    /* Claude.ai Dark Palette (Warm Obsidian & Terracotta) */
-    --claude-bg: #18181a;
-    --claude-bg-translucent: rgba(24, 24, 26, 0.92);
-    --claude-sidebar: #141312;
-    --claude-surface: #21201d;
-    --claude-surface-translucent: rgba(33, 32, 29, 0.90);
-    --claude-surface-elevated: #282724;
-    --claude-surface-hover: rgba(255, 255, 255, 0.06);
-    --claude-surface-active: #32302c;
+    /* TeleTerm Cyber-Ghibli Palette (Deep Space Slate & Electric Cyan) */
+    --claude-bg: #070d18;
+    --claude-bg-translucent: rgba(7, 13, 24, 0.92);
+    --claude-sidebar: #050811;
+    --claude-surface: #0e172a;
+    --claude-surface-translucent: rgba(14, 23, 42, 0.88);
+    --claude-surface-elevated: #1e293b;
+    --claude-surface-hover: rgba(255, 255, 255, 0.08);
+    --claude-surface-active: rgba(0, 240, 255, 0.12);
     
-    --claude-border: rgba(255, 255, 255, 0.08);
-    --claude-border-subtle: rgba(255, 255, 255, 0.05);
-    --claude-border-hover: rgba(255, 255, 255, 0.16);
-    --claude-border-active: rgba(218, 119, 86, 0.6);
+    --claude-border: rgba(255, 255, 255, 0.10);
+    --claude-border-subtle: rgba(255, 255, 255, 0.06);
+    --claude-border-hover: rgba(0, 240, 255, 0.35);
+    --claude-border-active: rgba(0, 240, 255, 0.65);
     
-    --claude-accent: #da7756;           /* Signature Claude Terracotta / Warm Coral */
-    --claude-accent-hover: #ea8867;
-    --claude-accent-active: #c56545;
-    --claude-accent-soft: rgba(218, 119, 86, 0.15);
+    --claude-accent: #00f0ff;           /* TeleTerm Signature Electric Cyan */
+    --claude-accent-hover: #38bdf8;
+    --claude-accent-active: #0284c7;
+    --claude-accent-soft: rgba(0, 240, 255, 0.14);
     
-    --claude-text-primary: #edeae3;     /* Soft Warm Ivory */
-    --claude-text-secondary: #a39e93;   /* Warm Muted Gray */
-    --claude-text-tertiary: #6d6961;    /* Deep Muted Gray */
+    --claude-text-primary: #f8fafc;     /* Crisp Pure Slate */
+    --claude-text-secondary: #94a3b8;   /* Muted Slate */
+    --claude-text-tertiary: #64748b;    /* Deep Slate */
     
-    --claude-emerald: #52a373;
-    --claude-amber: #d49746;
-    --claude-violet: #9d85b5;
-    --claude-rose: #d66060;
+    --claude-emerald: #10b981;
+    --claude-amber: #f59e0b;
+    --claude-violet: #8b5cf6;
+    --claude-rose: #f43f5e;
     
-    --claude-card-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
-    --claude-modal-shadow: 0 24px 64px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    --claude-card-shadow: 0 4px 20px rgba(0, 0, 0, 0.55);
+    --claude-modal-shadow: 0 24px 64px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(0, 240, 255, 0.25);
     
     /* Legacy Variable Bindings */
     --bg-deep: var(--claude-bg);
@@ -46,13 +46,13 @@
 
     --border-subtle: var(--claude-border);
     --border-cyan: var(--claude-border-active);
-    --border-glow: none;
+    --border-glow: 0 0 14px rgba(0, 240, 255, 0.35);
 
-    --cyber-cyan: var(--claude-accent);
-    --cyber-emerald: var(--claude-emerald);
-    --cyber-violet: var(--claude-violet);
-    --cyber-amber: var(--claude-amber);
-    --cyber-rose: var(--claude-rose);
+    --cyber-cyan: #00f0ff;
+    --cyber-emerald: #10b981;
+    --cyber-violet: #8b5cf6;
+    --cyber-amber: #f59e0b;
+    --cyber-rose: #f43f5e;
     
     --text-primary: var(--claude-text-primary);
     --text-muted: var(--claude-text-secondary);
@@ -4759,7 +4759,7 @@ body:not(.mode-explore) .anime-comic-speech-bubble {
     100% { opacity: 0; transform: translate(-50%, -20px) scale(0.95); }
 }
 
-/* 2. MMO Top-Left Global & Whisper Chat — Claude.ai Minimalist */
+/* 2. MMO Top-Left Global & Whisper Chat — Cyber-Ghibli Dark Glassmorphism */
 .mmo-chat-container {
     position: fixed;
     top: 56px;
@@ -4768,16 +4768,16 @@ body:not(.mode-explore) .anime-comic-speech-bubble {
     height: 250px;
     max-height: 36vh;
     background: var(--claude-surface-translucent);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--claude-border);
-    border-radius: 10px;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(0, 240, 255, 0.22);
+    border-radius: 14px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     z-index: 85;
-    box-shadow: var(--claude-card-shadow);
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 240, 255, 0.08);
+    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     pointer-events: auto;
 }
 .mmo-chat-container.chat-closed {
@@ -5006,10 +5006,11 @@ body:not(.mode-explore) .anime-comic-speech-bubble {
     box-shadow: 0 0 0 2px var(--claude-accent-soft);
 }
 .btn-mmo-chat-send {
-    background: var(--claude-accent);
+    background: linear-gradient(135deg, #00f0ff, #38bdf8);
     border: none;
-    border-radius: 6px;
-    color: #fff;
+    border-radius: 7px;
+    color: #050b16;
+    font-weight: 800;
     width: 30px;
     height: 26px;
     cursor: pointer;
@@ -5018,7 +5019,8 @@ body:not(.mode-explore) .anime-comic-speech-bubble {
     justify-content: center;
     font-size: 11px;
     flex-shrink: 0;
-    transition: transform 0.12s ease;
+    box-shadow: 0 2px 8px rgba(0, 240, 255, 0.35);
+    transition: transform 0.12s ease, filter 0.15s ease;
 }
 .btn-mmo-chat-send:hover {
     filter: brightness(1.1);
@@ -9448,9 +9450,10 @@ body:has(.mmo-chat-container.chat-closed) .genshin-quest-tracker.collapsed {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(10, 15, 29, 0.75);
-    backdrop-filter: blur(8px);
-    transition: opacity 0.25s ease;
+    background: rgba(6, 11, 24, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .pet-companion-overlay.hidden {
@@ -9460,111 +9463,140 @@ body:has(.mmo-chat-container.chat-closed) .genshin-quest-tracker.collapsed {
 }
 
 .pet-card {
-    width: 380px;
-    max-width: 90vw;
-    background: linear-gradient(145deg, rgba(26, 32, 53, 0.95), rgba(15, 23, 42, 0.98));
-    border: 1px solid rgba(244, 63, 94, 0.35);
-    border-radius: 20px;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 25px rgba(244, 63, 94, 0.2);
+    width: 400px;
+    max-width: 92vw;
+    background: rgba(13, 20, 36, 0.90);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(0, 240, 255, 0.28);
+    border-radius: 22px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 35px rgba(0, 240, 255, 0.16);
     padding: 24px;
     display: flex;
     flex-direction: column;
     gap: 18px;
     color: #e2e8f0;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    animation: petCardEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes petCardEnter {
+    from {
+        opacity: 0;
+        transform: scale(0.94) translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
 .pet-header {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
 }
 
 .pet-avatar-icon {
     font-size: 2.2rem;
+    filter: drop-shadow(0 2px 8px rgba(0, 240, 255, 0.3));
 }
 
 .pet-title {
     margin: 0;
-    font-size: 1.15rem;
+    font-size: 1.25rem;
     font-weight: 800;
-    color: #f8fafc;
+    color: #ffffff;
     letter-spacing: -0.01em;
 }
 
 .pet-subtitle {
-    margin: 2px 0 0;
+    margin: 3px 0 0;
     font-size: 0.78rem;
     color: #94a3b8;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.02em;
 }
 
 .pet-close-btn {
     margin-left: auto;
-    background: none;
-    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     color: #94a3b8;
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     cursor: pointer;
     line-height: 1;
-    transition: color 0.15s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .pet-close-btn:hover {
-    color: #f43f5e;
+    background: rgba(0, 240, 255, 0.15);
+    border-color: rgba(0, 240, 255, 0.4);
+    color: #00f0ff;
+    transform: scale(1.08);
 }
 
 .pet-stats-panel {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    background: rgba(0, 0, 0, 0.3);
-    padding: 14px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(5, 10, 22, 0.65);
+    padding: 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .pet-stat-row {
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-size: 0.82rem;
+    gap: 12px;
+    font-size: 0.84rem;
 }
 
 .stat-label {
-    width: 75px;
+    width: 80px;
     font-weight: 700;
     color: #cbd5e1;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
 }
 
 .stat-bar-track {
     flex: 1;
     height: 10px;
     background: rgba(255, 255, 255, 0.08);
-    border-radius: 5px;
+    border-radius: 9999px;
     overflow: hidden;
 }
 
 .stat-bar-fill {
     height: 100%;
-    border-radius: 5px;
-    transition: width 0.3s ease;
+    border-radius: 9999px;
+    transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .bar-happiness {
-    background: linear-gradient(90deg, #f43f5e, #fb7185);
-    box-shadow: 0 0 10px rgba(244, 63, 94, 0.5);
+    background: linear-gradient(90deg, #00f0ff, #38bdf8);
+    box-shadow: 0 0 12px rgba(0, 240, 255, 0.45);
 }
 
 .bar-stamina {
     background: linear-gradient(90deg, #10b981, #34d399);
-    box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.45);
 }
 
 .stat-val {
-    font-family: monospace;
+    font-family: 'JetBrains Mono', monospace;
     font-weight: 800;
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     color: #f1f5f9;
-    width: 35px;
+    width: 40px;
     text-align: right;
 }
 
@@ -9573,8 +9605,9 @@ body:has(.mmo-chat-container.chat-closed) .genshin-quest-tracker.collapsed {
     align-items: center;
     gap: 8px;
     font-size: 0.78rem;
-    color: #38bdf8;
+    color: #00f0ff;
     font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
     margin-top: 4px;
 }
 
@@ -9582,8 +9615,8 @@ body:has(.mmo-chat-container.chat-closed) .genshin-quest-tracker.collapsed {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #38bdf8;
-    box-shadow: 0 0 8px #38bdf8;
+    background: #00f0ff;
+    box-shadow: 0 0 8px #00f0ff;
     animation: statusPulse 2s infinite;
 }
 
@@ -9595,54 +9628,62 @@ body:has(.mmo-chat-container.chat-closed) .genshin-quest-tracker.collapsed {
 .pet-actions {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
 }
 
 .pet-btn {
-    padding: 10px 14px;
-    border-radius: 10px;
-    font-weight: 800;
-    font-size: 0.88rem;
+    padding: 12px 18px;
+    border-radius: 9999px;
+    font-weight: 700;
+    font-size: 0.9rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    transition: all 0.15s ease;
+    gap: 10px;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     border: none;
+    user-select: none;
 }
 
 .btn-pet {
-    background: linear-gradient(135deg, #e11d48, #f43f5e);
+    background: linear-gradient(135deg, rgba(0, 240, 255, 0.25), rgba(139, 92, 246, 0.35));
+    border: 1px solid rgba(0, 240, 255, 0.5);
     color: #ffffff;
-    box-shadow: 0 4px 14px rgba(225, 29, 72, 0.35);
+    box-shadow: 0 4px 16px rgba(0, 240, 255, 0.22);
 }
 
 .btn-pet:hover {
+    background: linear-gradient(135deg, rgba(0, 240, 255, 0.4), rgba(139, 92, 246, 0.55));
+    border-color: rgba(0, 240, 255, 0.8);
     transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(225, 29, 72, 0.5);
+    box-shadow: 0 8px 24px rgba(0, 240, 255, 0.4);
 }
 
 .btn-feed {
-    background: linear-gradient(135deg, #d97706, #f59e0b);
-    color: #ffffff;
-    box-shadow: 0 4px 14px rgba(217, 119, 6, 0.35);
-}
-
-.btn-feed:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(217, 119, 6, 0.5);
-}
-
-.btn-switch {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.16);
     color: #e2e8f0;
 }
 
-.btn-switch:hover {
-    background: rgba(255, 255, 255, 0.12);
+.btn-feed:hover {
+    background: rgba(255, 255, 255, 0.14);
     border-color: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+.btn-switch {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+}
+
+.btn-switch:hover {
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.22);
+    color: #f1f5f9;
+    transform: translateY(-1px);
 }
 
 

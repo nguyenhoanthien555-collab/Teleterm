@@ -113,20 +113,35 @@ body.desktop-app .desktop-titlebar {
     transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Suppress all in-game HUDs, chat and toolbars while Launcher is active */
+/* Suppress all in-game HUDs, chat, trackers, and toolbars while Launcher is active */
 body.launcher-active .cyber-top-nav,
 body.launcher-active #mmo-chat-container,
 body.launcher-active #hotbar-container,
 body.launcher-active #player-inventory-hotbar,
 body.launcher-active .player-inventory-hotbar,
+body.launcher-active #genshin-quest-tracker,
+body.launcher-active .genshin-quest-tracker,
+body.launcher-active #deck-terminal-screen,
+body.launcher-active .holo-3d-card,
+body.launcher-active .tod-quest-toast,
+body.launcher-active .time-of-day-toast,
+body.launcher-active #modal-pet-companion,
+body.launcher-active .pet-companion-overlay,
 body.launcher-active #mobile-tools-drawer,
 body.launcher-active #world-interact-prompt,
 body.launcher-active #css3d-viewport,
 body.launcher-active #top-xp-hud-capsule,
 body.launcher-active #brand-orb,
 body.launcher-active .tactile-thumb-deck,
-body.launcher-active .mobile-mode-switcher-pill {
+body.launcher-active .mobile-mode-switcher-pill,
+body.launcher-active .cyber-view-pill-container,
+body.launcher-active #overhead-nametag-container,
+body.launcher-active #mmo-audio-controls,
+body.launcher-active .mmo-perf-hud {
     display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
 }
 
 body.desktop-app .teleterm-launcher-overlay {
