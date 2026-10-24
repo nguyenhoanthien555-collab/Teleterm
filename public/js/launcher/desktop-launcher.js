@@ -108,12 +108,13 @@ export class DesktopLauncher {
             <!-- Center Hero: Single Visual Anchor -->
             <main class="launcher-hero-center">
                 <h1 class="launcher-hero-title">TELETERM</h1>
-                <p class="launcher-hero-subtitle">Enter the Cyber Valley</p>
+                <p class="launcher-hero-subtitle"><span class="tt-icon" data-icon="sparkles" data-size="12" style="color:#00f0ff;margin-right:4px;"></span>Cyber Valley · Holographic 3D MMO</p>
 
                 <button id="btn-start-vibing" class="btn-start-vibing" autofocus>
                     <span>START VIBING</span>
+                    <span style="font-size:15px;margin-left:2px;">✦</span>
                 </button>
-                <div class="vibing-subtext">Press [ Enter ] to launch</div>
+                <div class="vibing-subtext"><span>Nhấn phím</span> <kbd style="background:rgba(255,255,255,0.15);padding:1px 6px;border-radius:4px;font-family:inherit;">Enter</kbd> <span>để vào thế giới</span></div>
             </main>
 
             <!-- Bottom Bar: Account & Status -->
