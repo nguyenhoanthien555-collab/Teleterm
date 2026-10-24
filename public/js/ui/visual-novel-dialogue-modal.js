@@ -25,9 +25,9 @@ export class VisualNovelDialogueModal {
                 id: 'lumina',
                 name: 'Lumina',
                 role: { en: 'Lead AI Architect', vi: 'Kiến Trúc Sư AI Trưởng' },
-                color: '#da7756',
+                color: '#00f0ff',
                 themeClass: 'theme-lumina',
-                avatarBg: 'linear-gradient(135deg, #c56545, #da7756)',
+                avatarBg: 'linear-gradient(135deg, #0284c7, #00f0ff)',
                 icon: 'zap'
             },
             sakura: {

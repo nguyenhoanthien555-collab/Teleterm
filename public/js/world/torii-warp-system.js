@@ -271,7 +271,7 @@ export class ToriiWarpSystem {
             flash.id = 'torii-warp-flash';
             flash.style.cssText = `
                 position: fixed; inset: 0; z-index: 99998;
-                background: radial-gradient(circle, rgba(218, 119, 86, 0.8) 0%, rgba(255, 255, 255, 0.95) 40%, rgba(24, 24, 26, 0.8) 100%);
+                background: radial-gradient(circle, rgba(0, 240, 255, 0.8) 0%, rgba(255, 255, 255, 0.95) 40%, rgba(24, 24, 26, 0.8) 100%);
                 opacity: 0; pointer-events: none;
                 transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
             `;
@@ -310,8 +310,8 @@ export class ToriiWarpSystem {
                 .torii-warp-card {
                     max-width: 680px; width: 92vw;
                     background: rgba(24, 24, 26, 0.96) !important;
-                    border: 1.5px solid rgba(218, 119, 86, 0.4) !important;
-                    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 24px rgba(218, 119, 86, 0.2) !important;
+                    border: 1.5px solid rgba(0, 240, 255, 0.4) !important;
+                    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 24px rgba(0, 240, 255, 0.2) !important;
                     border-radius: 14px;
                 }
                 .torii-warp-body {
@@ -334,9 +334,9 @@ export class ToriiWarpSystem {
                     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
                 }
                 .torii-dest-card:hover {
-                    background: rgba(218, 119, 86, 0.14);
-                    border-color: #da7756;
-                    box-shadow: 0 0 16px rgba(218, 119, 86, 0.25);
+                    background: rgba(0, 240, 255, 0.14);
+                    border-color: #00f0ff;
+                    box-shadow: 0 0 16px rgba(0, 240, 255, 0.25);
                     transform: translateY(-2px);
                 }
                 .torii-dest-card.current {
@@ -363,7 +363,7 @@ export class ToriiWarpSystem {
                 }
                 .torii-dest-badge {
                     display: inline-flex; align-items: center; gap: 5px;
-                    font-size: 0.65rem; color: #da7756; font-weight: 600; text-transform: uppercase;
+                    font-size: 0.65rem; color: #00f0ff; font-weight: 600; text-transform: uppercase;
                     margin-top: 2px;
                 }
                 .torii-dest-badge .tt-icon,

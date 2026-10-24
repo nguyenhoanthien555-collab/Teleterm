@@ -98,16 +98,16 @@ export class TimeOfDayQuestManager {
         }[phaseId] || 'clock';
 
         const phaseIconSvg = (typeof window !== 'undefined' && window.TeleTermIcons)
-            ? window.TeleTermIcons.render(phaseIconName, { size: 13, color: '#da7756' })
+            ? window.TeleTermIcons.render(phaseIconName, { size: 13, color: '#00f0ff' })
             : '';
         const scrollSvg = (typeof window !== 'undefined' && window.TeleTermIcons)
-            ? window.TeleTermIcons.render('file-text', { size: 14, color: '#da7756' })
+            ? window.TeleTermIcons.render('file-text', { size: 14, color: '#00f0ff' })
             : '';
 
         const toast = document.createElement('div');
         toast.className = 'tod-quest-toast animate-slide-in';
         toast.innerHTML = `
-            <div style="display:flex;align-items:center;gap:6px;font-size: 11px; letter-spacing: 0.12em; color: #da7756; text-transform: uppercase; font-weight: 700;">
+            <div style="display:flex;align-items:center;gap:6px;font-size: 11px; letter-spacing: 0.12em; color: #00f0ff; text-transform: uppercase; font-weight: 700;">
                 ${phaseIconSvg} <span>${phaseTitles[phaseId] || 'NHIỆM VỤ THEO GIỜ'}</span>
             </div>
             <div style="display:flex;align-items:center;gap:6px;font-size: 14px; font-weight: 600; color: #edeae3; margin: 3px 0;">
@@ -122,7 +122,7 @@ export class TimeOfDayQuestManager {
             top: '72px',
             right: '24px',
             backgroundColor: 'rgba(24, 24, 26, 0.95)',
-            borderLeft: '3px solid #da7756',
+            borderLeft: '3px solid #00f0ff',
             borderTop: '1px solid rgba(255, 255, 255, 0.08)',
             borderRight: '1px solid rgba(255, 255, 255, 0.08)',
             borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
@@ -182,7 +182,7 @@ export class TimeOfDayQuestManager {
                 ${awardSvg} <span>HOÀN THÀNH NHIỆM VỤ: ${quest.title}</span>
             </div>
             <div style="font-size: 13px; color: #a39e93; margin-top: 4px;">
-                Nhận thành công <b style="color: #da7756;">+${quest.rewardXp} XP</b>! Nhấn <kbd style="background: rgba(218, 119, 86, 0.2); border: 1px solid #da7756; color: #ea8867; padding: 1px 6px; border-radius: 4px; font-size: 11px;">K</kbd> để mở Cửa Hàng.
+                Nhận thành công <b style="color: #00f0ff;">+${quest.rewardXp} XP</b>! Nhấn <kbd style="background: rgba(0, 240, 255, 0.2); border: 1px solid #00f0ff; color: #38bdf8; padding: 1px 6px; border-radius: 4px; font-size: 11px;">K</kbd> để mở Cửa Hàng.
             </div>
         `;
         Object.assign(toast.style, {

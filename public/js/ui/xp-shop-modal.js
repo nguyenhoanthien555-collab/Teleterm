@@ -80,7 +80,7 @@ export class XpShopModal {
                 cost: 800,
                 desc: 'Động tác nhảy xoay vòng 360 độ kết hợp nhịp điệu bass điện tử.',
                 iconName: 'music',
-                iconColor: '#da7756'
+                iconColor: '#00f0ff'
             },
             {
                 id: 'emote_cyber_bow',
@@ -130,7 +130,7 @@ export class XpShopModal {
                 <div class="xp-shop-header">
                     <div class="xp-shop-title-group">
                         <span class="xp-shop-badge">CYBERPUNK PROGRESSION</span>
-                        <h2><span class="tt-icon" data-icon="shopping-bag" data-size="20" style="margin-right:8px;color:#da7756;"></span>CỬA HÀNG ĐỔI THƯỞNG XP</h2>
+                        <h2><span class="tt-icon" data-icon="shopping-bag" data-size="20" style="margin-right:8px;color:#00f0ff;"></span>CỬA HÀNG ĐỔI THƯỞNG XP</h2>
                     </div>
                     <div class="xp-shop-balance">
                         <span>SỐ DƯ XP:</span>
@@ -151,7 +151,7 @@ export class XpShopModal {
                 </div>
 
                 <div class="xp-shop-footer">
-                    <span><span class="tt-icon" data-icon="lightbulb" data-size="14" style="margin-right:6px;color:#da7756;"></span>Nhận thêm XP bằng cách làm <b>Nhiệm vụ theo giờ</b> hoặc nhảy múa cùng NPC để đạt <b>Vibe Harmony (+50 XP)</b>!</span>
+                    <span><span class="tt-icon" data-icon="lightbulb" data-size="14" style="margin-right:6px;color:#00f0ff;"></span>Nhận thêm XP bằng cách làm <b>Nhiệm vụ theo giờ</b> hoặc nhảy múa cùng NPC để đạt <b>Vibe Harmony (+50 XP)</b>!</span>
                 </div>
             </div>
         `;
@@ -195,7 +195,7 @@ export class XpShopModal {
                 width: 900px; max-width: 92vw;
                 max-height: 85vh;
                 background: #18181a;
-                border: 1px solid rgba(218, 119, 86, 0.35);
+                border: 1px solid rgba(0, 240, 255, 0.35);
                 border-radius: 16px;
                 box-shadow: 0 24px 64px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.06);
                 display: flex; flex-direction: column;
@@ -205,10 +205,10 @@ export class XpShopModal {
                 display: flex; align-items: center; justify-content: space-between;
                 padding: 20px 28px;
                 border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-                background: linear-gradient(90deg, rgba(218, 119, 86, 0.12), transparent);
+                background: linear-gradient(90deg, rgba(0, 240, 255, 0.12), transparent);
             }
             .xp-shop-badge {
-                font-size: 11px; letter-spacing: 0.15em; color: #da7756; font-weight: 700; text-transform: uppercase;
+                font-size: 11px; letter-spacing: 0.15em; color: #00f0ff; font-weight: 700; text-transform: uppercase;
             }
             .xp-shop-header h2 {
                 margin: 4px 0 0 0; font-size: 22px; color: #edeae3; font-weight: 600;
@@ -216,12 +216,12 @@ export class XpShopModal {
             }
             .xp-shop-balance {
                 display: flex; align-items: center; gap: 8px;
-                background: rgba(218, 119, 86, 0.12);
-                border: 1px solid rgba(218, 119, 86, 0.4);
+                background: rgba(0, 240, 255, 0.12);
+                border: 1px solid rgba(0, 240, 255, 0.4);
                 padding: 6px 14px; border-radius: 20px;
                 color: #a39e93; font-size: 13px; font-weight: 500;
             }
-            .xp-shop-balance b { color: #da7756; font-size: 16px; }
+            .xp-shop-balance b { color: #00f0ff; font-size: 16px; }
             .xp-shop-close-btn {
                 background: transparent; border: none; color: #a39e93; font-size: 22px; cursor: pointer;
                 transition: color 0.15s;
@@ -238,7 +238,7 @@ export class XpShopModal {
                 transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             }
             .xp-tab-btn.active, .xp-tab-btn:hover {
-                background: rgba(218, 119, 86, 0.16); border-color: #da7756; color: #ea8867;
+                background: rgba(0, 240, 255, 0.16); border-color: #00f0ff; color: #38bdf8;
             }
             .xp-shop-grid {
                 flex: 1; overflow-y: auto;
@@ -254,7 +254,7 @@ export class XpShopModal {
             }
             .xp-shop-item-card:hover {
                 transform: translateY(-2px);
-                border-color: rgba(218, 119, 86, 0.45);
+                border-color: rgba(0, 240, 255, 0.45);
                 box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
             }
             .xp-item-top { display: flex; gap: 12px; margin-bottom: 8px; }
@@ -264,12 +264,12 @@ export class XpShopModal {
             .xp-item-action { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
             .xp-item-price { font-size: 14px; font-weight: 700; color: #d49746; }
             .xp-buy-btn {
-                background: #da7756; border: none; color: #ffffff;
+                background: #00f0ff; border: none; color: #ffffff;
                 padding: 7px 16px; border-radius: 8px; font-weight: 600; cursor: pointer;
                 transition: background 0.15s, transform 0.1s;
             }
-            .xp-buy-btn:hover { background: #ea8867; }
-            .xp-buy-btn:active { background: #c56545; transform: scale(0.98); }
+            .xp-buy-btn:hover { background: #38bdf8; }
+            .xp-buy-btn:active { background: #0284c7; transform: scale(0.98); }
             .xp-equip-btn {
                 background: rgba(82, 163, 115, 0.16); border: 1px solid rgba(82, 163, 115, 0.5); color: #52a373;
                 padding: 6px 14px; border-radius: 8px; font-weight: 600; cursor: pointer;
@@ -336,7 +336,7 @@ export class XpShopModal {
                                (item.type === 'lut' && this.activeLut === item.id);
 
             const iconSvg = window.TeleTermIcons
-                ? window.TeleTermIcons.render(item.iconName || 'sparkles', { size: 22, color: item.iconColor || '#da7756' })
+                ? window.TeleTermIcons.render(item.iconName || 'sparkles', { size: 22, color: item.iconColor || '#00f0ff' })
                 : '<span class="tt-icon" data-icon="sparkles" data-size="22"></span>';
 
             const card = document.createElement('div');

@@ -87,7 +87,7 @@ export class InworldPhotoBillboard {
         bannerCanvas.width = 512;
         bannerCanvas.height = 96;
         const bCtx = bannerCanvas.getContext('2d');
-        bCtx.fillStyle = '#da7756';
+        bCtx.fillStyle = '#00f0ff';
         bCtx.font = 'bold 30px "Plus Jakarta Sans", "Segoe UI", sans-serif';
         bCtx.textAlign = 'center';
         bCtx.fillText('TELETERM PHOTO SHOWCASE', 256, 56);
@@ -114,7 +114,7 @@ export class InworldPhotoBillboard {
         ctx.fillRect(0, 0, 720, 405);
 
         // Subtle warm grid
-        ctx.strokeStyle = 'rgba(218, 119, 86, 0.12)';
+        ctx.strokeStyle = 'rgba(0, 240, 255, 0.12)';
         ctx.lineWidth = 1.5;
         for (let x = 0; x < 720; x += 45) {
             ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 405); ctx.stroke();
@@ -123,7 +123,7 @@ export class InworldPhotoBillboard {
             ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(720, y); ctx.stroke();
         }
 
-        ctx.fillStyle = '#da7756';
+        ctx.fillStyle = '#00f0ff';
         ctx.font = 'bold 34px "Plus Jakarta Sans", "Segoe UI", sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('TELETERM 3D GALLERY', 360, 180);
@@ -148,7 +148,7 @@ export class InworldPhotoBillboard {
             // Watermark footer
             ctx.fillStyle = 'rgba(24, 24, 26, 0.90)';
             ctx.fillRect(0, 310, 640, 50);
-            ctx.fillStyle = '#da7756';
+            ctx.fillStyle = '#00f0ff';
             ctx.font = 'bold 18px "Plus Jakarta Sans", "Segoe UI", sans-serif';
             ctx.fillText(caption || 'Shared by Player', 20, 342);
 

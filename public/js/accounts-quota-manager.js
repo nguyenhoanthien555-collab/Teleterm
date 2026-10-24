@@ -229,7 +229,7 @@ export class AccountsQuotaManager {
                 
                 const checkSvg = window.TeleTermIcons ? window.TeleTermIcons.render('check', { size: 11, className: 'badge-icon' }) : '';
                 const alertSvg = window.TeleTermIcons ? window.TeleTermIcons.render('alert-triangle', { size: 11, className: 'badge-icon' }) : '';
-                const orbitSvg = window.TeleTermIcons ? window.TeleTermIcons.render('orbit', { size: 15, color: '#da7756' }) : '';
+                const orbitSvg = window.TeleTermIcons ? window.TeleTermIcons.render('orbit', { size: 15, color: '#00f0ff' }) : '';
 
                 const tokenBadge = acc.hasSavedToken 
                     ? `<span class="acc-badge badge-green">${checkSvg} Saved Token</span>` 
@@ -284,7 +284,7 @@ export class AccountsQuotaManager {
                 const card = document.createElement('div');
                 card.className = `acc-profile-card ${acc.isActive ? 'active' : ''}`;
 
-                const cpuSvg = window.TeleTermIcons ? window.TeleTermIcons.render('cpu', { size: 15, color: '#da7756' }) : '';
+                const cpuSvg = window.TeleTermIcons ? window.TeleTermIcons.render('cpu', { size: 15, color: '#00f0ff' }) : '';
                 const activeTag = acc.isActive 
                     ? '<span class="acc-badge badge-active">ACTIVE</span>' 
                     : `<button class="btn-switch-acc" data-provider="claude" data-id="${acc.id}">Switch ⏎</button>`;

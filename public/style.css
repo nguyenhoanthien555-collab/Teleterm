@@ -5368,14 +5368,14 @@ body:not(.mode-explore) .anime-comic-speech-bubble {
     transition: all 0.15s ease;
 }
 .avatar-preset-btn:hover {
-    border-color: #da7756;
-    background: rgba(218, 119, 86, 0.08);
+    border-color: #00f0ff;
+    background: rgba(0, 240, 255, 0.08);
 }
 .avatar-preset-btn.active {
-    border-color: #da7756;
-    background: rgba(218, 119, 86, 0.18);
+    border-color: #00f0ff;
+    background: rgba(0, 240, 255, 0.18);
     font-weight: 700;
-    box-shadow: 0 0 12px rgba(218, 119, 86, 0.3);
+    box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
 }
 .color-picker-grid {
     display: flex;
@@ -5412,7 +5412,7 @@ body:not(.mode-explore) .anime-comic-speech-bubble {
     transition: border-color 0.15s ease;
 }
 .upload-dropzone:hover {
-    border-color: #da7756;
+    border-color: #00f0ff;
 }
 .upload-status-text {
     font-size: 10px;
@@ -5425,10 +5425,10 @@ body:not(.mode-explore) .anime-comic-speech-bubble {
     gap: 10px;
     padding: 12px 16px;
     background: #141312;
-    border-top: 1px solid rgba(218, 119, 86, 0.2);
+    border-top: 1px solid rgba(0, 240, 255, 0.2);
 }
 .cyber-btn-primary {
-    background: linear-gradient(135deg, #da7756, #c56545);
+    background: linear-gradient(135deg, #00f0ff, #0284c7);
     border: none;
     border-radius: 8px;
     color: #edeae3;
@@ -5439,7 +5439,7 @@ body:not(.mode-explore) .anime-comic-speech-bubble {
     transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 .cyber-btn-primary:hover {
-    box-shadow: 0 0 16px rgba(218, 119, 86, 0.45);
+    box-shadow: 0 0 16px rgba(0, 240, 255, 0.45);
     transform: translateY(-1px);
 }
 .cyber-btn-outline {
@@ -5454,8 +5454,8 @@ body:not(.mode-explore) .anime-comic-speech-bubble {
     transition: all 0.15s ease;
 }
 .cyber-btn-outline:hover {
-    border-color: #da7756;
-    background: rgba(218, 119, 86, 0.12);
+    border-color: #00f0ff;
+    background: rgba(0, 240, 255, 0.12);
 }
 
 /* 7. Level-Up Celebration Modal */
@@ -6081,8 +6081,8 @@ hr + hr,
     height: 640px;
     max-height: 88vh;
     background: rgba(24, 24, 26, 0.96) !important;
-    border: 1.5px solid rgba(218, 119, 86, 0.35) !important;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.85), 0 0 24px rgba(218, 119, 86, 0.15) !important;
+    border: 1.5px solid rgba(0, 240, 255, 0.35) !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.85), 0 0 24px rgba(0, 240, 255, 0.15) !important;
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-radius: 16px;
@@ -6128,17 +6128,17 @@ hr + hr,
 }
 
 .settings-tab-btn:hover {
-    background: rgba(218, 119, 86, 0.08);
-    border-color: rgba(218, 119, 86, 0.25);
+    background: rgba(0, 240, 255, 0.08);
+    border-color: rgba(0, 240, 255, 0.25);
     color: #edeae3;
 }
 
 .settings-tab-btn.active {
-    background: rgba(218, 119, 86, 0.14);
-    border-color: rgba(218, 119, 86, 0.4);
-    border-left-color: #da7756;
-    color: #da7756;
-    box-shadow: 0 0 14px rgba(218, 119, 86, 0.12);
+    background: rgba(0, 240, 255, 0.14);
+    border-color: rgba(0, 240, 255, 0.4);
+    border-left-color: #00f0ff;
+    color: #00f0ff;
+    box-shadow: 0 0 14px rgba(0, 240, 255, 0.12);
 }
 
 .settings-tab-btn .tab-icon {
@@ -6162,7 +6162,7 @@ hr + hr,
 }
 
 .settings-tab-btn.active .tab-title {
-    color: #da7756;
+    color: #00f0ff;
 }
 
 .settings-tab-btn .tab-sub {
@@ -6174,7 +6174,7 @@ hr + hr,
 }
 
 .settings-tab-btn.active .tab-sub {
-    color: #ea8867;
+    color: #38bdf8;
 }
 
 /* Right Scrollable Tab Panels */
@@ -6225,9 +6225,9 @@ hr + hr,
 }
 
 .keybind-action-btn {
-    background: rgba(218, 119, 86, 0.1);
-    border: 1px solid rgba(218, 119, 86, 0.35);
-    color: #da7756;
+    background: rgba(0, 240, 255, 0.1);
+    border: 1px solid rgba(0, 240, 255, 0.35);
+    color: #00f0ff;
     font-weight: 700;
     font-family: monospace;
     font-size: 0.78rem;
@@ -6240,9 +6240,9 @@ hr + hr,
 }
 
 .keybind-action-btn:hover {
-    background: rgba(218, 119, 86, 0.22);
-    border-color: #da7756;
-    box-shadow: 0 0 10px rgba(218, 119, 86, 0.25);
+    background: rgba(0, 240, 255, 0.22);
+    border-color: #00f0ff;
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.25);
 }
 
 .keybind-action-btn.capturing {
@@ -6299,7 +6299,7 @@ hr + hr,
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: #da7756;
+    color: #00f0ff;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -6332,14 +6332,14 @@ hr + hr,
 }
 
 .gfx-mode-btn:hover {
-    border-color: rgba(218, 119, 86, 0.5);
+    border-color: rgba(0, 240, 255, 0.5);
     background: rgba(40, 39, 36, 0.9);
 }
 
 .gfx-mode-btn.active {
-    background: rgba(218, 119, 86, 0.18) !important;
-    border-color: #da7756 !important;
-    box-shadow: 0 0 16px rgba(218, 119, 86, 0.25);
+    background: rgba(0, 240, 255, 0.18) !important;
+    border-color: #00f0ff !important;
+    box-shadow: 0 0 16px rgba(0, 240, 255, 0.25);
 }
 
 .gfx-mode-btn .gfx-icon {
@@ -6368,14 +6368,14 @@ hr + hr,
 }
 
 .gfx-platform-btn:hover {
-    border-color: rgba(218, 119, 86, 0.5);
+    border-color: rgba(0, 240, 255, 0.5);
     background: rgba(40, 39, 36, 0.9);
 }
 
 .gfx-platform-btn.active {
-    background: rgba(218, 119, 86, 0.18) !important;
-    border-color: #da7756 !important;
-    box-shadow: 0 0 16px rgba(218, 119, 86, 0.25);
+    background: rgba(0, 240, 255, 0.18) !important;
+    border-color: #00f0ff !important;
+    box-shadow: 0 0 16px rgba(0, 240, 255, 0.25);
 }
 
 .gfx-platform-btn .gfx-icon {
@@ -6426,15 +6426,15 @@ hr + hr,
 }
 
 .gfx-preset-btn:hover {
-    border-color: #da7756;
+    border-color: #00f0ff;
     color: #ffffff;
 }
 
 .gfx-preset-btn.active {
-    background: linear-gradient(135deg, #da7756 0%, #c56545 100%) !important;
-    border-color: #da7756 !important;
+    background: linear-gradient(135deg, #00f0ff 0%, #0284c7 100%) !important;
+    border-color: #00f0ff !important;
     color: #ffffff !important;
-    box-shadow: 0 0 12px rgba(218, 119, 86, 0.35);
+    box-shadow: 0 0 12px rgba(0, 240, 255, 0.35);
 }
 
 .gfx-preset-btn.disabled {
@@ -6539,11 +6539,11 @@ hr + hr,
 .gfx-field-tag {
     font-size: 9px;
     font-weight: 700;
-    color: #da7756;
-    background: rgba(218, 119, 86, 0.12);
+    color: #00f0ff;
+    background: rgba(0, 240, 255, 0.12);
     padding: 1px 6px;
     border-radius: 4px;
-    border: 1px solid rgba(218, 119, 86, 0.25);
+    border: 1px solid rgba(0, 240, 255, 0.25);
 }
 
 .gfx-field-desc {
@@ -6555,7 +6555,7 @@ hr + hr,
 
 .gfx-select {
     background: #18181a;
-    border: 1px solid rgba(218, 119, 86, 0.3);
+    border: 1px solid rgba(0, 240, 255, 0.3);
     color: #edeae3;
     padding: 7px 10px;
     border-radius: 6px;
@@ -6569,8 +6569,8 @@ hr + hr,
 }
 
 .gfx-select:focus {
-    border-color: #da7756;
-    box-shadow: 0 0 8px rgba(218, 119, 86, 0.35);
+    border-color: #00f0ff;
+    box-shadow: 0 0 8px rgba(0, 240, 255, 0.35);
 }
 
 .gfx-toggle-row {
@@ -6588,7 +6588,7 @@ hr + hr,
     width: 18px;
     height: 18px;
     cursor: pointer;
-    accent-color: #da7756;
+    accent-color: #00f0ff;
 }
 
 .gfx-modal-footer {
@@ -7895,8 +7895,8 @@ body:has(.mmo-chat-container.chat-closed) .genshin-quest-tracker.collapsed {
     background: rgba(24, 24, 26, 0.94);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(218, 119, 86, 0.4);
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75), 0 0 24px rgba(218, 119, 86, 0.15);
+    border: 1px solid rgba(0, 240, 255, 0.4);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75), 0 0 24px rgba(0, 240, 255, 0.15);
     border-radius: 16px;
     overflow: hidden;
 }
@@ -7921,8 +7921,8 @@ body:has(.mmo-chat-container.chat-closed) .genshin-quest-tracker.collapsed {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    border: 2px solid rgba(218, 119, 86, 0.5);
-    box-shadow: 0 0 16px rgba(218, 119, 86, 0.35);
+    border: 2px solid rgba(0, 240, 255, 0.5);
+    box-shadow: 0 0 16px rgba(0, 240, 255, 0.35);
     position: relative;
 }
 
@@ -7934,7 +7934,7 @@ body:has(.mmo-chat-container.chat-closed) .genshin-quest-tracker.collapsed {
     position: absolute;
     bottom: -8px;
     background: rgba(24, 24, 26, 0.9);
-    border: 1px solid rgba(218, 119, 86, 0.3);
+    border: 1px solid rgba(0, 240, 255, 0.3);
     border-radius: 8px;
     font-size: 10px;
     font-weight: 700;
@@ -7976,9 +7976,9 @@ body:has(.mmo-chat-container.chat-closed) .genshin-quest-tracker.collapsed {
     font-size: 11px;
     padding: 2px 8px;
     border-radius: 10px;
-    background: rgba(218, 119, 86, 0.15);
-    border: 1px solid rgba(218, 119, 86, 0.4);
-    color: #da7756;
+    background: rgba(0, 240, 255, 0.15);
+    border: 1px solid rgba(0, 240, 255, 0.4);
+    color: #00f0ff;
     font-family: var(--font-mono, monospace);
 }
 
@@ -8029,7 +8029,7 @@ body:has(.mmo-chat-container.chat-closed) .genshin-quest-tracker.collapsed {
     align-items: center;
     gap: 10px;
     background: rgba(33, 32, 29, 0.75);
-    border: 1px solid rgba(218, 119, 86, 0.3);
+    border: 1px solid rgba(0, 240, 255, 0.3);
     border-radius: 8px;
     padding: 8px 14px;
     color: #edeae3;
@@ -8040,15 +8040,15 @@ body:has(.mmo-chat-container.chat-closed) .genshin-quest-tracker.collapsed {
 }
 
 .vn-choice-btn:hover {
-    background: rgba(218, 119, 86, 0.18);
-    border-color: #da7756;
+    background: rgba(0, 240, 255, 0.18);
+    border-color: #00f0ff;
     color: #ffffff;
     transform: translateX(4px);
 }
 
 .vn-choice-key {
-    background: rgba(218, 119, 86, 0.25);
-    color: #da7756;
+    background: rgba(0, 240, 255, 0.25);
+    color: #00f0ff;
     border-radius: 4px;
     width: 20px;
     height: 20px;
@@ -8110,7 +8110,7 @@ body:has(.mmo-chat-container.chat-closed) .genshin-quest-tracker.collapsed {
 .tt-icon-32 { --icon-size: 32px; width: 32px; height: 32px; max-width: 32px; max-height: 32px; }
 
 .tt-icon-accent {
-    color: var(--claude-accent, #da7756);
+    color: var(--claude-accent, #00f0ff);
 }
 .tt-icon-muted {
     color: var(--claude-text-secondary, #a39e93);
@@ -8156,7 +8156,7 @@ body:has(.mmo-chat-container.chat-closed) .genshin-quest-tracker.collapsed {
     align-items: center !important;
     gap: 5px !important;
     font-size: 0.68rem !important;
-    color: #da7756 !important;
+    color: #00f0ff !important;
     font-weight: 600 !important;
     text-transform: uppercase !important;
     margin-top: 2px !important;

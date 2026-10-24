@@ -148,10 +148,10 @@ export class DiegeticTerminalKiosk {
         bCtx.roundRect(16, 16, 480, 96, 16);
         bCtx.fill();
         bCtx.lineWidth = 3;
-        bCtx.strokeStyle = 'rgba(218, 119, 86, 0.85)';
+        bCtx.strokeStyle = 'rgba(0, 240, 255, 0.85)';
         bCtx.stroke();
 
-        bCtx.fillStyle = '#da7756';
+        bCtx.fillStyle = '#00f0ff';
         bCtx.font = 'bold 36px "Segoe UI", system-ui, sans-serif';
         bCtx.textAlign = 'center';
         bCtx.fillText('⌨️ [E] MỞ TERMINAL KIOSK', 256, 75);
@@ -174,7 +174,7 @@ export class DiegeticTerminalKiosk {
         ctx.fillRect(0, 0, w, h);
 
         // Scanlines: Subtle warm amber/terracotta
-        ctx.fillStyle = 'rgba(218, 119, 86, 0.025)';
+        ctx.fillStyle = 'rgba(0, 240, 255, 0.025)';
         for (let y = 0; y < h; y += 4) {
             ctx.fillRect(0, y, w, 2);
         }
@@ -182,7 +182,7 @@ export class DiegeticTerminalKiosk {
         // Header bar: Warm charcoal surface
         ctx.fillStyle = '#21201d';
         ctx.fillRect(0, 0, w, 52);
-        ctx.fillStyle = '#da7756';
+        ctx.fillStyle = '#00f0ff';
         ctx.font = 'bold 22px "Consolas", monospace';
         ctx.fillText('TELETERM // DIEGETIC KIOSK', 24, 34);
 
@@ -207,7 +207,7 @@ export class DiegeticTerminalKiosk {
             if (line.startsWith('================') || line.startsWith('----------------')) {
                 ctx.fillStyle = '#44403c';
             } else if (line.startsWith(' [SYSTEM]')) {
-                ctx.fillStyle = '#da7756';
+                ctx.fillStyle = '#00f0ff';
             } else if (line.startsWith(' [ERROR]')) {
                 ctx.fillStyle = '#d66060';
             } else if (line.startsWith(' >')) {
@@ -221,7 +221,7 @@ export class DiegeticTerminalKiosk {
         // Active prompt line
         const inputY = startY + visibleLines.length * lineHeight + 8;
         if (inputY < h - 20) {
-            ctx.fillStyle = '#da7756';
+            ctx.fillStyle = '#00f0ff';
             ctx.fillText('> ' + this.currentInput + (this.isCursorVisible && this.isFocused ? '█' : ''), 24, inputY);
         }
 

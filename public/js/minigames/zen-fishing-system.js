@@ -189,7 +189,7 @@ export const FISH_SPECIES = [
         maxWeight: 72.0,
         value: 1200,
         icon: 'sparkles',
-        color: '#da7756',
+        color: '#00f0ff',
         preferredBiome: 'south_pier',
         desc: 'Radiant mythical dragon of glowing terracotta flame representing Gemini 4 Argon reasoning.',
         descVi: 'Thần long rực rỡ với ánh lửa terracotta đại diện cho trí tuệ suy luận siêu việt của Gemini 4 Argon.'

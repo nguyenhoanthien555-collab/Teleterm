@@ -161,9 +161,9 @@ export class GroupEmoteSyncManager {
             const sparkleSvg = window.TeleTermIcons ? window.TeleTermIcons.render('sparkles', { size: 20 }) : '';
             toast.innerHTML = `
                 <div style="display:flex; align-items:center; gap:10px;">
-                    <span style="display:flex; align-items:center; color:#da7756;">${sparkleSvg}</span>
+                    <span style="display:flex; align-items:center; color:#00f0ff;">${sparkleSvg}</span>
                     <div>
-                        <div style="font-weight:bold; color:#da7756; letter-spacing:0.5px;">VIBE HARMONY COMBO!</div>
+                        <div style="font-weight:bold; color:#00f0ff; letter-spacing:0.5px;">VIBE HARMONY COMBO!</div>
                         <div style="font-size:11px; color:#edeae3; opacity:0.85;">Đồng điệu vũ đạo nhóm (${count} người) • +50 XP</div>
                     </div>
                 </div>
@@ -174,7 +174,7 @@ export class GroupEmoteSyncManager {
                 left: '50%',
                 transform: 'translateX(-50%)',
                 background: 'rgba(24, 24, 26, 0.92)',
-                border: '1px solid rgba(218, 119, 86, 0.45)',
+                border: '1px solid rgba(0, 240, 255, 0.45)',
                 borderRadius: '8px',
                 padding: '10px 18px',
                 color: '#edeae3',

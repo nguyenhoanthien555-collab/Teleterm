@@ -53,7 +53,7 @@ export class PhotoStudioModal {
                 <!-- Top Header & Controls -->
                 <div class="studio-top-bar">
                     <div class="studio-title">
-                        <span class="studio-icon tt-icon" data-icon="camera" data-size="16" style="margin-right:6px;color:#da7756;"></span>
+                        <span class="studio-icon tt-icon" data-icon="camera" data-size="16" style="margin-right:6px;color:#00f0ff;"></span>
                         <span>PHOTO STUDIO • TELETERM 3D</span>
                     </div>
                     <div class="studio-top-actions">
@@ -158,7 +158,7 @@ export class PhotoStudioModal {
             .studio-title {
                 display: flex; align-items: center; gap: 8px;
                 font-family: system-ui, sans-serif; font-weight: 800; font-size: 15px;
-                color: #da7756; letter-spacing: 1px; text-shadow: 0 0 12px rgba(218, 119, 86, 0.4);
+                color: #00f0ff; letter-spacing: 1px; text-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
             }
             .studio-top-actions {
                 display: flex; align-items: center; gap: 10px;
@@ -169,8 +169,8 @@ export class PhotoStudioModal {
                 border-radius: 6px; cursor: pointer; transition: all 0.2s;
             }
             .studio-btn-toggle.active {
-                background: rgba(218, 119, 86, 0.18); border-color: #da7756; color: #da7756;
-                box-shadow: 0 0 10px rgba(218, 119, 86, 0.3);
+                background: rgba(0, 240, 255, 0.18); border-color: #00f0ff; color: #00f0ff;
+                box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
             }
             .studio-btn-close {
                 background: rgba(214, 96, 96, 0.2); border: 1px solid rgba(214, 96, 96, 0.4);
@@ -187,8 +187,8 @@ export class PhotoStudioModal {
                 pointer-events: auto;
                 margin: 0 auto 28px;
                 background: rgba(24, 24, 26, 0.94);
-                border: 1px solid rgba(218, 119, 86, 0.35);
-                box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7), 0 0 20px rgba(218, 119, 86, 0.18);
+                border: 1px solid rgba(0, 240, 255, 0.35);
+                box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 240, 255, 0.18);
                 border-radius: 16px;
                 padding: 12px 24px;
                 display: flex; align-items: center; gap: 24px;
@@ -198,7 +198,7 @@ export class PhotoStudioModal {
                 display: flex; flex-direction: column; gap: 6px;
             }
             .dock-label {
-                font-family: monospace; font-size: 11px; font-weight: bold; color: #da7756;
+                font-family: monospace; font-size: 11px; font-weight: bold; color: #00f0ff;
                 letter-spacing: 0.5px;
             }
             .dock-pill-group {
@@ -209,21 +209,21 @@ export class PhotoStudioModal {
                 color: #edeae3; font-size: 12px; font-weight: 600; padding: 4px 10px;
                 border-radius: 8px; cursor: pointer; transition: all 0.15s;
             }
-            .dock-pill:hover { border-color: #da7756; color: #fff; }
+            .dock-pill:hover { border-color: #00f0ff; color: #fff; }
             .dock-pill.active {
-                background: rgba(218, 119, 86, 0.22); border-color: #da7756; color: #da7756;
-                box-shadow: 0 0 10px rgba(218, 119, 86, 0.35);
+                background: rgba(0, 240, 255, 0.22); border-color: #00f0ff; color: #00f0ff;
+                box-shadow: 0 0 10px rgba(0, 240, 255, 0.35);
             }
             .studio-shutter-btn {
-                background: linear-gradient(135deg, #da7756 0%, #c56545 100%);
+                background: linear-gradient(135deg, #00f0ff 0%, #0284c7 100%);
                 border: none; color: #ffffff; font-weight: 800; font-size: 13px;
                 padding: 10px 22px; border-radius: 12px; cursor: pointer;
                 display: flex; align-items: center; gap: 8px;
-                box-shadow: 0 4px 18px rgba(218, 119, 86, 0.45);
+                box-shadow: 0 4px 18px rgba(0, 240, 255, 0.45);
                 transition: transform 0.15s, box-shadow 0.15s;
             }
             .studio-shutter-btn:hover {
-                transform: scale(1.05); box-shadow: 0 0 25px rgba(218, 119, 86, 0.65);
+                transform: scale(1.05); box-shadow: 0 0 25px rgba(0, 240, 255, 0.65);
             }
 
             /* Flash animation */
@@ -236,7 +236,7 @@ export class PhotoStudioModal {
             /* Gallery Drawer */
             .studio-gallery-drawer {
                 position: absolute; right: 24px; top: 72px; bottom: 100px; width: 340px;
-                background: rgba(24, 24, 26, 0.95); border: 1px solid rgba(218, 119, 86, 0.35);
+                background: rgba(24, 24, 26, 0.95); border: 1px solid rgba(0, 240, 255, 0.35);
                 border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px;
                 pointer-events: auto; backdrop-filter: blur(16px);
                 box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8);
@@ -244,7 +244,7 @@ export class PhotoStudioModal {
             .studio-gallery-drawer.hidden { display: none; }
             .gallery-header {
                 display: flex; justify-content: space-between; align-items: center;
-                font-size: 13px; font-weight: bold; color: #da7756; border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                font-size: 13px; font-weight: bold; color: #00f0ff; border-bottom: 1px solid rgba(255, 255, 255, 0.1);
                 padding-bottom: 8px;
             }
             .gallery-close-btn {

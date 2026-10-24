@@ -58,7 +58,7 @@ export class FishDexModal {
 
                 <div class="fish-dex-footer">
                     <span>
-                        <span class="tt-icon" data-icon="lightbulb" style="margin-right:6px;color:#da7756;"></span>
+                        <span class="tt-icon" data-icon="lightbulb" style="margin-right:6px;color:#00f0ff;"></span>
                         <span data-i18n="fish_dex_tip">Mẹo: Nhấp chuột nhanh khi phao giật [!] để tăng 30% tỷ lệ bắt cá Sử Thi và Thần Thoại! Treo máy AFK vẫn tự động câu cá Thường.</span>
                     </span>
                 </div>
@@ -114,9 +114,9 @@ export class FishDexModal {
                 max-width: 94vw;
                 max-height: 86vh;
                 background: rgba(15, 23, 42, 0.94);
-                border: 1px solid rgba(218, 119, 86, 0.35);
+                border: 1px solid rgba(0, 240, 255, 0.35);
                 border-radius: 14px;
-                box-shadow: 0 20px 45px rgba(0, 0, 0, 0.65), 0 0 30px rgba(218, 119, 86, 0.15);
+                box-shadow: 0 20px 45px rgba(0, 0, 0, 0.65), 0 0 30px rgba(0, 240, 255, 0.15);
                 display: flex;
                 flex-direction: column;
                 overflow: hidden;
@@ -143,7 +143,7 @@ export class FishDexModal {
                 font-size: 10px;
                 font-weight: 800;
                 letter-spacing: 1.2px;
-                color: #da7756;
+                color: #00f0ff;
                 text-transform: uppercase;
                 margin-bottom: 4px;
             }
@@ -197,9 +197,9 @@ export class FishDexModal {
                 background: rgba(255, 255, 255, 0.05);
             }
             .fish-dex-tab.active {
-                background: rgba(218, 119, 86, 0.15);
-                border-color: rgba(218, 119, 86, 0.4);
-                color: #da7756;
+                background: rgba(0, 240, 255, 0.15);
+                border-color: rgba(0, 240, 255, 0.4);
+                color: #00f0ff;
             }
             .fish-dex-grid {
                 flex: 1;
@@ -221,7 +221,7 @@ export class FishDexModal {
             }
             .fish-card:hover {
                 transform: translateY(-2px);
-                border-color: rgba(218, 119, 86, 0.4);
+                border-color: rgba(0, 240, 255, 0.4);
             }
             .fish-card.locked {
                 opacity: 0.55;
@@ -272,13 +272,13 @@ export class FishDexModal {
             }
             .fish-sell-btn {
                 flex: 1;
-                background: rgba(218, 119, 86, 0.15);
-                border: 1px solid rgba(218, 119, 86, 0.35);
+                background: rgba(0, 240, 255, 0.15);
+                border: 1px solid rgba(0, 240, 255, 0.35);
                 border-radius: 6px;
                 padding: 6px 10px;
                 font-size: 11px;
                 font-weight: 700;
-                color: #da7756;
+                color: #00f0ff;
                 cursor: pointer;
                 transition: all 0.15s ease;
                 display: flex;
@@ -287,7 +287,7 @@ export class FishDexModal {
                 gap: 5px;
             }
             .fish-sell-btn:hover:not(:disabled) {
-                background: #da7756;
+                background: #00f0ff;
                 color: #0f172a;
             }
             .fish-sell-btn:disabled {

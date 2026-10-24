@@ -18,7 +18,7 @@
 
     <!-- Stylesheets -->
     <link rel="stylesheet" href="/vendor/xterm/xterm/css/xterm.css">
-    <link rel="stylesheet" href="/style.css?v=32">
+    <link rel="stylesheet" href="/style.css?v=33">
     <link rel="stylesheet" href="/css/desktop-launcher.css?v=31">
 
     <!-- Immediate Theme Initialization (Zero FOUC) -->
@@ -210,7 +210,7 @@
                 <span class="h-dot dot-yellow" title="Minimize / Return to 3D World"></span>
                 <span class="h-dot dot-green" title="Toggle Fullscreen"></span>
             </div>
-            <div id="screen-title-text" class="screen-title"><span class="tt-icon" data-icon="terminal" data-size="14" style="margin-right:6px;color:#da7756;"></span>PowerShell</div>
+            <div id="screen-title-text" class="screen-title"><span class="tt-icon" data-icon="terminal" data-size="14" style="margin-right:6px;color:var(--cyber-cyan);"></span>PowerShell</div>
             <div class="screen-tools">
                 <span id="codex-diff-summary" class="acc-badge badge-active" style="display:none;"></span>
                 <button id="btn-term-clear" class="tool-btn-micro" title="Clear Screen Output">⌫ Clear</button>
@@ -228,7 +228,7 @@
             <div class="codex-layout">
                 <div class="codex-sidebar">
                     <div class="codex-sb-header">
-                        <span><span class="tt-icon" data-icon="message-square" data-size="13" style="margin-right:6px;color:#da7756;"></span>Codex Threads</span>
+                        <span><span class="tt-icon" data-icon="message-square" data-size="13" style="margin-right:6px;color:var(--cyber-cyan);"></span>Codex Threads</span>
                         <button id="btn-codex-refresh-sidebar" class="tool-btn-micro" title="Refresh" aria-label="Refresh"><span class="tt-icon" data-icon="refresh-cw" data-size="11"></span></button>
                     </div>
                     <div id="codex-threads-list" class="codex-threads-list"></div>
@@ -256,7 +256,7 @@
                 <div class="agy-web-header">
                     <div class="agy-sess-control-box">
                         <button id="btn-agy-toggle-sessions" class="agy-btn-chip" title="View conversations list">
-                            <span id="agy-active-session-title"><span class="tt-icon" data-icon="orbit" data-size="13" style="margin-right:4px;color:#da7756;"></span>Loading session...</span>
+                            <span id="agy-active-session-title"><span class="tt-icon" data-icon="orbit" data-size="13" style="margin-right:4px;color:var(--cyber-cyan);"></span>Loading session...</span>
                             <span class="chevron">▾</span>
                         </button>
                         <button id="btn-agy-new-session" class="agy-btn-chip active" title="Create new session">+ New Session</button>
@@ -290,7 +290,7 @@
                 <!-- Chat Feed Scroll Area -->
                 <div id="agy-web-chat-feed" class="agy-web-chat-feed">
                     <div class="agy-chat-loading">
-                        <span class="loading-orb"><span class="tt-icon" data-icon="orbit" data-size="18" style="color:#da7756;"></span></span>
+                        <span class="loading-orb"><span class="tt-icon" data-icon="orbit" data-size="18" style="color:var(--cyber-cyan);"></span></span>
                         <span>Loading Antigravity conversation data...</span>
                     </div>
                 </div>
@@ -453,7 +453,7 @@
     <div id="quota-accounts-modal" class="cyber-modal-overlay hidden">
         <div class="cyber-modal-card" style="max-width: 620px;">
             <div class="modal-header">
-                <span class="modal-title"><span class="tt-icon" data-icon="users" data-size="16" style="margin-right:8px;color:#da7756;"></span>TeleTerm Accounts & Quota Manager</span>
+                <span class="modal-title"><span class="tt-icon" data-icon="users" data-size="16" style="margin-right:8px;color:var(--cyber-cyan);"></span>TeleTerm Accounts & Quota Manager</span>
                 <button id="btn-close-quota-modal" class="modal-close-btn" aria-label="Close"><span class="tt-icon" data-icon="x" data-size="15"></span></button>
             </div>
             <div class="quota-modal-body">
@@ -480,7 +480,7 @@
                 <!-- Live Model Quotas (Geminis, Claudes, GPTs) -->
                 <div class="acc-section-block">
                     <div class="acc-section-header">
-                        <span><span class="tt-icon" data-icon="zap" data-size="14" style="margin-right:6px;color:#da7756;"></span>Detailed Model Quotas (Gemini, Claude, GPT)</span>
+                        <span><span class="tt-icon" data-icon="zap" data-size="14" style="margin-right:6px;color:var(--cyber-cyan);"></span>Detailed Model Quotas (Gemini, Claude, GPT)</span>
                         <span id="quota-reset-countdown" style="font-size:10px;color:var(--text-muted);">Auto Reset</span>
                     </div>
                     <div id="agy-models-quota-list" class="models-quota-grid">
@@ -499,7 +499,7 @@
                 <!-- Section 1: Antigravity Accounts -->
                 <div class="acc-section-block">
                     <div class="acc-section-header">
-                        <span><span class="tt-icon" data-icon="orbit" data-size="14" style="margin-right:6px;color:#da7756;"></span>Google Antigravity Profiles (1-Tap Switch)</span>
+                        <span><span class="tt-icon" data-icon="orbit" data-size="14" style="margin-right:6px;color:var(--cyber-cyan);"></span>Google Antigravity Profiles (1-Tap Switch)</span>
                     </div>
                     <div id="agy-accounts-list" class="acc-profiles-container"></div>
                 </div>
@@ -507,7 +507,7 @@
                 <!-- Section 2: Claude Accounts -->
                 <div class="acc-section-block">
                     <div class="acc-section-header">
-                        <span><span class="tt-icon" data-icon="cpu" data-size="14" style="margin-right:6px;color:#da7756;"></span>Claude AI Profiles</span>
+                        <span><span class="tt-icon" data-icon="cpu" data-size="14" style="margin-right:6px;color:var(--cyber-cyan);"></span>Claude AI Profiles</span>
                     </div>
                     <div id="claude-accounts-list" class="acc-profiles-container"></div>
                 </div>
@@ -519,7 +519,7 @@
     <div id="modal-desktop-peek" class="cyber-modal-overlay hidden">
         <div class="cyber-modal-card">
             <div class="modal-header">
-                <span class="modal-title"><span class="tt-icon" data-icon="monitor" data-size="16" style="margin-right:8px;color:#da7756;"></span>Desktop Live Peek</span>
+                <span class="modal-title"><span class="tt-icon" data-icon="monitor" data-size="16" style="margin-right:8px;color:var(--cyber-cyan);"></span>Desktop Live Peek</span>
                 <button id="btn-close-peek" class="modal-close-btn" title="Close" aria-label="Close"><span class="tt-icon" data-icon="x" data-size="15"></span></button>
             </div>
             <div class="peek-modal-body">
@@ -542,7 +542,7 @@
     <div id="modal-tools-drawer" class="cyber-modal-overlay hidden">
         <div class="cyber-modal-card">
             <div class="modal-header">
-                <span class="modal-title"><span class="tt-icon" data-icon="settings" data-size="16" style="margin-right:8px;color:#da7756;"></span>Cyber Tools Drawer</span>
+                <span class="modal-title"><span class="tt-icon" data-icon="settings" data-size="16" style="margin-right:8px;color:var(--cyber-cyan);"></span>Cyber Tools Drawer</span>
                 <button id="btn-close-tools-drawer" class="modal-close-btn" title="Close" aria-label="Close"><span class="tt-icon" data-icon="x" data-size="15"></span></button>
             </div>
             <div class="tools-nav-bar">
@@ -610,7 +610,7 @@
                     <!-- Web Preview -->
                     <div class="web-preview-box">
                         <div class="web-preview-header">
-                            <span class="web-preview-title"><span class="tt-icon" data-icon="globe" data-size="15" style="margin-right:6px;color:#da7756;"></span>Localhost Web Preview</span>
+                            <span class="web-preview-title"><span class="tt-icon" data-icon="globe" data-size="15" style="margin-right:6px;color:var(--cyber-cyan);"></span>Localhost Web Preview</span>
                             <button id="btn-scan-ports" class="tool-btn-micro" title="Scan dev ports"><span class="tt-icon" data-icon="refresh-cw" data-size="12" style="margin-right:4px;"></span>Scan</button>
                         </div>
                         <div id="web-preview-ports" class="web-port-chips">
@@ -747,7 +747,7 @@
             
             <div class="mobile-drawer-header">
                 <div class="mobile-drawer-title-group">
-                    <span class="mobile-drawer-title" data-i18n="mob_drawer_title"><span class="tt-icon" data-icon="settings" data-size="16" style="margin-right:6px;color:#da7756;"></span>TeleTerm Cyber Suite</span>
+                    <span class="mobile-drawer-title" data-i18n="mob_drawer_title"><span class="tt-icon" data-icon="settings" data-size="16" style="margin-right:6px;color:var(--cyber-cyan);"></span>TeleTerm Cyber Suite</span>
                     <span class="mobile-drawer-badge">FULL TOOLS</span>
                 </div>
                 <button id="btn-close-mobile-tools" class="mobile-drawer-close-btn" type="button" title="Close Tools Drawer" aria-label="Close"><span class="tt-icon" data-icon="x" data-size="15"></span></button>
@@ -777,7 +777,7 @@
                 <!-- Group 1: Workspaces & AI Engines -->
                 <div class="mob-section-block">
                     <div class="mob-section-title">
-                        <span class="tt-icon" data-icon="orbit" data-size="14" style="margin-right:6px;color:#da7756;"></span> <span data-i18n="mob_sec_workspaces">WORKSPACES & AI ENGINES</span>
+                        <span class="tt-icon" data-icon="orbit" data-size="14" style="margin-right:6px;color:var(--cyber-cyan);"></span> <span data-i18n="mob_sec_workspaces">WORKSPACES & AI ENGINES</span>
                     </div>
                     <div class="mob-tools-grid">
                         <button type="button" class="mob-tool-tile" data-mob-action="view-terminal">
@@ -828,7 +828,7 @@
                 <!-- Group 2: Metaverse, Graphics & Audio -->
                 <div class="mob-section-block">
                     <div class="mob-section-title">
-                        <span class="tt-icon" data-icon="gamepad-2" data-size="14" style="margin-right:6px;color:#da7756;"></span> <span data-i18n="mob_sec_metaverse">METAVERSE & CUSTOMIZATION</span>
+                        <span class="tt-icon" data-icon="gamepad-2" data-size="14" style="margin-right:6px;color:var(--cyber-cyan);"></span> <span data-i18n="mob_sec_metaverse">METAVERSE & CUSTOMIZATION</span>
                     </div>
                     <div class="mob-tools-grid">
                         <button type="button" class="mob-tool-tile highlight-violet" data-mob-action="open-graphics">
@@ -886,7 +886,7 @@
                 <!-- Group 3: Remote Desktop & System Control -->
                 <div class="mob-section-block">
                     <div class="mob-section-title">
-                        <span class="tt-icon" data-icon="laptop" data-size="14" style="margin-right:6px;color:#da7756;"></span> <span data-i18n="mob_sec_utilities">REMOTE PC & SYSTEM POWER</span>
+                        <span class="tt-icon" data-icon="laptop" data-size="14" style="margin-right:6px;color:var(--cyber-cyan);"></span> <span data-i18n="mob_sec_utilities">REMOTE PC & SYSTEM POWER</span>
                     </div>
                     <div class="mob-tools-grid">
                         <button type="button" class="mob-tool-tile" data-mob-action="desktop-peek">
@@ -962,7 +962,7 @@
     <div id="modal-file-viewer" class="cyber-modal-overlay hidden">
         <div class="cyber-modal-card">
             <div class="modal-header">
-                <span id="viewer-file-title" class="modal-title"><span class="tt-icon" data-icon="file-text" data-size="16" style="margin-right:8px;color:#da7756;"></span>Remote File Viewer</span>
+                <span id="viewer-file-title" class="modal-title"><span class="tt-icon" data-icon="file-text" data-size="16" style="margin-right:8px;color:var(--cyber-cyan);"></span>Remote File Viewer</span>
                 <button id="btn-close-file-viewer" class="modal-close-btn" title="Close" aria-label="Close"><span class="tt-icon" data-icon="x" data-size="15"></span></button>
             </div>
             <div class="file-viewer-body">
@@ -975,7 +975,7 @@
     <div id="cyber-hub-modal" class="cyber-modal-overlay hidden">
         <div class="cyber-modal-card">
             <div class="modal-header">
-                <span class="modal-title"><span class="tt-icon" data-icon="settings" data-size="16" style="margin-right:8px;color:#da7756;"></span>TeleTerm Control Hub</span>
+                <span class="modal-title"><span class="tt-icon" data-icon="settings" data-size="16" style="margin-right:8px;color:var(--cyber-cyan);"></span>TeleTerm Control Hub</span>
                 <button id="btn-close-hub" class="modal-close-btn" aria-label="Close"><span class="tt-icon" data-icon="x" data-size="15"></span></button>
             </div>
             <div class="modal-grid">
@@ -1036,7 +1036,7 @@
     <div id="modal-agy-session-actions" class="cyber-modal-overlay hidden">
         <div class="cyber-modal-card" style="max-width: 480px;">
             <div class="modal-header">
-                <span class="modal-title"><span class="tt-icon" data-icon="orbit" data-size="16" style="margin-right:8px;color:#da7756;"></span>Antigravity Session Options</span>
+                <span class="modal-title"><span class="tt-icon" data-icon="orbit" data-size="16" style="margin-right:8px;color:var(--cyber-cyan);"></span>Antigravity Session Options</span>
                 <button id="btn-close-agy-action-modal" class="modal-close-btn" aria-label="Close"><span class="tt-icon" data-icon="x" data-size="15"></span></button>
             </div>
             <div style="padding: 16px; display: flex; flex-direction: column; gap: 12px; background: #05070d;">
@@ -1061,7 +1061,7 @@
     <div id="modal-agy-transcript" class="cyber-modal-overlay hidden">
         <div class="cyber-modal-card" style="max-width: 720px; max-height: 88vh;">
             <div class="modal-header">
-                <span id="agy-transcript-title" class="modal-title"><span class="tt-icon" data-icon="message-square" data-size="16" style="margin-right:8px;color:#da7756;"></span>Antigravity Transcript</span>
+                <span id="agy-transcript-title" class="modal-title"><span class="tt-icon" data-icon="message-square" data-size="16" style="margin-right:8px;color:var(--cyber-cyan);"></span>Antigravity Transcript</span>
                 <button id="btn-close-agy-transcript" class="modal-close-btn" aria-label="Close"><span class="tt-icon" data-icon="x" data-size="15"></span></button>
             </div>
             <div id="agy-transcript-messages" class="codex-turns-container" style="flex: 1; max-height: 75vh; overflow-y: auto;">
@@ -1074,7 +1074,7 @@
     <div id="anime-dialogue-modal" class="anime-dialogue-overlay hidden" style="display: none;">
         <div class="anime-dialogue-card">
             <div class="dialogue-header">
-                <div id="dialogue-avatar" class="dialogue-avatar"><span class="tt-icon" data-icon="sparkles" data-size="28" style="color:#da7756;"></span></div>
+                <div id="dialogue-avatar" class="dialogue-avatar"><span class="tt-icon" data-icon="sparkles" data-size="28" style="color:var(--cyber-cyan);"></span></div>
                 <div class="dialogue-char-info">
                     <div id="dialogue-char-name" class="dialogue-char-name">Lumina</div>
                     <div id="dialogue-char-role" class="dialogue-char-role">Spirit of Light</div>
@@ -1102,7 +1102,7 @@
         <div id="chat-whisper-banner" class="chat-whisper-banner hidden"></div>
         <div id="mmo-chat-messages" class="mmo-chat-messages">
             <div class="chat-message-row is-system">
-                <span class="chat-system-tag"><span class="tt-icon" data-icon="sparkles" data-size="12" style="margin-right:4px;color:#da7756;"></span>TeleTerm:</span>
+                <span class="chat-system-tag"><span class="tt-icon" data-icon="sparkles" data-size="12" style="margin-right:4px;color:var(--cyber-cyan);"></span>TeleTerm:</span>
                 <span class="chat-content" data-i18n-html="chat_welcome">Welcome to the open developer metaverse! Press <strong>[T]</strong> to chat.</span>
             </div>
         </div>
@@ -1119,7 +1119,7 @@
         <div class="lofi-panel-header">
             <div class="lofi-track-cluster">
                 <span id="lofi-status-dot" class="lofi-status-dot"></span>
-                <span class="lofi-track-title" data-i18n="lofi_track_sakura"><span class="tt-icon" data-icon="music" data-size="13" style="margin-right:5px;color:#da7756;"></span> Sakura Afternoon (Rhodes Chill)</span>
+                <span class="lofi-track-title" data-i18n="lofi_track_sakura"><span class="tt-icon" data-icon="music" data-size="13" style="margin-right:5px;color:var(--cyber-cyan);"></span> Sakura Afternoon (Rhodes Chill)</span>
             </div>
             <button id="btn-lofi-play" class="lofi-play-btn" data-i18n="lofi_play"><span class="tt-icon" data-icon="play" data-size="12" style="margin-right:4px;"></span> Play Music</button>
         </div>
@@ -1146,7 +1146,7 @@
     <div id="modal-avatar-customizer" class="cyber-modal-overlay hidden">
         <div class="cyber-modal-card avatar-customizer-card">
             <div class="modal-header">
-                <span class="modal-title" data-i18n="avatar_modal_title"><span class="tt-icon" data-icon="shirt" data-size="16" style="margin-right:8px;color:#da7756;"></span> Customize Avatar & 3D Model</span>
+                <span class="modal-title" data-i18n="avatar_modal_title"><span class="tt-icon" data-icon="shirt" data-size="16" style="margin-right:8px;color:var(--cyber-cyan);"></span> Customize Avatar & 3D Model</span>
                 <button id="btn-close-customizer" class="modal-close-btn" aria-label="Close"><span class="tt-icon" data-icon="x" data-size="15"></span></button>
             </div>
             <div class="customizer-content">
@@ -1159,7 +1159,7 @@
                         <button class="avatar-preset-btn" data-preset="kemono_coder" data-i18n="avatar_preset_kemono"><span class="tt-icon" data-icon="laptop" data-size="14" style="margin-right:4px;"></span> Kemono Coder</button>
                     </div>
                     <div style="font-size: 11px; color: #94a3b8; margin-top: 8px;" data-i18n-html="avatar_texture_notice">
-                        <span class="tt-icon" data-icon="sparkles" data-size="12" style="margin-right:4px;color:#da7756;"></span> <em>Original high-res MToon textures are 100% preserved with anti-color bleed protection.</em>
+                        <span class="tt-icon" data-icon="sparkles" data-size="12" style="margin-right:4px;color:var(--cyber-cyan);"></span> <em>Original high-res MToon textures are 100% preserved with anti-color bleed protection.</em>
                     </div>
                 </div>
                 <div class="customizer-section">
@@ -1183,7 +1183,7 @@
     <div id="modal-graphics-settings" class="cyber-modal-overlay hidden">
         <div class="cyber-modal-card gfx-modal-card universal-settings-card">
             <div class="modal-header gfx-modal-header">
-                <span class="modal-title" data-i18n="settings_title"><span class="tt-icon" data-icon="settings" data-size="18" style="margin-right:8px;color:#da7756;"></span>System Configuration / Cài Đặt Hệ Thống</span>
+                <span class="modal-title" data-i18n="settings_title"><span class="tt-icon" data-icon="settings" data-size="18" style="margin-right:8px;color:var(--cyber-cyan);"></span>System Configuration / Cài Đặt Hệ Thống</span>
                 <button id="btn-close-graphics-modal" class="modal-close-btn" data-i18n-title="gfx_close" title="Close" aria-label="Close"><span class="tt-icon" data-icon="x" data-size="15"></span></button>
             </div>
             
@@ -1233,7 +1233,7 @@
                     <section class="settings-panel active" data-panel="graphics">
                         <!-- Presets Row -->
                         <div class="gfx-section-block">
-                            <div class="gfx-section-label" data-i18n="gfx_presets_section"><span class="tt-icon" data-icon="zap" data-size="14" style="margin-right:6px;color:#da7756;"></span>1. Quick Quality Presets</div>
+                            <div class="gfx-section-label" data-i18n="gfx_presets_section"><span class="tt-icon" data-icon="zap" data-size="14" style="margin-right:6px;color:var(--cyber-cyan);"></span>1. Quick Quality Presets</div>
                             <div class="gfx-presets-row">
                                 <button id="gfx-preset-low" class="gfx-preset-btn" type="button" data-i18n="preset_btn_low">Low</button>
                                 <button id="gfx-preset-medium" class="gfx-preset-btn" type="button" data-i18n="preset_btn_medium">Medium</button>
@@ -1249,12 +1249,12 @@
                                 <span class="gfx-platform-pill"><span class="tt-icon" data-icon="monitor" data-size="12" style="margin-right:4px;"></span>PC Graphics</span>
                                 <span class="gfx-preset-pill">HIGH</span>
                             </div>
-                            <div class="gfx-status-desc"><span class="tt-icon" data-icon="sparkles" data-size="12" style="margin-right:4px;color:#da7756;"></span>High fidelity with smooth 60 FPS and crisp shadows</div>
+                            <div class="gfx-status-desc"><span class="tt-icon" data-icon="sparkles" data-size="12" style="margin-right:4px;color:var(--cyber-cyan);"></span>High fidelity with smooth 60 FPS and crisp shadows</div>
                         </div>
 
                         <!-- Platform Profile Switcher -->
                         <div class="gfx-section-block">
-                            <div class="gfx-section-label" data-i18n="gfx_profile_section"><span class="tt-icon" data-icon="smartphone" data-size="14" style="margin-right:6px;color:#da7756;"></span>2. Hardware Platform Profile</div>
+                            <div class="gfx-section-label" data-i18n="gfx_profile_section"><span class="tt-icon" data-icon="smartphone" data-size="14" style="margin-right:6px;color:var(--cyber-cyan);"></span>2. Hardware Platform Profile</div>
                             <div class="gfx-platform-toggle">
                                 <button id="gfx-platform-mobile" class="gfx-platform-btn" type="button" data-profile="mobile">
                                     <span class="gfx-icon tt-icon" data-icon="smartphone" data-size="20"></span>
@@ -1282,7 +1282,7 @@
 
                         <!-- Display Mode (Fullscreen, Borderless, Window) -->
                         <div class="gfx-section-block">
-                            <div class="gfx-section-label" data-i18n="gfx_display_mode_section"><span class="tt-icon" data-icon="monitor" data-size="14" style="margin-right:6px;color:#da7756;"></span>3. Display Mode / Chế Độ Hiển Thị</div>
+                            <div class="gfx-section-label" data-i18n="gfx_display_mode_section"><span class="tt-icon" data-icon="monitor" data-size="14" style="margin-right:6px;color:var(--cyber-cyan);"></span>3. Display Mode / Chế Độ Hiển Thị</div>
                             <div class="gfx-display-mode-toggle">
                                 <button id="gfx-mode-fullscreen" class="gfx-mode-btn" type="button" data-mode="fullscreen">
                                     <span class="gfx-icon tt-icon" data-icon="maximize" data-size="20"></span>
@@ -1310,12 +1310,12 @@
 
                         <!-- Granular Parameters Grid -->
                         <div class="gfx-section-block">
-                            <div class="gfx-section-label" data-i18n="gfx_custom_section"><span class="tt-icon" data-icon="settings" data-size="14" style="margin-right:6px;color:#da7756;"></span>4. Granular Graphics Settings</div>
+                            <div class="gfx-section-label" data-i18n="gfx_custom_section"><span class="tt-icon" data-icon="settings" data-size="14" style="margin-right:6px;color:var(--cyber-cyan);"></span>4. Granular Graphics Settings</div>
                             <div class="gfx-options-grid">
                                 <!-- Resolution Scale / DPR -->
                                 <div class="gfx-field-card">
                                     <div class="gfx-field-title">
-                                        <span data-i18n="gfx_res_label"><span class="tt-icon" data-icon="gauge" data-size="14" style="margin-right:4px;color:#da7756;"></span>Resolution Scale (DPR)</span>
+                                        <span data-i18n="gfx_res_label"><span class="tt-icon" data-icon="gauge" data-size="14" style="margin-right:4px;color:var(--cyber-cyan);"></span>Resolution Scale (DPR)</span>
                                         <span class="gfx-field-tag" data-i18n="gfx_res_tag">Clarity</span>
                                     </div>
                                     <div class="gfx-field-desc" data-i18n="gfx_res_desc">Maintains render sharpness and prevents texture blur</div>
@@ -1330,7 +1330,7 @@
                                 <!-- Anti-Aliasing -->
                                 <div class="gfx-field-card">
                                     <div class="gfx-field-title">
-                                        <span data-i18n="gfx_aa_label"><span class="tt-icon" data-icon="sparkles" data-size="14" style="margin-right:4px;color:#da7756;"></span>Anti-Aliasing (MSAA)</span>
+                                        <span data-i18n="gfx_aa_label"><span class="tt-icon" data-icon="sparkles" data-size="14" style="margin-right:4px;color:var(--cyber-cyan);"></span>Anti-Aliasing (MSAA)</span>
                                         <span class="gfx-field-tag" data-i18n="gfx_aa_tag">Smooth Edges</span>
                                     </div>
                                     <div class="gfx-field-desc" data-i18n="gfx_aa_desc">Eliminates jagged polygon edges for smooth silhouettes</div>
@@ -1343,7 +1343,7 @@
                                 <!-- Model Smoothing & Textures -->
                                 <div class="gfx-field-card">
                                     <div class="gfx-field-title">
-                                        <span data-i18n="gfx_model_label"><span class="tt-icon" data-icon="layers" data-size="14" style="margin-right:4px;color:#da7756;"></span>Model & Texture Smoothing</span>
+                                        <span data-i18n="gfx_model_label"><span class="tt-icon" data-icon="layers" data-size="14" style="margin-right:4px;color:var(--cyber-cyan);"></span>Model & Texture Smoothing</span>
                                         <span class="gfx-field-tag" data-i18n="gfx_model_tag">MToon</span>
                                     </div>
                                     <div class="gfx-field-desc" data-i18n="gfx_model_desc">Smooths character mesh surfaces with anisotropic texture filtering</div>
@@ -1356,7 +1356,7 @@
                                 <!-- Shadow Quality -->
                                 <div class="gfx-field-card">
                                     <div class="gfx-field-title">
-                                        <span data-i18n="gfx_shadow_label"><span class="tt-icon" data-icon="sun" data-size="14" style="margin-right:4px;color:#da7756;"></span>Shadow Quality</span>
+                                        <span data-i18n="gfx_shadow_label"><span class="tt-icon" data-icon="sun" data-size="14" style="margin-right:4px;color:var(--cyber-cyan);"></span>Shadow Quality</span>
                                         <span class="gfx-field-tag" data-i18n="gfx_shadow_tag">Lighting</span>
                                     </div>
                                     <div class="gfx-field-desc" data-i18n="gfx_shadow_desc">Resolution of directional sunlight shadows on terrain and avatars</div>
@@ -1371,7 +1371,7 @@
                                 <!-- Shader Atmosphere -->
                                 <div class="gfx-field-card">
                                     <div class="gfx-field-title">
-                                        <span data-i18n="gfx_shader_label"><span class="tt-icon" data-icon="eye" data-size="14" style="margin-right:4px;color:#da7756;"></span>Shader Atmosphere (BSL Inspired)</span>
+                                        <span data-i18n="gfx_shader_label"><span class="tt-icon" data-icon="eye" data-size="14" style="margin-right:4px;color:var(--cyber-cyan);"></span>Shader Atmosphere (BSL Inspired)</span>
                                         <span class="gfx-field-tag" data-i18n="gfx_shader_tag">Atmosphere</span>
                                     </div>
                                     <div class="gfx-field-desc" data-i18n="gfx_shader_desc">Enhances world atmosphere with warm god rays and water reflections</div>
@@ -1384,7 +1384,7 @@
                                 <!-- Frame Rate Cap -->
                                 <div class="gfx-field-card">
                                     <div class="gfx-field-title">
-                                        <span data-i18n="gfx_fps_label"><span class="tt-icon" data-icon="gauge" data-size="14" style="margin-right:4px;color:#da7756;"></span>Frame Rate Limit (FPS Cap)</span>
+                                        <span data-i18n="gfx_fps_label"><span class="tt-icon" data-icon="gauge" data-size="14" style="margin-right:4px;color:var(--cyber-cyan);"></span>Frame Rate Limit (FPS Cap)</span>
                                         <span class="gfx-field-tag" data-i18n="gfx_fps_tag">Thermals</span>
                                     </div>
                                     <div class="gfx-field-desc" data-i18n="gfx_fps_desc">Locks FPS to keep devices cool during extended play</div>
@@ -1401,12 +1401,12 @@
                     <!-- ================= TAB 2: AUDIO ================= -->
                     <section class="settings-panel" data-panel="audio" hidden>
                         <div class="gfx-section-block">
-                            <div class="gfx-section-label" data-i18n="sound_settings_section"><span class="tt-icon" data-icon="volume-2" data-size="14" style="margin-right:6px;color:#da7756;"></span>Master & Volume Channels</div>
+                            <div class="gfx-section-label" data-i18n="sound_settings_section"><span class="tt-icon" data-icon="volume-2" data-size="14" style="margin-right:6px;color:var(--cyber-cyan);"></span>Master & Volume Channels</div>
                             <div class="gfx-options-grid">
                                 <!-- Master Volume -->
                                 <div class="gfx-field-card" style="grid-column: 1 / -1;">
                                     <div class="gfx-field-title">
-                                        <span data-i18n="sound_master_label"><span class="tt-icon" data-icon="volume-2" data-size="14" style="margin-right:4px;color:#da7756;"></span>Master Volume</span>
+                                        <span data-i18n="sound_master_label"><span class="tt-icon" data-icon="volume-2" data-size="14" style="margin-right:4px;color:var(--cyber-cyan);"></span>Master Volume</span>
                                         <span class="gfx-field-tag" id="val-sound-master">100%</span>
                                     </div>
                                     <div class="gfx-field-desc" data-i18n="sound_master_desc">Scales all game audio, ambience, footstep and action sounds</div>
@@ -1416,7 +1416,7 @@
                                 <!-- LoFi / BGM Music -->
                                 <div class="gfx-field-card">
                                     <div class="gfx-field-title">
-                                        <span><span class="tt-icon" data-icon="music" data-size="14" style="margin-right:4px;color:#da7756;"></span>LoFi & Background Music</span>
+                                        <span><span class="tt-icon" data-icon="music" data-size="14" style="margin-right:4px;color:var(--cyber-cyan);"></span>LoFi & Background Music</span>
                                         <span class="gfx-field-tag" id="val-sound-bgm">60%</span>
                                     </div>
                                     <div class="gfx-field-desc">Background chillhop streams and ambient melodies</div>
@@ -1426,7 +1426,7 @@
                                 <!-- Ambiance Volume -->
                                 <div class="gfx-field-card">
                                     <div class="gfx-field-title">
-                                        <span data-i18n="sound_ambiance_label"><span class="tt-icon" data-icon="wind" data-size="14" style="margin-right:4px;color:#da7756;"></span>Nature Ambience</span>
+                                        <span data-i18n="sound_ambiance_label"><span class="tt-icon" data-icon="wind" data-size="14" style="margin-right:4px;color:var(--cyber-cyan);"></span>Nature Ambience</span>
                                         <span class="gfx-field-tag" id="val-sound-ambiance">70%</span>
                                     </div>
                                     <div class="gfx-field-desc" data-i18n="sound_ambiance_desc">Gentle wind, waterfall stream, koi pond splashes, flocking birds & crickets</div>
@@ -1436,7 +1436,7 @@
                                 <!-- Players' Sounds -->
                                 <div class="gfx-field-card">
                                     <div class="gfx-field-title">
-                                        <span data-i18n="sound_players_label"><span class="tt-icon" data-icon="footprints" data-size="14" style="margin-right:4px;color:#da7756;"></span>Players' Action SFX</span>
+                                        <span data-i18n="sound_players_label"><span class="tt-icon" data-icon="footprints" data-size="14" style="margin-right:4px;color:var(--cyber-cyan);"></span>Players' Action SFX</span>
                                         <span class="gfx-field-tag" id="val-sound-players">80%</span>
                                     </div>
                                     <div class="gfx-field-desc" data-i18n="sound_players_desc">Footsteps, drinking tea, item use, vending machine & warp sound effects</div>
@@ -1446,7 +1446,7 @@
                                 <!-- 3D Positional Audio Toggle -->
                                 <div class="gfx-field-card">
                                     <div class="gfx-field-title">
-                                        <span><span class="tt-icon" data-icon="headphones" data-size="14" style="margin-right:4px;color:#da7756;"></span>3D Spatial Audio</span>
+                                        <span><span class="tt-icon" data-icon="headphones" data-size="14" style="margin-right:4px;color:var(--cyber-cyan);"></span>3D Spatial Audio</span>
                                         <span class="gfx-field-tag">Binaural</span>
                                     </div>
                                     <div class="gfx-field-desc">Realistic distance falloff and stereo panning based on player head position</div>
@@ -1462,12 +1462,12 @@
                     <!-- ================= TAB 3: CONTROLS & CAMERA ================= -->
                     <section class="settings-panel" data-panel="controls" hidden>
                         <div class="gfx-section-block">
-                            <div class="gfx-section-label"><span class="tt-icon" data-icon="gamepad-2" data-size="14" style="margin-right:6px;color:#da7756;"></span>Camera Dynamics & Sensitivity</div>
+                            <div class="gfx-section-label"><span class="tt-icon" data-icon="gamepad-2" data-size="14" style="margin-right:6px;color:var(--cyber-cyan);"></span>Camera Dynamics & Sensitivity</div>
                             <div class="gfx-options-grid">
                                 <!-- Mouse Sensitivity -->
                                 <div class="gfx-field-card">
                                     <div class="gfx-field-title">
-                                        <span><span class="tt-icon" data-icon="mouse" data-size="14" style="margin-right:4px;color:#da7756;"></span>Mouse Sensitivity</span>
+                                        <span><span class="tt-icon" data-icon="mouse" data-size="14" style="margin-right:4px;color:var(--cyber-cyan);"></span>Mouse Sensitivity</span>
                                         <span class="gfx-field-tag" id="val-mouse-sensitivity">0.0050</span>
                                     </div>
                                     <div class="gfx-field-desc">Camera orbit responsiveness during desktop mouse dragging</div>
@@ -1477,7 +1477,7 @@
                                 <!-- Invert Y -->
                                 <div class="gfx-field-card">
                                     <div class="gfx-field-title">
-                                        <span><span class="tt-icon" data-icon="refresh-cw" data-size="14" style="margin-right:4px;color:#da7756;"></span>Invert Vertical Pitch (Invert Y)</span>
+                                        <span><span class="tt-icon" data-icon="refresh-cw" data-size="14" style="margin-right:4px;color:var(--cyber-cyan);"></span>Invert Vertical Pitch (Invert Y)</span>
                                         <span class="gfx-field-tag">Pitch</span>
                                     </div>
                                     <div class="gfx-field-desc">Inverts vertical pitch direction when moving mouse up/down</div>
@@ -1490,7 +1490,7 @@
                                 <!-- Field of View (FOV) -->
                                 <div class="gfx-field-card">
                                     <div class="gfx-field-title">
-                                        <span><span class="tt-icon" data-icon="compass" data-size="14" style="margin-right:4px;color:#da7756;"></span>Field of View (FOV)</span>
+                                        <span><span class="tt-icon" data-icon="compass" data-size="14" style="margin-right:4px;color:var(--cyber-cyan);"></span>Field of View (FOV)</span>
                                         <span class="gfx-field-tag" id="val-camera-fov">75°</span>
                                     </div>
                                     <div class="gfx-field-desc">Wider view angles provide cinematic panoramic perception</div>
@@ -1500,7 +1500,7 @@
                                 <!-- Camera Orbit Distance -->
                                 <div class="gfx-field-card">
                                     <div class="gfx-field-title">
-                                        <span><span class="tt-icon" data-icon="ruler" data-size="14" style="margin-right:4px;color:#da7756;"></span>Default Camera Distance</span>
+                                        <span><span class="tt-icon" data-icon="ruler" data-size="14" style="margin-right:4px;color:var(--cyber-cyan);"></span>Default Camera Distance</span>
                                         <span class="gfx-field-tag" id="val-camera-distance">4.2m</span>
                                     </div>
                                     <div class="gfx-field-desc">Distance from third-person camera to character shoulders</div>
@@ -1511,7 +1511,7 @@
 
                         <!-- Keybinding Reference Cheat Sheet -->
                         <div class="gfx-section-block">
-                            <div class="gfx-section-label"><span class="tt-icon" data-icon="keyboard" data-size="14" style="margin-right:6px;color:#da7756;"></span>Keybinding Quick Reference</div>
+                            <div class="gfx-section-label"><span class="tt-icon" data-icon="keyboard" data-size="14" style="margin-right:6px;color:var(--cyber-cyan);"></span>Keybinding Quick Reference</div>
                             <div class="keybinds-table-grid">
                                 <div class="keybind-row"><span>Move Forward</span><button class="keybind-action-btn" data-action="forward">W</button></div>
                                 <div class="keybind-row"><span>Move Backward</span><button class="keybind-action-btn" data-action="backward">S</button></div>
@@ -1532,12 +1532,12 @@
                     <!-- ================= TAB 4: GAME & WORLD ================= -->
                     <section class="settings-panel" data-panel="gameui" hidden>
                         <div class="gfx-section-block">
-                            <div class="gfx-section-label"><span class="tt-icon" data-icon="globe" data-size="14" style="margin-right:6px;color:#da7756;"></span>Language & Aesthetic Theme</div>
+                            <div class="gfx-section-label"><span class="tt-icon" data-icon="globe" data-size="14" style="margin-right:6px;color:var(--cyber-cyan);"></span>Language & Aesthetic Theme</div>
                             <div class="gfx-options-grid">
                                 <!-- Language -->
                                 <div class="gfx-field-card">
                                     <div class="gfx-field-title">
-                                        <span data-i18n="gfx_lang_label"><span class="tt-icon" data-icon="globe" data-size="14" style="margin-right:4px;color:#da7756;"></span>Interface Language / Ngôn Ngữ</span>
+                                        <span data-i18n="gfx_lang_label"><span class="tt-icon" data-icon="globe" data-size="14" style="margin-right:4px;color:var(--cyber-cyan);"></span>Interface Language / Ngôn Ngữ</span>
                                     </div>
                                     <div class="gfx-field-desc" data-i18n="gfx_lang_desc">Bilingual English & Tiếng Việt localization</div>
                                     <select id="gfx-language-select" class="gfx-select">
@@ -1549,7 +1549,7 @@
                                 <!-- Theme -->
                                 <div class="gfx-field-card">
                                     <div class="gfx-field-title">
-                                        <span><span class="tt-icon" data-icon="palette" data-size="14" style="margin-right:4px;color:#da7756;"></span>Claude Minimalist UI Theme</span>
+                                        <span><span class="tt-icon" data-icon="palette" data-size="14" style="margin-right:4px;color:var(--cyber-cyan);"></span>Claude Minimalist UI Theme</span>
                                     </div>
                                     <div class="gfx-field-desc">Claude.ai Minimalist Palette (Obsidian vs Paper Cream)</div>
                                     <select id="gfx-theme-select" class="gfx-select">
@@ -1561,7 +1561,7 @@
                                 <!-- Time of Day -->
                                 <div class="gfx-field-card" style="grid-column: 1 / -1;">
                                     <div class="gfx-field-title">
-                                        <span data-i18n="gfx_tod_mode_label"><span class="tt-icon" data-icon="clock" data-size="14" style="margin-right:4px;color:#da7756;"></span>Environmental Time of Day</span>
+                                        <span data-i18n="gfx_tod_mode_label"><span class="tt-icon" data-icon="clock" data-size="14" style="margin-right:4px;color:var(--cyber-cyan);"></span>Environmental Time of Day</span>
                                         <span class="gfx-field-tag" id="gfx-tod-current-time">Cycle: 10:00</span>
                                     </div>
                                     <div class="gfx-field-desc" data-i18n="gfx_tod_desc">Dynamic 24-minute diurnal cycle or lock your favorite aesthetic horizon</div>
@@ -1579,7 +1579,7 @@
                                 <!-- In-World Hologram Screens Toggle -->
                                 <div class="gfx-field-card">
                                     <div class="gfx-field-title">
-                                        <span><span class="tt-icon" data-icon="sparkles" data-size="14" style="margin-right:4px;color:#da7756;"></span>In-World 3D Holographic Popups</span>
+                                        <span><span class="tt-icon" data-icon="sparkles" data-size="14" style="margin-right:4px;color:var(--cyber-cyan);"></span>In-World 3D Holographic Popups</span>
                                         <span class="gfx-field-tag">3D HUD</span>
                                     </div>
                                     <div class="gfx-field-desc">Project cyber floating holograms when you open Terminal, Codex, or AGY</div>
@@ -1592,7 +1592,7 @@
                                 <!-- Nametag Visibility Mode -->
                                 <div class="gfx-field-card" style="grid-column: 1 / -1;">
                                     <div class="gfx-field-title">
-                                        <span data-i18n="gfx_nametag_label"><span class="tt-icon" data-icon="tag" data-size="14" style="margin-right:4px;color:#da7756;"></span>Overhead Nametags & Ranks</span>
+                                        <span data-i18n="gfx_nametag_label"><span class="tt-icon" data-icon="tag" data-size="14" style="margin-right:4px;color:var(--cyber-cyan);"></span>Overhead Nametags & Ranks</span>
                                         <span class="gfx-field-tag" data-i18n="gfx_nametag_tag">Smart View</span>
                                     </div>
                                     <div class="gfx-field-desc" data-i18n="gfx_nametag_desc">Smart view cone culling prevents visual clutter during exploration</div>
@@ -1609,12 +1609,12 @@
                     <!-- ================= TAB 5: SYSTEM & NETWORK ================= -->
                     <section class="settings-panel" data-panel="system" hidden>
                         <div class="gfx-section-block">
-                            <div class="gfx-section-label"><span class="tt-icon" data-icon="zap" data-size="14" style="margin-right:6px;color:#da7756;"></span>Real-time Telemetry & Performance</div>
+                            <div class="gfx-section-label"><span class="tt-icon" data-icon="zap" data-size="14" style="margin-right:6px;color:var(--cyber-cyan);"></span>Real-time Telemetry & Performance</div>
                             <div class="gfx-options-grid">
                                 <!-- Ping Latency Indicator -->
                                 <div class="gfx-field-card">
                                     <div class="gfx-field-title">
-                                        <span><span class="tt-icon" data-icon="activity" data-size="14" style="margin-right:4px;color:#da7756;"></span>Server Connection & Ping</span>
+                                        <span><span class="tt-icon" data-icon="activity" data-size="14" style="margin-right:4px;color:var(--cyber-cyan);"></span>Server Connection & Ping</span>
                                         <span class="gfx-field-tag" id="sys-ping-latency">12 ms</span>
                                     </div>
                                     <div class="gfx-field-desc">Real-time WebSocket round-trip latency to TeleTerm backend</div>
@@ -1623,7 +1623,7 @@
                                 <!-- Telemetry Overlay Toggle -->
                                 <div class="gfx-field-card">
                                     <div class="gfx-field-title">
-                                        <span><span class="tt-icon" data-icon="gauge" data-size="14" style="margin-right:4px;color:#da7756;"></span>Performance Telemetry Chip</span>
+                                        <span><span class="tt-icon" data-icon="gauge" data-size="14" style="margin-right:4px;color:var(--cyber-cyan);"></span>Performance Telemetry Chip</span>
                                         <span class="gfx-field-tag">Metrics</span>
                                     </div>
                                     <div class="gfx-field-desc">Display FPS, RAM usage, and GPU draw-calls on the top navigation bar</div>
@@ -1636,7 +1636,7 @@
                                 <!-- Cache & Session Reset -->
                                 <div class="gfx-field-card" style="grid-column: 1 / -1;">
                                     <div class="gfx-field-title">
-                                        <span><span class="tt-icon" data-icon="hard-drive" data-size="14" style="margin-right:4px;color:#da7756;"></span>Local Session & Asset Cache</span>
+                                        <span><span class="tt-icon" data-icon="hard-drive" data-size="14" style="margin-right:4px;color:var(--cyber-cyan);"></span>Local Session & Asset Cache</span>
                                         <span class="gfx-field-tag">Storage</span>
                                     </div>
                                     <div class="gfx-field-desc">Clear cached 3D assets, textures, and temporary UI states</div>
@@ -1660,7 +1660,7 @@
     <!-- 17. Level-Up Celebration Modal -->
     <div id="modal-level-up" class="cyber-modal-overlay hidden">
         <div class="cyber-modal-card levelup-card">
-            <div class="levelup-sparks"><span class="tt-icon" data-icon="sparkles" data-size="28" style="color:#da7756;"></span></div>
+            <div class="levelup-sparks"><span class="tt-icon" data-icon="sparkles" data-size="28" style="color:var(--cyber-cyan);"></span></div>
             <h2 class="levelup-header">LEVEL UP!</h2>
             <div id="levelup-modal-level-num" class="levelup-level-num">LEVEL 2</div>
             <div id="levelup-modal-title" class="levelup-title">New Title: Terminal Adept</div>
@@ -1673,7 +1673,7 @@
     <div id="modal-player-inventory" class="cyber-modal-overlay hidden">
         <div class="cyber-modal-card inventory-modal-card">
             <div class="modal-header">
-                <span class="modal-title" data-i18n="inventory_title"><span class="tt-icon" data-icon="shopping-bag" data-size="16" style="margin-right:8px;color:#da7756;"></span>Player Inventory</span>
+                <span class="modal-title" data-i18n="inventory_title"><span class="tt-icon" data-icon="shopping-bag" data-size="16" style="margin-right:8px;color:var(--cyber-cyan);"></span>Player Inventory</span>
                 <button id="btn-close-inventory" class="modal-close-btn" title="Close (Esc)" aria-label="Close"><span class="tt-icon" data-icon="x" data-size="15"></span></button>
             </div>
             <div class="inventory-modal-body">
@@ -1683,7 +1683,7 @@
                 <div class="inv-section-title" style="margin-top: 14px;" data-i18n="inventory_hotbar">Hotbar (1..9)</div>
                 <div id="inventory-hotbar-grid" class="inventory-hotbar-grid"></div>
 
-                <div class="inv-modal-hint" data-i18n="inventory_drag_hint"><span class="tt-icon" data-icon="lightbulb" data-size="13" style="margin-right:6px;color:#da7756;"></span>Click or drag items to swap / rearrange slots [E/I to toggle]</div>
+                <div class="inv-modal-hint" data-i18n="inventory_drag_hint"><span class="tt-icon" data-icon="lightbulb" data-size="13" style="margin-right:6px;color:var(--cyber-cyan);"></span>Click or drag items to swap / rearrange slots [E/I to toggle]</div>
             </div>
         </div>
     </div>
@@ -1710,7 +1710,7 @@
     <script type="module" src="/js/voice-chat-manager.js?v=26"></script>
     <script type="module" src="/js/minigames/campfire-cooking-system.js?v=41"></script>
     <script type="module" src="/js/shop/cyber-shop-system.js?v=41"></script>
-    <script type="module" src="/js/ui/radial-emote-wheel.js?v=42"></script>
+    <script type="module" src="/js/ui/radial-emote-wheel.js?v=43"></script>
     <script type="module" src="/js/world/spatial-boombox-manager.js?v=42"></script>
     <script type="module" src="/js/world/ghibli-sky-dome.js?v=43"></script>
     <script type="module" src="/js/world/firefly-swarm-system.js?v=43"></script>
@@ -1718,6 +1718,6 @@
     <script type="module" src="/js/world/pet-companion-system.js?v=46"></script>
 
     <!-- Application Script (ESM) -->
-    <script type="module" src="/app.js?v=42"></script>
+    <script type="module" src="/app.js?v=43"></script>
 </body>
 </html>

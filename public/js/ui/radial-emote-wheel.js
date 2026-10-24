@@ -74,7 +74,7 @@ export const EMOTE_SLICES = [
         label: 'Peace Pose',
         labelVi: 'Tạo Dáng',
         icon: '✌️',
-        color: '#da7756'
+        color: '#00f0ff'
     }
 ];
 

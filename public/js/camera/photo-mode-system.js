@@ -77,7 +77,7 @@ export class PhotoModeSystem {
                         <button id="btn-photo-capture" class="photo-btn-primary" style="display:inline-flex;align-items:center;gap:6px;">
                             ${window.TeleTermIcons ? window.TeleTermIcons.render('camera', { size: 14 }) : ''} SNAPSHOT
                         </button>
-                        <button id="btn-photo-open-studio" class="photo-btn-primary" style="background: linear-gradient(135deg, #da7756, #b85a3a); color:#fff; display:inline-flex;align-items:center;gap:6px;">
+                        <button id="btn-photo-open-studio" class="photo-btn-primary" style="background: linear-gradient(135deg, #00f0ff, #b85a3a); color:#fff; display:inline-flex;align-items:center;gap:6px;">
                             ${window.TeleTermIcons ? window.TeleTermIcons.render('sparkles', { size: 14 }) : ''} STUDIO
                         </button>
                         <button id="btn-photo-exit" class="photo-btn-outline" style="display:inline-flex;align-items:center;gap:6px;">

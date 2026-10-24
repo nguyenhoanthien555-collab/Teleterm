@@ -173,7 +173,7 @@ function setupTopbarControls() {
     const return3dBtn = document.getElementById('btn-return-3d-world');
     if (return3dBtn) {
         if (window.parent && window.parent !== window) {
-            const icon = window.TeleTermIcons ? window.TeleTermIcons.render('orbit', { size: 13, color: '#da7756' }) : '';
+            const icon = window.TeleTermIcons ? window.TeleTermIcons.render('orbit', { size: 13, color: '#00f0ff' }) : '';
             return3dBtn.innerHTML = `${icon} Return to 3D (Instant)`;
             return3dBtn.title = 'Instantly return to 3D World (Zero reload, map stays loaded)';
         }
