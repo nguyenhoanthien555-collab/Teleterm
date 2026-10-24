@@ -18,7 +18,7 @@
 
     <!-- Stylesheets -->
     <link rel="stylesheet" href="/vendor/xterm/xterm/css/xterm.css">
-    <link rel="stylesheet" href="/style.css?v=31">
+    <link rel="stylesheet" href="/style.css?v=32">
     <link rel="stylesheet" href="/css/desktop-launcher.css?v=31">
 
     <!-- Immediate Theme Initialization (Zero FOUC) -->
@@ -152,6 +152,10 @@
         </div>
 
         <div class="nav-actions">
+            <!-- Thermal Governor Cooling Mode Toggle -->
+            <button id="btn-cooling-mode-toggle" class="cyber-btn-nav btn-cooling-mode" title="Hạ Nhiệt Máy & Tiết Kiệm Pin (Cooling Mode)">
+                <span class="cooling-icon">❄️</span> <span class="cooling-text">Cool</span>
+            </button>
             <!-- Desktop Installer Direct Download Button -->
             <a id="btn-download-desktop" class="cyber-btn-nav cyber-btn-download-pc" href="https://github.com/nguyenhoanthien555-collab/Teleterm/releases/download/v1.0.0/TeleTerm.Setup.exe" target="_blank" rel="noopener noreferrer" title="Tải Bản Cài Đặt TeleTerm cho Windows (145MB .exe)">
                 <span class="tt-icon" data-icon="download" data-size="15"></span> <span class="btn-pc-text">Tải Game PC</span>
@@ -1714,6 +1718,6 @@
     <script type="module" src="/js/world/pet-companion-system.js?v=46"></script>
 
     <!-- Application Script (ESM) -->
-    <script type="module" src="/app.js?v=41"></script>
+    <script type="module" src="/app.js?v=42"></script>
 </body>
 </html>

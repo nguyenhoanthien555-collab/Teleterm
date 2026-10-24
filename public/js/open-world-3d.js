@@ -56,6 +56,7 @@ import { XpShopModal } from './ui/xp-shop-modal.js';
 import { InworldPhotoBillboard } from './world/inworld-photo-billboard.js';
 import { ZenFishingSystem } from './minigames/zen-fishing-system.js?v=40';
 import { FishDexModal } from './minigames/fish-dex-modal.js?v=40';
+import { ThermalGovernor } from './core/thermal-governor.js?v=47';
 
 // Zero-Allocation Module Scratchpad (Argon Task #3)
 const _interactionCandidates = [];
@@ -283,6 +284,10 @@ export class OpenWorld3D {
         window.worldContext = worldContext;
         window.worldComposition = this.worldComposition;
         window.modularDeskDecor = this.worldComposition.deskDecor;
+
+        // 3a. Thermal & Battery Performance Governor (Argon v2)
+        this.thermalGovernor = new ThermalGovernor(this);
+        window.thermalGovernor = this.thermalGovernor;
 
         // 3b. In-World 3D Holographic Windows & Cyber Projection System
         this.inworldHologram = new InWorldHologramSystem(this.scene);
@@ -3295,27 +3300,24 @@ export class OpenWorld3D {
     animate() {
         requestAnimationFrame(() => this.animate());
 
-        if (document.hidden) {
-            this.lastFrameTime = performance.now();
-            return;
-        }
-
-        // Performance Optimization: when in Focus mode on mobile, throttle 3D rendering
-        // to leave full GPU & CPU bandwidth for the terminal, ConPTY and chat inputs
-        if (!this.isExploreMode && this.isMobileDevice) {
-            this.focusFrameSkip = (this.focusFrameSkip || 0) + 1;
-            if (this.focusFrameSkip % 2 !== 0) {
-                return;
-            }
-        }
-
         const now = performance.now();
 
-        // Frame rate limiter (Battery saving & Cool thermals)
-        if (this.fpsCap > 0) {
-            const targetInterval = 1000 / this.fpsCap;
-            if (now - this.lastRenderTime < (targetInterval - 1.5)) {
+        // 0. Thermal Governor & Hardware Heat Protection (Lead Architect Argon v2)
+        if (this.thermalGovernor) {
+            if (!this.thermalGovernor.shouldRenderFrame(now, this.lastRenderTime)) {
                 return;
+            }
+            this.thermalGovernor.governShadows(this.player ? this.player.position : null);
+        } else {
+            if (document.hidden) {
+                this.lastFrameTime = performance.now();
+                return;
+            }
+            if (this.fpsCap > 0) {
+                const targetInterval = 1000 / this.fpsCap;
+                if (now - this.lastRenderTime < (targetInterval - 1.5)) {
+                    return;
+                }
             }
         }
         this.lastRenderTime = now;
